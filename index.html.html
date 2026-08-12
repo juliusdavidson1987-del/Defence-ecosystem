@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Defence Ecosystem</title>
+<meta name="description" content="An interactive map of the defence innovation and procurement ecosystem — UK, NATO, Europe, USA and Five Eyes. Find the right organisation for your technology, research, problem or capital.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230A1220' stroke='%233FE0D0' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%233FE0D0' stroke-opacity='0.5' stroke-width='1'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%233FE0D0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#070C16; --ink2:#0C1424; --panel:#0B1526; --line:#18263F;
+    --txt:#EAF1FB; --mut:#8A9BB8; --faint:#54648A; --phos:#3FE0D0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--ink);color:var(--txt);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+  /* ---------------- top bar ---------------- */
+  header{position:fixed;top:0;left:0;right:0;height:58px;z-index:40;display:flex;align-items:center;gap:16px;
+    padding:0 18px;background:linear-gradient(180deg,rgba(7,12,22,.98),rgba(7,12,22,.72));
+    border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand .t{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:16px;letter-spacing:.2px}
+  .brand .s{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--phos);letter-spacing:2px;text-transform:uppercase;opacity:.8}
+  .spacer{flex:1}
+  .search{position:relative}
+  .search input{width:220px;background:rgba(10,18,32,.9);border:1px solid var(--line);color:var(--txt);border-radius:9px;
+    padding:8px 12px 8px 32px;font-size:13px;outline:none;transition:.15s}
+  .search input:focus{border-color:var(--phos);box-shadow:0 0 0 3px color-mix(in srgb,var(--phos) 18%,transparent)}
+  .search input::placeholder{color:var(--faint)}
+  .search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--mut);fill:none}
+  .ctrls{display:flex;gap:6px}
+  .btn{background:rgba(12,20,36,.9);border:1px solid var(--line);color:var(--txt);border-radius:9px;height:34px;min-width:34px;
+    padding:0 11px;display:grid;place-items:center;cursor:pointer;font-size:12px;transition:.15s;
+    font-family:"IBM Plex Mono",monospace;letter-spacing:.5px}
+  .btn:hover{border-color:var(--phos);color:#fff;box-shadow:0 0 14px color-mix(in srgb,var(--phos) 22%,transparent)}
+  /* ---------------- legend ---------------- */
+  .legend{position:fixed;left:14px;top:72px;z-index:35;width:212px;max-height:calc(100vh - 116px);overflow:auto;
+    background:linear-gradient(180deg,rgba(12,21,38,.94),rgba(9,16,30,.9));border:1px solid var(--line);border-radius:14px;
+    padding:12px 12px 10px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .legend::-webkit-scrollbar{width:8px}.legend::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .legend h4{margin:0 0 8px;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--faint)}
+  .lg{display:flex;align-items:center;gap:9px;padding:5px 7px;border-radius:8px;cursor:pointer;user-select:none;transition:.12s}
+  .lg:hover{background:rgba(63,224,208,.06)}
+  .lg .dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+  .lg .nm{font-weight:500;font-size:11.5px;line-height:1.2;color:#CDD8EC}
+  .lg .ct{margin-left:auto;font-family:"IBM Plex Mono",monospace;color:var(--faint);font-size:10px}
+  .legend .hint{margin-top:8px;padding-top:9px;border-top:1px solid var(--line);color:var(--mut);font-size:10.5px;line-height:1.55}
+  .legend .hint b{color:var(--phos);font-weight:500}
+  /* ---------------- stage ---------------- */
+  #stage{position:fixed;inset:0;top:58px;cursor:grab;touch-action:none;
+    background:
+      radial-gradient(circle at 1px 1px,rgba(90,120,170,.05) 1px,transparent 0) 0 0/30px 30px,
+      radial-gradient(130% 100% at 50% 42%,#0E1A2E 0%,#0A1220 42%,#060A12 100%)}
+  #stage.drag{cursor:grabbing}
+  #world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  #edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+  #edges .ring{fill:none;stroke:color-mix(in srgb,var(--phos) 22%,transparent);stroke-width:1;stroke-dasharray:2 7;opacity:.5}
+  #edges .glow path{fill:none;stroke-width:5.5;opacity:.16;stroke-linecap:round;filter:blur(4px);transition:opacity .25s}
+  #edges .crisp path{fill:none;stroke-width:1.3;opacity:.42;stroke-linecap:round;transition:opacity .2s,stroke-width .2s}
+  #edges .crisp path.lit{opacity:1;stroke-width:2.4}
+  #edges .glow path.lit{opacity:.55}
+  #edges path.faded{opacity:.05!important}
+  /* ---------------- nodes ---------------- */
+  .node{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;cursor:pointer;
+    border-radius:100px;border:1px solid color-mix(in srgb,var(--c,#4a6) 42%,transparent);
+    background:linear-gradient(180deg,color-mix(in srgb,var(--c,#28374f) 14%,#0C1524),color-mix(in srgb,var(--c,#28374f) 6%,#0A121F));
+    transition:left .5s cubic-bezier(.2,.7,.2,1),top .5s cubic-bezier(.2,.7,.2,1),box-shadow .16s,border-color .16s,opacity .28s,transform .16s;
+    box-shadow:0 3px 12px rgba(0,0,0,.4);white-space:nowrap}
+  .node:hover{border-color:color-mix(in srgb,var(--c) 85%,transparent);
+    box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent),0 0 20px color-mix(in srgb,var(--c) 32%,transparent),0 8px 22px rgba(0,0,0,.5);z-index:6}
+  .node:focus{outline:none;border-color:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--phos) 55%,transparent)}
+  .node .cdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 9px var(--c)}
+  .node .lab{font-weight:500;line-height:1.14;white-space:normal;overflow:hidden;text-overflow:ellipsis}
+  .node .badge{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:#dfe8f6;
+    background:color-mix(in srgb,var(--c) 26%,transparent);border-radius:20px;padding:1px 7px;flex:none}
+  .node .tri{font-size:8px;color:var(--mut);flex:none;transition:transform .3s;opacity:.8}
+  .node.collapsed .tri{transform:rotate(-90deg)}
+  /* kinds */
+  .node.kind-root{width:132px;height:132px;border-radius:50%;justify-content:center;text-align:center;padding:14px;
+    border:1.5px solid color-mix(in srgb,var(--phos) 55%,transparent);
+    background:radial-gradient(circle at 50% 42%,#12314a,#0a1626 70%);
+    box-shadow:0 0 0 6px rgba(63,224,208,.05),0 0 40px rgba(63,224,208,.22),inset 0 0 30px rgba(63,224,208,.12)}
+  .node.kind-root .lab{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:12.5px;max-width:104px;color:#EAF6FF}
+  .node.kind-root .cdot,.node.kind-root .tri,.node.kind-root .badge{display:none}
+  .node.kind-branch{padding:9px 14px;max-width:216px}
+  .node.kind-branch .lab{font-family:"Space Grotesk",sans-serif;font-size:12.5px;font-weight:600;max-width:150px}
+  .node.kind-cat{padding:7px 12px;max-width:196px}
+  .node.kind-cat .lab{font-size:11.5px;font-weight:600;max-width:140px}
+  .node.kind-leaf{padding:6px 11px;max-width:180px;border-radius:11px}
+  .node.kind-leaf .lab{font-size:10.8px;max-width:150px}
+  .node.dim{opacity:.12;filter:saturate(.5)}
+  .node.hit{border-color:#FFD46B!important;box-shadow:0 0 0 1px #FFD46B,0 0 20px rgba(255,212,107,.5)!important;z-index:7}
+  .node.sel{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.6),0 0 26px color-mix(in srgb,var(--c) 55%,transparent)!important;z-index:8}
+  /* ---------------- detail panel ---------------- */
+  #panel{position:fixed;top:58px;right:0;bottom:0;width:356px;z-index:38;transform:translateX(100%);
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);background:linear-gradient(180deg,#0C1627,#080E1A);
+    border-left:1px solid var(--line);padding:22px 22px 30px;overflow:auto;box-shadow:-24px 0 60px rgba(0,0,0,.5)}
+  #panel.open{transform:none}
+  #panel::-webkit-scrollbar{width:9px}#panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  #panel .close{position:absolute;top:13px;right:13px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);
+    background:rgba(12,20,36,.9);color:var(--txt);cursor:pointer;font-size:16px;transition:.15s}
+  #panel .close:hover{border-color:var(--phos)}
+  #panel .eye{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--phos);opacity:.85}
+  #panel h2{font-family:"Space Grotesk",sans-serif;font-size:20px;margin:9px 0 2px;line-height:1.18}
+  #panel .tag{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-family:"IBM Plex Mono",monospace;letter-spacing:.5px;
+    text-transform:uppercase;padding:4px 10px;border-radius:20px;border:1px solid var(--line);margin-top:11px;color:var(--mut)}
+  #panel .tag i{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor}
+  #panel .sect{margin-top:19px}
+  #panel .sect .lab{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  #panel .sect p{margin:0;font-size:13px;line-height:1.58;color:#D2DCEE}
+  #panel #pentry{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  #panel .cchip{display:inline-flex;align-items:center;gap:8px;max-width:100%;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+    color:var(--phos);background:rgba(63,224,208,.06);border:1px solid color-mix(in srgb,var(--phos) 24%,transparent);
+    border-radius:8px;padding:7px 10px;text-decoration:none;transition:.14s;word-break:break-all}
+  #panel .cchip:hover{background:rgba(63,224,208,.13);border-color:var(--phos);box-shadow:0 0 14px color-mix(in srgb,var(--phos) 22%,transparent)}
+  #panel .cchip .ci{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5}
+  #panel .cchip.mail{color:#93E3B4;background:rgba(147,227,180,.06);border-color:color-mix(in srgb,#93E3B4 26%,transparent)}
+  #panel .cchip.mail:hover{background:rgba(147,227,180,.14);border-color:#93E3B4;box-shadow:0 0 14px rgba(147,227,180,.22)}
+  #panel .cnote{font-size:12px;color:var(--mut);line-height:1.5;padding:1px 2px}
+  #panel #popps{font-size:12.5px;line-height:1.62;color:#D2DCEE}
+  #panel .ilink{color:var(--phos);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--phos) 42%,transparent);transition:.12s;cursor:pointer}
+  #panel .ilink:hover{color:#fff;border-bottom-color:#fff}
+  #panel .ilink.mail{color:#93E3B4;border-bottom-color:color-mix(in srgb,#93E3B4 45%,transparent)}
+  #panel .ilink.mail:hover{color:#fff;border-bottom-color:#fff}
+  #panel .ocav{display:block;margin-top:8px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.3px;color:var(--faint)}
+  #panel .kids{display:flex;flex-wrap:wrap;gap:6px}
+  #panel .kids button{background:rgba(12,20,36,.9);border:1px solid var(--line);color:#CBD7EC;border-radius:8px;
+    padding:5px 10px;font-size:11px;cursor:pointer;transition:.12s}
+  #panel .kids button:hover{border-color:var(--phos);color:#fff}
+  .fnote{position:fixed;left:14px;bottom:12px;z-index:33;max-width:212px;font-size:10px;line-height:1.55;color:var(--faint)}
+  .fnote b{color:var(--mut)}
+  #panel .chint{font-family:Inter,sans-serif;font-size:10.5px;color:var(--faint);margin-top:3px;letter-spacing:.2px}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);z-index:60;
+    background:rgba(10,17,30,.97);border:1px solid color-mix(in srgb,var(--phos) 42%,transparent);color:var(--phos);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;padding:9px 15px;border-radius:10px;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;box-shadow:0 12px 34px rgba(0,0,0,.55);max-width:80vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* find-your-door button + panel */
+  .btn.find{background:linear-gradient(180deg,color-mix(in srgb,var(--phos) 24%,#0C1424),color-mix(in srgb,var(--phos) 10%,#0A121F));
+    border-color:color-mix(in srgb,var(--phos) 50%,transparent);color:#EAFBF8;font-weight:600;letter-spacing:.4px}
+  .btn.find:hover{border-color:var(--phos);box-shadow:0 0 16px color-mix(in srgb,var(--phos) 32%,transparent)}
+  #finder{position:fixed;top:58px;left:0;bottom:0;width:404px;max-width:92vw;z-index:45;transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);background:linear-gradient(180deg,#0C1627,#080E1A);
+    border-right:1px solid var(--line);padding:20px 20px 30px;overflow:auto;box-shadow:24px 0 60px rgba(0,0,0,.5)}
+  #finder.open{transform:none}
+  #finder::-webkit-scrollbar{width:9px}#finder::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  #finder .fclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(12,20,36,.9);color:var(--txt);cursor:pointer;font-size:16px}
+  #finder h3{font-family:"Space Grotesk",sans-serif;font-size:19px;margin:2px 0 3px}
+  #finder .fintro{font-size:12px;color:var(--mut);line-height:1.55;margin-bottom:14px}
+  .fgroup{margin-bottom:14px}
+  .fgroup .flab{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--phos);opacity:.85;margin-bottom:7px}
+  .fchips{display:flex;flex-wrap:wrap;gap:6px}
+  .fchip{background:rgba(12,20,36,.7);border:1px solid var(--line);color:#CBD7EC;border-radius:8px;padding:6px 11px;font-size:11.5px;cursor:pointer;transition:.13s;font-family:Inter,sans-serif}
+  .fchip:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent)}
+  .fchip.on{background:color-mix(in srgb,var(--phos) 18%,#0C1424);border-color:var(--phos);color:#fff;box-shadow:0 0 12px color-mix(in srgb,var(--phos) 22%,transparent)}
+  .frow{display:flex;gap:8px;margin:16px 0 6px}
+  .fgo{flex:1;background:linear-gradient(180deg,color-mix(in srgb,var(--phos) 30%,#0C1424),color-mix(in srgb,var(--phos) 14%,#0A121F));
+    border:1px solid var(--phos);color:#EAFBF8;font-weight:600;border-radius:10px;padding:11px;cursor:pointer;font-size:13px;letter-spacing:.3px;transition:.14s}
+  .fgo:hover{box-shadow:0 0 20px color-mix(in srgb,var(--phos) 34%,transparent)}
+  .freset{background:rgba(12,20,36,.8);border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:12px}
+  .freset:hover{border-color:var(--phos);color:#fff}
+  #finderResults{margin-top:16px}
+  #finderResults .rcount{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
+  .rcard{background:linear-gradient(180deg,#111C31,#0C1524);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;cursor:pointer;transition:.14s}
+  .rcard:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent);box-shadow:0 6px 20px rgba(0,0,0,.4);transform:translateY(-1px)}
+  .rcard .rhead{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .rcard .rdot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+  .rcard .rname{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13.5px;line-height:1.15}
+  .rcard .abadge{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;flex:none}
+  .rcard .rwhy{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+  .rcard .wtag{font-size:10px;color:#C6D2E6;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .rcard .ract{font-size:11px;line-height:1.5;color:var(--mut)}
+  .rcard .ract .ilink{font-size:11px}
+  #finder .fnone{font-size:12.5px;color:var(--mut);line-height:1.6;padding:10px 2px}
+  #panel #pfit{font-size:12px;line-height:1.55;color:#CBD7EC}
+  @media(max-width:820px){#finder{width:100%}}
+  /* ---- product layer: welcome, about, share, export ---- */
+  #welcome{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 100% at 50% 28%,rgba(12,26,46,.86),rgba(6,10,18,.95));backdrop-filter:blur(9px);transition:opacity .35s}
+  #welcome.hide{opacity:0;pointer-events:none}
+  #welcome .wcard{max-width:660px;width:100%;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);
+    border-radius:20px;padding:32px 32px 26px;box-shadow:0 40px 110px rgba(0,0,0,.65)}
+  #welcome .wk{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--phos)}
+  #welcome h1{font-family:"Space Grotesk",sans-serif;font-size:32px;margin:9px 0 7px;letter-spacing:.2px}
+  #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
+  #welcome .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:24px}
+  #welcome .wtile{background:rgba(12,20,36,.7);border:1px solid var(--line);border-radius:13px;padding:15px 15px 16px;cursor:pointer;transition:.14s}
+  #welcome .wtile:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent);transform:translateY(-2px)}
+  #welcome .wtile .wi{font-size:17px;margin-bottom:7px}
+  #welcome .wtile .wt{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13.5px;margin-bottom:4px}
+  #welcome .wtile .wd{font-size:11px;color:var(--mut);line-height:1.5}
+  #welcome .wbtns{display:flex;gap:14px;align-items:center}
+  #welcome .wenter{background:linear-gradient(180deg,color-mix(in srgb,var(--phos) 30%,#0C1424),color-mix(in srgb,var(--phos) 14%,#0A121F));border:1px solid var(--phos);color:#EAFBF8;font-weight:600;border-radius:11px;padding:12px 22px;cursor:pointer;font-size:13px;transition:.14s}
+  #welcome .wenter:hover{box-shadow:0 0 22px color-mix(in srgb,var(--phos) 36%,transparent)}
+  #welcome .wabout{background:none;border:none;color:var(--mut);cursor:pointer;font-size:12px;text-decoration:underline}
+  #welcome .wdis{font-size:10.5px;color:var(--faint);margin-top:18px;line-height:1.55;border-top:1px solid var(--line);padding-top:13px}
+  #about{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #about.open{display:flex}
+  #about .acard{max-width:640px;width:100%;max-height:86vh;overflow:auto;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:18px;padding:26px 28px 26px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative}
+  #about .aclose{position:absolute;top:15px;right:15px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(12,20,36,.9);color:var(--txt);cursor:pointer;font-size:16px}
+  #about .ak{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--phos)}
+  #about h2{font-family:"Space Grotesk",sans-serif;font-size:23px;margin:8px 0 3px}
+  #about h4{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin:20px 0 6px}
+  #about p{font-size:13px;line-height:1.64;color:#D2DCEE;margin:0 0 9px}
+  #about a{color:var(--phos)}
+  #about .aver{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--faint)}
+  .ractions{display:flex;gap:7px;margin-bottom:11px}
+  .rbtn{flex:1;background:rgba(12,20,36,.8);border:1px solid var(--line);color:#CBD7EC;border-radius:9px;padding:8px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;letter-spacing:.3px;transition:.13s}
+  .rbtn:hover{border-color:var(--phos);color:#fff;box-shadow:0 0 12px color-mix(in srgb,var(--phos) 20%,transparent)}
+  #panel .plink{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(12,20,36,.8);border:1px solid var(--line);
+    color:var(--mut);border-radius:8px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:.13s}
+  #panel .plink:hover{border-color:var(--phos);color:#fff}
+  @media(max-width:640px){#welcome .wgrid{grid-template-columns:1fr}#welcome .wcard{padding:24px}}
+  /* ---- pathway / valley of death ---- */
+  #pathway{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,10,18,.84);backdrop-filter:blur(7px)}
+  #pathway.open{display:flex}
+  #pathway .pcard{width:min(1180px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:18px;padding:24px 26px 26px;box-shadow:0 40px 100px rgba(0,0,0,.62);position:relative}
+  #pathway .pwclose{position:absolute;top:15px;right:15px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(12,20,36,.9);color:var(--txt);cursor:pointer;font-size:16px;z-index:2}
+  #pathway .ak{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--phos)}
+  #pathway h2{font-family:"Space Grotesk",sans-serif;font-size:23px;margin:8px 0 3px}
+  #pathway .pintro{font-size:12.5px;color:var(--mut);line-height:1.6;margin:0 0 18px;max-width:760px}
+  .prow{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:10px}
+  .prow::-webkit-scrollbar{height:9px}.prow::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .pstage{min-width:236px;max-width:236px;flex:none;background:linear-gradient(180deg,#111C31,#0C1524);border:1px solid var(--line);border-top:3px solid var(--sc,#4a6);border-radius:13px;padding:13px 13px 14px;position:relative}
+  .pstage.valley{border-color:#E36C6C55;border-top-color:#E36C6C;box-shadow:0 0 0 1px #E36C6C33,0 0 26px rgba(227,108,108,.14)}
+  .pstage .ptrl{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.6px;color:var(--sc,#8fa);text-transform:uppercase}
+  .pstage .phead{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;margin:3px 0 6px;line-height:1.15}
+  .pstage .pblurb{font-size:11px;color:var(--mut);line-height:1.5;margin-bottom:10px}
+  .pstage .porgs{display:flex;flex-wrap:wrap;gap:5px}
+  .pchip{background:rgba(255,255,255,.05);border:1px solid var(--line);color:#CBD7EC;border-radius:7px;padding:4px 8px;font-size:10.5px;cursor:pointer;transition:.12s;line-height:1.2;text-align:left}
+  .pchip:hover{border-color:var(--phos);color:#fff;box-shadow:0 0 10px color-mix(in srgb,var(--phos) 20%,transparent)}
+  .vrib{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#E36C6C;color:#1A0A0C;font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:2px 9px;border-radius:20px}
+  .phandoff{min-width:104px;max-width:104px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;gap:6px}
+  .phandoff .parrow{font-size:20px;color:var(--phos);opacity:.7}
+  .phandoff .phtext{font-size:9.5px;color:var(--faint);line-height:1.4;text-align:center}
+  .vcallout{margin-top:18px;background:linear-gradient(180deg,rgba(227,108,108,.08),rgba(227,108,108,.03));border:1px solid #E36C6C44;border-radius:13px;padding:15px 17px}
+  .vcallout .vtitle{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13.5px;color:#F0A9A9;margin-bottom:7px}
+  .vcallout p{font-size:12.5px;line-height:1.62;color:#D2DCEE;margin:0 0 8px}
+  .vcallout p:last-child{margin-bottom:0}
+  .vcallout b{color:#fff}
+  /* ---- CRM + add-node + forms ---- */
+  #crm,#addnode{position:fixed;inset:0;z-index:84;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #crm.open,#addnode.open{display:flex}
+  .crmbadge{display:none;background:var(--phos);color:#06121a;border-radius:20px;padding:0 6px;font-size:9px;font-weight:700;line-height:15px;min-width:15px;text-align:center}
+  .crmstat{font-size:13px;color:#D2DCEE;margin-bottom:13px}.crmstat b{color:#fff}
+  .crmempty{font-size:12.5px;color:var(--mut);line-height:1.6;background:rgba(63,224,208,.05);border:1px solid color-mix(in srgb,var(--phos) 20%,transparent);border-radius:10px;padding:13px}
+  .crmorg{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;transition:.12s}
+  .crmorg:hover{border-color:var(--phos);background:rgba(63,224,208,.04)}
+  .crmdot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+  .crmname{font-size:12.5px;font-weight:500;color:#EAF1FB}
+  .crmc{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--phos)}
+  .crmdel{margin-left:auto;background:none;border:1px solid var(--line);color:var(--mut);border-radius:6px;font-size:10px;padding:2px 8px;cursor:pointer}
+  .crmdel:hover{border-color:#E36C6C;color:#E36C6C}
+  .crmsub{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:15px 0 7px}
+  .crmactions{display:flex;gap:7px;margin-top:15px}
+  .crmnote{font-size:10.5px;color:var(--faint);line-height:1.55;margin-top:11px}
+  .finput{width:100%;background:rgba(10,18,32,.9);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:Inter,sans-serif;outline:none;margin-bottom:9px}
+  .finput:focus{border-color:var(--phos);box-shadow:0 0 0 3px color-mix(in srgb,var(--phos) 15%,transparent)}
+  textarea.finput{resize:vertical;line-height:1.5}
+  .anlab{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:3px 0 5px}
+  #panel .crmhead{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+  #panel .crmhead .crmn{color:var(--phos)}
+  .ccard{position:relative;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin-bottom:6px}
+  .ccard .cdel{position:absolute;top:5px;right:6px;background:none;border:none;color:var(--faint);cursor:pointer;font-size:15px;line-height:1}
+  .ccard .cdel:hover{color:#E36C6C}
+  .ccard .cn{font-size:12.5px;font-weight:600;color:#EAF1FB;padding-right:16px}
+  .ccard .cr{font-weight:400;color:var(--mut)}
+  .ccard .cc{font-size:11.5px;margin-top:3px}
+  .ccard .cnote2{font-size:11.5px;color:var(--mut);line-height:1.5;margin-top:5px;white-space:pre-wrap}
+  .caddtog{background:rgba(12,20,36,.6);border:1px dashed color-mix(in srgb,var(--phos) 40%,transparent);color:var(--phos);border-radius:9px;padding:8px;width:100%;cursor:pointer;font-size:11.5px;margin-top:2px;transition:.13s}
+  .caddtog:hover{border-color:var(--phos);background:rgba(63,224,208,.05)}
+  .caddform{margin-top:9px}
+  .node.custom{border-style:dashed}
+  .node.custom .lab::after{content:' ✎';color:var(--phos);font-size:9px;opacity:.7}
+  #an_dupes{margin:-2px 0 9px}
+  .dupwarn{background:rgba(227,162,75,.08);border:1px solid #E3A24B55;border-radius:9px;padding:8px 10px}
+  .dupt{font-size:10px;color:#E3C07B;margin-bottom:5px;font-family:"IBM Plex Mono",monospace;letter-spacing:.3px}
+  .dupitem{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#EAF1FB;padding:4px 6px;border-radius:6px;cursor:pointer}
+  .dupitem:hover{background:rgba(255,255,255,.05)}
+  .dupgo{color:var(--phos);font-size:10px;flex:none;margin-left:8px}
+  .anmini{margin-bottom:9px}
+  .anmini .fchip{padding:5px 9px;font-size:10.5px}
+  .rnet{margin-top:15px;padding-top:13px;border-top:1px dashed var(--line)}
+  .rnet .rnhead{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:#C08AD8;margin-bottom:4px}
+  .rnet .rnsub{font-size:10.5px;color:var(--mut);line-height:1.5;margin-bottom:9px}
+  .rncard{display:flex;align-items:flex-start;gap:9px;background:rgba(192,138,216,.06);border:1px solid #C08AD833;border-radius:10px;padding:9px 11px;margin-bottom:7px;cursor:pointer;transition:.13s}
+  .rncard:hover{border-color:#C08AD8;box-shadow:0 0 12px rgba(192,138,216,.18);transform:translateY(-1px)}
+  .rncard .rndot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:4px;background:#C08AD8;box-shadow:0 0 8px #C08AD8}
+  .rncard .rnname{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:12px;line-height:1.15}
+  .rncard .rnwhy{font-size:10.5px;color:var(--mut);line-height:1.45;margin-top:3px}
+  .recrow{display:flex;gap:6px;margin-top:9px}
+  .recrow .rbtn{flex:1;font-size:10.5px;padding:7px 6px}
+  /* ================= v2: themes ================= */
+  :root{--nodebg1:#152037;--nodebg2:#101a2e;--stage1:#0E1A2E;--stage2:#0A1220;--stage3:#060A12}
+  html[data-theme="light"]{--ink:#EDF1F8;--ink2:#FFFFFF;--panel:#FFFFFF;--line:#D3DCEA;--txt:#0F1826;--mut:#46566E;--faint:#7A8AA2;--phos:#0B6E5C;--nodebg1:#FFFFFF;--nodebg2:#EEF3FA;--stage1:#EDF3FB;--stage2:#E4ECF6;--stage3:#DCE6F2}
+  html[data-theme="hc"]{--ink:#000;--ink2:#000;--panel:#000;--line:#FFF;--txt:#FFF;--mut:#F2F2F2;--faint:#D5D5D5;--phos:#3CE7FF;--nodebg1:#000;--nodebg2:#000;--stage1:#000;--stage2:#000;--stage3:#000}
+  #stage{background:radial-gradient(circle at 1px 1px,rgba(120,150,200,.05) 1px,transparent 0) 0 0/30px 30px,radial-gradient(130% 100% at 50% 42%,var(--stage1) 0%,var(--stage2) 42%,var(--stage3) 100%)}
+  html[data-theme="light"] #stage{background:radial-gradient(circle at 1px 1px,rgba(30,60,110,.06) 1px,transparent 0) 0 0/30px 30px,radial-gradient(130% 100% at 50% 42%,var(--stage1),var(--stage3))}
+  .node{background:linear-gradient(180deg,color-mix(in srgb,var(--c,#28374f) 14%,var(--nodebg1)),color-mix(in srgb,var(--c,#28374f) 6%,var(--nodebg2)))}
+  html[data-theme="light"] header,html[data-theme="light"] .legend,html[data-theme="light"] #panel,html[data-theme="light"] #finder,html[data-theme="light"] .acard,html[data-theme="light"] .pcard,html[data-theme="light"] #listview .lvcard,html[data-theme="light"] .btn,html[data-theme="light"] .search input{background:#fff}
+  html[data-theme="light"] header{border-bottom-color:var(--line)}
+  html[data-theme="hc"] .node{border-width:2px}
+  html[data-theme="hc"] header,html[data-theme="hc"] .legend,html[data-theme="hc"] #panel,html[data-theme="hc"] #finder,html[data-theme="hc"] .acard,html[data-theme="hc"] .pcard,html[data-theme="hc"] .btn,html[data-theme="hc"] #listview .lvcard{background:#000}
+  html[data-theme="hc"] #edges .crisp path{opacity:.95}
+  html[data-theme="hc"] .node:focus,html[data-theme="hc"] .btn:focus,html[data-theme="hc"] a:focus{outline:3px solid #3CE7FF!important;outline-offset:2px}
+  header{flex-wrap:nowrap;overflow-x:auto}
+  header::-webkit-scrollbar{height:0}
+  /* ================= v2: list / explore view ================= */
+  #listview,#compare,#correct{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #listview.open,#compare.open,#correct.open{display:flex}
+  #listview .lvcard,#compare .lvcard{width:min(1180px,97vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative}
+  #listview .aclose,#compare .aclose,#correct .aclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--txt);cursor:pointer;font-size:16px;z-index:3}
+  .lvfilters{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .lvfg{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .lvfg .lvlab{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-right:2px}
+  .lvchip{background:rgba(120,140,180,.08);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;transition:.12s}
+  .lvchip:hover{border-color:var(--phos)}
+  .lvchip.on{background:color-mix(in srgb,var(--phos) 20%,transparent);border-color:var(--phos);color:var(--txt)}
+  .lvsearch{background:var(--ink2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 10px;font-size:12px;outline:none;min-width:150px}
+  .lvsearch:focus{border-color:var(--phos)}
+  .lvbtn{background:var(--ink2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 11px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace}
+  .lvbtn:hover{border-color:var(--phos)}
+  .lvscroll{overflow:auto;flex:1}
+  table.lvtable{width:100%;border-collapse:collapse;font-size:12px}
+  table.lvtable th{position:sticky;top:0;background:var(--ink2);text-align:left;padding:8px 9px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+  table.lvtable td{padding:8px 9px;border-bottom:1px solid var(--line);color:var(--txt);vertical-align:top}
+  table.lvtable tr{cursor:pointer}
+  table.lvtable tbody tr:hover td{background:color-mix(in srgb,var(--phos) 6%,transparent)}
+  table.lvtable tr:focus{outline:2px solid var(--phos);outline-offset:-2px}
+  .lvname{font-weight:600}
+  .lvarea{color:var(--mut);font-size:11px}
+  .lvbadge{font-family:"IBM Plex Mono",monospace;font-size:9px;padding:2px 7px;border-radius:20px;border:1px solid;white-space:nowrap}
+  .lvstar,.lvpin{background:none;border:none;cursor:pointer;font-size:14px;color:var(--faint);padding:2px}
+  .lvstar.on{color:#FFD46B}.lvpin.on{color:var(--phos)}
+  .lvcount{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);margin-left:auto}
+  /* ================= v2: compare ================= */
+  table.cmptable{width:100%;border-collapse:collapse;font-size:12px}
+  table.cmptable th,table.cmptable td{padding:9px 11px;border:1px solid var(--line);vertical-align:top;text-align:left}
+  table.cmptable th{background:var(--ink2);font-family:"Space Grotesk",sans-serif;font-size:12.5px}
+  table.cmptable td.rl{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);white-space:nowrap;width:120px}
+  .cmprm{background:none;border:none;color:var(--faint);cursor:pointer;font-size:13px;float:right}
+  .cmprm:hover{color:#E36C6C}
+  .cmpempty{font-size:13px;color:var(--mut);line-height:1.6;padding:14px}
+  /* ================= v2: panel action row + verify/source ================= */
+  #panel .pactions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  #panel .pabtn{display:inline-flex;align-items:center;gap:5px;background:var(--ink2);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:.12s}
+  #panel .pabtn:hover{border-color:var(--phos);color:var(--txt)}
+  #panel .pabtn.on{color:#FFD46B;border-color:#FFD46B66}
+  #panel .pverify{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);margin-top:9px;line-height:1.5}
+  #panel .pverify b{color:var(--phos)}
+  #panel .psource{font-size:11.5px;margin-top:6px}
+  #compareBadge,.crmbadge{display:none;background:var(--phos);color:#06121a;border-radius:20px;padding:0 6px;font-size:9px;font-weight:700;line-height:15px;min-width:15px;text-align:center}
+  @media(max-width:640px){#listview .lvcard,#compare .lvcard{padding:16px}}
+  @media(max-width:820px){.legend,.fnote{display:none}#panel{width:100%}.search input{width:130px}}
+  @media(prefers-reduced-motion:reduce){.node{transition:opacity .2s}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="t">The Defence Ecosystem</div></div>
+  <div class="spacer"></div>
+  <button class="btn find" id="findBtn">◎ Find your door</button>
+  <div class="search"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" placeholder="Search nodes…" autocomplete="off"></div>
+  <div class="ctrls">
+    <button class="btn" id="expand">EXPAND ALL</button>
+    <button class="btn" id="collapse">COLLAPSE</button>
+    <button class="btn" id="zin">+</button>
+    <button class="btn" id="zout">–</button>
+    <button class="btn" id="fit" aria-label="Fit map to screen">FIT</button>
+    <button class="btn" id="listBtn" aria-label="Open list and filter view">☰ Explore</button>
+    <button class="btn" id="compareBtn" aria-label="Open comparison">⇄ Compare <span class="crmbadge" id="compareBadge"></span></button>
+    <button class="btn" id="themeBtn" aria-label="Switch colour theme">◐ Theme</button>
+    <button class="btn" id="pathwayBtn" aria-label="Open innovation pathway">⇢ Pathway</button>
+    <button class="btn" id="crmBtn" aria-label="Open my CRM">◱ My CRM <span class="crmbadge" id="crmBadge"></span></button>
+    <button class="btn" id="aboutBtn" aria-label="About this tool">About</button>
+  </div>
+</header>
+
+<aside class="legend"><h4>Branches — click to open</h4><div id="lg"></div>
+  <div class="hint">Click a branch to expand it · click a node to see detail &amp; trace its links · drag to pan · scroll to zoom.</div>
+</aside>
+
+<div id="stage" role="application" aria-label="Defence ecosystem map — drag to pan, scroll to zoom"><div id="world"><svg id="edges" aria-hidden="true"></svg></div></div>
+
+<section id="finder">
+  <button class="fclose" id="fclose">×</button>
+  <h3>Find your door</h3>
+  <div class="fintro">Tell me about your thing and I'll rank the organisations most likely to be the right way in. Skip anything that doesn't apply.</div>
+
+  <div class="fgroup" data-facet="role" data-mode="single"><div class="flab">I am a…</div><div class="fchips">
+    <button class="fchip" data-v="sme">SME</button>
+    <button class="fchip" data-v="startup">Start-up</button>
+    <button class="fchip" data-v="academic">Academic / researcher</button>
+    <button class="fchip" data-v="prime">Established supplier / prime</button>
+    <button class="fchip" data-v="investor">Investor</button>
+  </div></div>
+
+  <div class="fgroup" data-facet="trl" data-mode="single"><div class="flab">Maturity</div><div class="fchips">
+    <button class="fchip" data-v="2">Idea / research (TRL 1–3)</button>
+    <button class="fchip" data-v="5">Prototype (TRL 4–6)</button>
+    <button class="fchip" data-v="8">Near-production (TRL 7–9)</button>
+    <button class="fchip" data-v="">Not sure</button>
+  </div></div>
+
+  <div class="fgroup" data-facet="domains" data-mode="multi"><div class="flab">Domain (pick any)</div><div class="fchips">
+    <button class="fchip" data-v="air">Air</button>
+    <button class="fchip" data-v="land">Land</button>
+    <button class="fchip" data-v="maritime">Maritime</button>
+    <button class="fchip" data-v="space">Space</button>
+    <button class="fchip" data-v="cyber">Cyber</button>
+    <button class="fchip" data-v="c4isr">C4ISR / EW</button>
+    <button class="fchip" data-v="ai">AI &amp; autonomy</button>
+    <button class="fchip" data-v="weapons">Weapons / effects</button>
+    <button class="fchip" data-v="nuclear">Nuclear</button>
+    <button class="fchip" data-v="medical">Human / medical</button>
+    <button class="fchip" data-v="materials">Materials / mfg</button>
+  </div></div>
+
+  <div class="fgroup" data-facet="needs" data-mode="multi"><div class="flab">I need (pick any)</div><div class="fchips">
+    <button class="fchip" data-v="grant">Grant funding</button>
+    <button class="fchip" data-v="investment">Investment</button>
+    <button class="fchip" data-v="contract">A route to contract</button>
+    <button class="fchip" data-v="research">A research partner</button>
+    <button class="fchip" data-v="test">Test &amp; evaluation</button>
+    <button class="fchip" data-v="export">Export support</button>
+    <button class="fchip" data-v="advice">Advice &amp; navigation</button>
+  </div></div>
+
+  <div class="fgroup" data-facet="geo" data-mode="single"><div class="flab">Region focus</div><div class="fchips">
+    <button class="fchip" data-v="uk">UK</button>
+    <button class="fchip" data-v="nato">NATO</button>
+    <button class="fchip" data-v="eu">Europe</button>
+    <button class="fchip" data-v="us">USA</button>
+    <button class="fchip" data-v="ca">Canada</button>
+    <button class="fchip" data-v="au">Australia</button>
+    <button class="fchip" data-v="nz">New Zealand</button>
+    <button class="fchip on" data-v="any">Any</button>
+  </div></div>
+
+  <div class="frow"><button class="fgo" id="finderGo">Show my doors →</button><button class="freset" id="finderReset">Reset</button></div>
+  <div id="savedBox"></div>
+  <div id="finderResults"></div>
+</section>
+
+<section id="panel"><button class="close" id="pclose">×</button>
+  <div class="eye" id="peye"></div><h2 id="pname"></h2>
+  <div class="tag" id="ptag"><i></i><span></span></div>
+  <div class="sect" id="s-fit"><div class="lab">Fit</div><p id="pfit"></p></div>
+  <div class="psource" id="psource"></div>
+  <div class="pverify" id="pverify"></div>
+  <div class="pactions" id="pactions"></div>
+  <button class="plink" id="plink">⤴ Copy shareable link</button>
+  <div class="sect" id="s-entry"><div class="lab">Point of entry / contact</div><p id="pentry"></p></div>
+  <div class="sect" id="s-does"><div class="lab">What they do</div><p id="pdoes"></p></div>
+  <div class="sect" id="s-opps"><div class="lab">Open calls &amp; opportunities</div><div id="popps"></div></div>
+  <div class="sect" id="s-kids"><div class="lab">Contains / connects to</div><div class="kids" id="pkids"></div></div>
+  <div class="sect" id="s-crm"><div id="pcrm"></div></div>
+  <button class="plink" id="paddsub">＋ Add a sub-part / department here</button>
+</section>
+
+<div class="fnote"><b>A navigational mind map, not an org chart.</b> Contacts shown are official general-enquiry channels / websites — verify on the organisation's own site before use. Representative, not exhaustive.</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div id="welcome">
+  <div class="wcard">
+    <div class="wk">◎ Interactive briefing</div>
+    <h1>The Defence Ecosystem</h1>
+    <p class="lead">A navigable map of the organisations behind defence innovation and procurement — across the UK, NATO, Europe, the USA and the Five Eyes. Use it to find the right door for a technology, a research idea, a problem, or capital.</p>
+    <div class="wgrid">
+      <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door</div><div class="wd">Describe your thing and get a ranked shortlist of who to approach.</div></div>
+      <div class="wtile" id="wExplore"><div class="wi">◍</div><div class="wt">Explore the map</div><div class="wd">Open the tiers and trace how bodies connect and hand off.</div></div>
+      <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search &amp; contacts</div><div class="wd">Jump to any organisation for its links, emails and live calls.</div></div>
+    </div>
+    <div class="wbtns"><button class="wenter" id="wEnter">Enter →</button><button class="wabout" id="wAboutLink">About &amp; disclaimer</button></div>
+    <div class="wdis">A navigational aid, not an official source. Not affiliated with the MOD or any government. Organisation details, contacts and fit ratings are best-effort and may change — always verify on the organisation's own site.</div>
+  </div>
+</div>
+
+<div id="about">
+  <div class="acard">
+    <button class="aclose" id="aClose">×</button>
+    <div class="ak">◎ About</div>
+    <h2>The Defence Ecosystem</h2>
+    <p>An interactive map of the organisations involved in defence innovation and procurement — strategy and acquisition bodies, science and innovation units, front-line commands, academia, catapults, test facilities, industry, capital, and the NATO, European, US and Five Eyes partners around them.</p>
+    <h4>How to use it</h4>
+    <p><b>Find your door</b> — tell the router what you are, how mature your work is, your domain, what you need and where; it ranks the organisations most likely to be your way in, with an access rating and the first step. <b>Explore</b> — click a branch to open it and trace the connections. <b>Search</b> — jump to any organisation. Every node carries its website, contact emails and where its live calls and competitions are posted.</p>
+    <h4>How the shortlist is scored</h4>
+    <p>Each organisation is tagged with who it serves, the maturity (TRL) band it typically accepts, its domains, what it offers, its geography and how accessible it is. The router matches your inputs against those tags. The tags — especially TRL bands and access ratings — are informed estimates to help you self-qualify, not official classifications.</p>
+    <h4>Currency &amp; accuracy</h4>
+    <p>Reflects the 2025 Defence Reform, the Defence Industrial Strategy 2025 and the 2026 Defence Investment Plan. It is representative, not exhaustive, and the landscape moves quickly — verify any contact, link or opportunity on the organisation's own site before acting on it.</p>
+    <h4>Sharing &amp; hosting</h4>
+    <p>This is a single self-contained file. Share it by sending the file, or host it free on any static host (GitHub Pages, Netlify, Cloudflare Pages, or an internal SharePoint) to give people a link. The <b>Share</b> buttons build deep links that reopen a specific search or organisation. If a <b>defence-ecosystem-data.json</b> file is placed alongside a hosted copy, the map refreshes from it automatically — so the data can be updated without rebuilding the app.</p>
+    <h4>Accessibility &amp; views</h4>
+    <p>Use the <b>◐ Theme</b> button to switch between dark, light and high-contrast. <b>☰ Explore</b> opens a keyboard-navigable, filterable table of every organisation as an alternative to the visual map. Contacts, opportunities and organisation facts carry a currency stamp, and you can mark any entry verified, suggest a correction, favourite it, or pin it to <b>⇄ Compare</b>.</p>
+    <div class="aver">The Defence Ecosystem · v2.0 · updated August 2026 · unofficial</div>
+  </div>
+</div>
+
+<div id="pathway"><div class="pcard">
+  <button class="pwclose" id="pwClose">×</button>
+  <div class="ak">◎ Innovation pathway</div>
+  <h2>Crossing the valley of death</h2>
+  <p class="pintro">The journey from idea to fielded capability — and where innovations stall. Each stage shows the organisations that operate there and the hand-off needed to progress. Click any organisation to jump to it on the map.</p>
+  <div class="prow" id="prow"></div>
+  <div class="vcallout" id="vcallout"></div>
+</div></div>
+
+<div id="crm"><div class="acard">
+  <button class="aclose" id="crmClose">×</button>
+  <div class="ak">◱ My CRM</div>
+  <h2>Your contacts &amp; additions</h2>
+  <div id="crmBody"></div>
+  <div class="crmactions">
+    <button class="rbtn" id="crmAdd">＋ Add organisation</button>
+    <button class="rbtn" id="crmCsv">⤓ Contacts CSV</button>
+    <button class="rbtn" id="crmExport">⤓ Backup (JSON)</button>
+    <button class="rbtn" id="crmImport">⤒ Restore</button>
+    <input type="file" id="crmFile" accept="application/json" style="display:none">
+  </div>
+  <div class="crmnote">Your contacts and additions are saved in this browser and are included when you <b>Export</b> them as a JSON file. Import that file on another machine — or share it with a colleague — to move your CRM with you.</div>
+</div></div>
+
+<div id="addnode"><div class="acard">
+  <button class="aclose" id="an_cancel2">×</button>
+  <div class="ak">＋ Add to the map</div>
+  <h2>Add an organisation or department</h2>
+  <p class="pintro">Record something you discover. Place it under a whole area, or inside a bigger organisation to add a division or team.</p>
+  <label class="anlab">Name</label><input class="finput" id="an_name" placeholder="e.g. Acme Robotics — Autonomy Division">
+  <div id="an_dupes"></div>
+  <label class="anlab">Sits under</label><select class="finput" id="an_parent"></select>
+  <label class="anlab">What they do</label><textarea class="finput" id="an_does" rows="2" placeholder="One line on what they do or make."></textarea>
+  <label class="anlab">Website / email / contact</label><input class="finput" id="an_entry" placeholder="acme.com · contact@acme.com">
+  <label class="anlab">Domain (optional — helps routing)</label>
+  <div class="fchips anmini" id="an_dom">
+    <button class="fchip" data-v="air">Air</button><button class="fchip" data-v="land">Land</button><button class="fchip" data-v="maritime">Maritime</button><button class="fchip" data-v="space">Space</button><button class="fchip" data-v="cyber">Cyber</button><button class="fchip" data-v="c4isr">C4ISR/EW</button><button class="fchip" data-v="ai">AI</button><button class="fchip" data-v="weapons">Weapons</button><button class="fchip" data-v="nuclear">Nuclear</button><button class="fchip" data-v="medical">Medical</button><button class="fchip" data-v="materials">Materials</button>
+  </div>
+  <label class="anlab">Offers (optional)</label>
+  <div class="fchips anmini" id="an_offer">
+    <button class="fchip" data-v="grant">Grant</button><button class="fchip" data-v="investment">Investment</button><button class="fchip" data-v="contract">Contract</button><button class="fchip" data-v="research">Research</button><button class="fchip" data-v="test">Test</button><button class="fchip" data-v="export">Export</button><button class="fchip" data-v="advice">Advice</button>
+  </div>
+  <label class="anlab">Access (optional)</label>
+  <select class="finput" id="an_access"><option value="">—</option><option value="open">Open front door</option><option value="prime">Via a prime</option><option value="invite">Invite / classified</option><option value="portal">Tender portal</option></select>
+  <div class="frow"><button class="fgo" id="an_save">Add to map</button><button class="freset" id="an_cancel">Cancel</button></div>
+</div></div>
+
+<div id="reconcile"><div class="acard">
+  <button class="aclose" id="recCancel2">×</button>
+  <div class="ak">⤒ Import CRM</div>
+  <h2>Reconcile with your CRM</h2>
+  <div id="recBody"></div>
+  <div class="crmactions">
+    <button class="rbtn" id="recMerge">Merge with mine</button>
+    <button class="rbtn" id="recReplace">Replace mine</button>
+    <button class="rbtn" id="recCancel">Cancel</button>
+  </div>
+</div></div>
+
+<div id="listview" role="dialog" aria-modal="true" aria-label="Explore and filter organisations"><div class="lvcard">
+  <button class="aclose" id="lvClose" aria-label="Close">×</button>
+  <div class="ak" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--phos)">☰ Explore</div>
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:21px;margin:7px 0 2px">All organisations — filter &amp; scan</h2>
+  <div class="lvfilters" id="lvFilters"></div>
+  <div class="lvscroll"><table class="lvtable" id="lvTable"></table></div>
+</div></div>
+
+<div id="compare" role="dialog" aria-modal="true" aria-label="Compare organisations"><div class="lvcard">
+  <button class="aclose" id="cmpClose" aria-label="Close">×</button>
+  <div class="ak" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--phos)">⇄ Compare</div>
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:21px;margin:7px 0 10px">Side-by-side</h2>
+  <div class="lvscroll" id="cmpBody"></div>
+</div></div>
+
+<div id="correct" role="dialog" aria-modal="true" aria-label="Suggest a correction"><div class="acard">
+  <button class="aclose" id="corClose" aria-label="Close">×</button>
+  <div class="ak">✎ Suggest a correction</div>
+  <h2 id="corTitle">Suggest a correction</h2>
+  <p class="pintro">Spotted something out of date or wrong? Note it here and download the correction — email it to whoever maintains this map. Nothing is sent automatically.</p>
+  <label class="anlab">What needs fixing</label>
+  <select class="finput" id="cor_field"><option value="Contact / email">Contact / email</option><option value="Website">Website</option><option value="What they do">What they do</option><option value="Live opportunity">Live opportunity</option><option value="Routing / tags">Routing / tags</option><option value="Other">Other</option></select>
+  <label class="anlab">The correction</label>
+  <textarea class="finput" id="cor_text" rows="3" placeholder="What's wrong, and what it should say…"></textarea>
+  <label class="anlab">Your name (optional)</label><input class="finput" id="cor_name" placeholder="So the maintainer can follow up">
+  <div class="frow"><button class="fgo" id="cor_save">Download note</button><button class="freset" id="cor_cancel">Cancel</button></div>
+</div></div>
+
+<script>
+/* ---------- tree builders ---------- */
+function L(id,l,e,d){return{id,l,entry:e,does:d};}
+function B(id,l,d,ch){return{id,l,does:d,children:ch};}
+
+const TREE = B("root","The Defence Ecosystem","The whole system, from strategy to the front line.",[
+
+ B("b_strat","Strategy & Policy","Sets direction, budget and the demand signal.",[
+   L("sos","Secretary of State for Defence","Ministerial correspondence · GOV.UK","Political head of the MOD; owns SDR 2025 and the direction the whole system follows."),
+   L("reform","Defence Reform (four-pillar model)","Internal MOD construct (Apr 2025)","Re-aligned the MOD into Department of State, Military Strategic HQ, the NAD Group and the Defence Nuclear Enterprise."),
+   L("sdr","Strategic Defence Review 2025","Published policy","The root strategy — sets the threat picture, force design and the push for novel tech and faster procurement."),
+   L("dis","Defence Industrial Strategy 2025","Published policy","‘Making defence an engine for growth’ — industrial, SME, exports, skills and clusters agenda."),
+   L("mshq","Military Strategic HQ","Via commands & CSOC","CDS-led; owns military strategy and the capability requirement that pulls innovation through."),
+   L("dcdc","Development, Concepts & Doctrine Centre (DCDC)","Shrivenham","MOD's think tank — future concepts, doctrine and the Global Strategic Trends horizon-scan."),
+   L("headoffice","MOD Head Office","Whitehall","Department of State — policy, finance and corporate direction."),
+ ]),
+
+ B("b_acq","Acquisition & Commercial — NAD Group","The consolidated procurement engine.",[
+   L("nad","National Armaments Director & NAD Group","Via DIS/DIP teams","Single accountable owner of end-to-end acquisition (~£20bn+/yr); delivers the DIS and Defence Investment Plan."),
+   L("des","Defence Equipment & Support (DE&S)","des.mod.uk · 0117 913 0893 · MOD Abbey Wood, Bristol BS34 8JH","MOD's main procurement & support arm (700+ programmes) across ships, land, air and weapons."),
+   L("fcg","DE&S Future Capability Group (FCG)","Via DE&S","Robotics, autonomy and rapid capability; a core member of the Defence AI Centre federation."),
+   L("ddig","Defence Digital","Via CSOC & DE&S digital routes","MOD's digital backbone, networks, data and enterprise IT; sets digital standards for adoption."),
+   L("foundry","Defence Digital Foundry","Via Defence Digital","Builds software-intensive capability (AI, data, automation); hosts part of the DAIC."),
+   L("dio","Defence Infrastructure Organisation (DIO)","GOV.UK › DIO","Manages the estate, ranges and infrastructure used for trials and experimentation."),
+   L("commercial","Defence Commercial / Sourcing Portal","Defence Sourcing Portal","MOD's commercial function and the portal where contracts and tenders are advertised."),
+   L("ssro","Single Source Regulations Office (SSRO)","ssro.gov.uk","Regulates non-competitive contracts >£5m; sets the Baseline Profit Rate (9.10% for 2026/27)."),
+   L("ccs","Crown Commercial Service (CCS)","crowncommercial.gov.uk","Cross-government commercial agreements used for common goods and services, incl. defence."),
+ ]),
+
+ B("b_sti","Science, Technology & Innovation","Where new capability is found, funded and de-risked.",[
+   L("dstl","Dstl","dstl.gov.uk · centralenquiries@dstl.gov.uk · 01980 950000","MOD's in-house S&T authority — research, experimentation and technical assurance. Parent of DASA."),
+   L("ukdi","UK Defence Innovation (UKDI)","Single front door · GOV.UK submission service","Consolidated innovation body (£400m/yr; £1.6bn in the DIP); runs Open Call, Themed and Loan competitions."),
+   L("dasa","Defence & Security Accelerator (DASA)","GOV.UK › DASA · accelerator@dstl.gov.uk · online submission service","Finds and funds exploitable innovation fast; the established SME competition route (now within UKDI)."),
+   L("diu","Defence Innovation Unit (DIU)","Via UKDI","Legacy innovation unit now folded into UKDI; brokered problems to solutions."),
+   L("daic","Defence AI Centre (DAIC)","Federated · led by CSOC","Champions, enables and scales AI across defence — a federation of Defence Digital, Dstl and DE&S FCG."),
+   L("battlelab","Defence BattleLab","Dorset Innovation Park","Open collaboration hub for MOD, SMEs and academia; an affiliated NATO DIANA test centre."),
+   L("ploughshare","Ploughshare Innovations","ploughshareinnovations.com","Dstl's technology-transfer company — spins MOD IP out into commercial and dual-use ventures."),
+   L("nstix","NSTIx","Via national security S&T community","National Security Technology & Innovation Exchange — connects national-security S&T across government."),
+   L("serapis","Serapis / R-Cloud frameworks","Via Dstl","Agile research frameworks that give industry and academia a fast route to Dstl-funded work."),
+ ]),
+
+ B("b_flc","Front-Line Commands & Experimentation","The military end-users and their innovation arms.",[
+   L("csoc","Cyber & Specialist Operations Command (CSOC)","Via CSOC","Formerly Strategic Command; integrates joint enablers, cyber, digital and specialist ops."),
+   L("jhub","jHub","Via CSOC","CSOC's central innovation hub — brokers mature dual-use tech into defence quickly."),
+   L("navy","Royal Navy — Navy Command","Via Navy Command","Sets maritime requirements; end-user for autonomy and AI at sea."),
+   L("dcto","DCTO (Disruptive Capabilities & Technologies Office)","Via Navy Command","Royal Navy's rapid prototype-test-deploy unit; merges NavyX, the Navy CTO office and AI Cell."),
+   L("nelson","NELSON","Via Navy Command","Royal Navy's digital & data service delivering software to the fleet."),
+   L("army","Army — Field Army / Army Futures","Via Army HQ","Sets land requirements; drives the ‘ten-times more lethal’ Army vision."),
+   L("lwc","Land Warfare Centre","Via Army HQ","Runs the Army Warfighting Experiment and land capability development."),
+   L("atdu","Armoured Trials & Development Unit (ATDU)","Bovington","Trials and develops armoured vehicles and land systems for the Army."),
+   L("air","RAF — Air Command","Via RAF Air Command","Sets air & space requirements; end-user for combat air and uncrewed systems."),
+   L("rafrco","RAF Rapid Capabilities Office (RCO)","Via RAF Air Command","Fast, often classified delivery of urgent air & space capability outside the standard cycle."),
+   L("astra","RAF ASTRA","Via RAF","The RAF's transformation programme building the ‘next-generation air force’."),
+ ]),
+
+ B("b_ics","Intelligence, Cyber & Space","Adjacent commands that both set requirements and buy deep tech.",[
+   L("di","Defence Intelligence (DI)","Via MOD","MOD's intelligence organisation; a customer for data, ISR and analytics."),
+   L("ncf","National Cyber Force (NCF)","Samlesbury, Lancashire","Joint MOD–GCHQ offensive cyber command; a significant deep-tech customer."),
+   L("ncsc","National Cyber Security Centre (NCSC)","ncsc.gov.uk · NCSC For Startups","National technical authority for cyber security; runs startup/accelerator routes."),
+   L("gchq","GCHQ","Cheltenham","Signals intelligence and cyber; sponsors dual-use tech and SMEs. Parent of NCSC."),
+   L("npsa","National Protective Security Authority (NPSA)","npsa.gov.uk","National technical authority for protective security (part of MI5); dual-use overlap."),
+   L("spacecmd","UK Space Command","spacecommand.mod.uk","Military space operations & capability; customer for space domain awareness and resilient comms."),
+   L("spaceagency","UK Space Agency","GOV.UK › UK Space Agency","Civil space programme and funding; dual-use partner for defence space."),
+   L("nspoc","National Space Operations Centre (NSpOC)","Via UK Space Command","Joint civil-military centre for space domain awareness and operations."),
+ ]),
+
+ B("b_nuke","Nuclear Enterprise","The deterrent and naval nuclear propulsion pillar.",[
+   L("dno","Defence Nuclear Organisation (DNO)","Via MOD Head Office","Sets policy and sponsors the deterrent and naval nuclear propulsion; oversees the enterprise."),
+   L("sda","Submarine Delivery Agency (SDA)","GOV.UK › SDA","Procures, builds and supports the submarine flotilla — Dreadnought and Astute/SSN."),
+   L("awe","AWE (Atomic Weapons Establishment)","awe.co.uk","Designs, makes and maintains warheads; deep science in materials, HPC and physics."),
+   L("rrsub","Rolls-Royce Submarines","Via Rolls-Royce","Designs and makes the naval nuclear reactors that power the submarine fleet."),
+   L("barrow","Plan for Barrow","Via MOD & local partners","Long-term place-based investment around the Barrow submarine industrial base."),
+ ]),
+
+ B("b_acad","Academia & Research","Where underpinning science and dual-use research happen.",[
+   B("c_edu","Defence education & policy","Professional military education and policy research.",[
+     L("cranfield","Cranfield University","cranfield.ac.uk","Postgraduate defence education, systems engineering and ordnance — embedded at the Defence Academy."),
+     L("kcl","King's College London","kcl.ac.uk","War studies, strategy and security policy; runs KIASS and the Freeman Air & Space Institute."),
+     L("defacad","Defence Academy of the UK","da.mod.uk","MOD's professional military education establishment (JSCSC, RCDS)."),
+     L("rand","RAND Europe","randeurope.org","Independent policy research and analysis; academic partner to the Defence Academy."),
+   ]),
+   B("c_uni","Research universities","Deep-tech and dual-use research strengths.",[
+     L("imperial","Imperial College London","Institute for Security Science & Technology","Security S&T, materials, sensing and networks."),
+     L("cambridge","University of Cambridge","Direct research / spin-outs","Quantum, materials, photonics and AI; strong spin-out pipeline."),
+     L("oxford","University of Oxford","Direct research / spin-outs","Robotics & autonomy, AI, quantum and cyber."),
+     L("ucl","UCL","Direct research","Sensing, security, space and defence-adjacent engineering."),
+     L("soton","University of Southampton","Southampton Marine & Maritime Institute","Maritime autonomy, acoustics, photonics and cyber."),
+     L("sheffield","University of Sheffield (AMRC)","Advanced Manufacturing Research Centre","Advanced manufacturing and machining for aerospace and defence."),
+     L("bristol","University of Bristol","Direct research","Composites (with the NCC), quantum and aerospace."),
+     L("surrey","University of Surrey","Surrey Space Centre","Small satellites, space systems and 5G/6G comms."),
+     L("lancaster","Lancaster University","Security Lancaster","Cyber security research and the cleared-talent pipeline."),
+     L("strath","University of Strathclyde","NMIS / AFRC","Advanced forming and manufacturing; National Manufacturing Institute Scotland."),
+     L("warwick","University of Warwick (WMG)","WMG","Digital manufacturing, materials and systems engineering."),
+     L("udrc","UDRC universities","Via UDRC (MOD & EPSRC)","Signal processing, sensing and machine learning — Edinburgh, Heriot-Watt, Strathclyde, Queen's Belfast."),
+   ]),
+   B("c_inst","National institutes","Cross-cutting national research bodies.",[
+     L("turing","The Alan Turing Institute","turing.ac.uk","National institute for data science & AI; defence and security research partnerships."),
+     L("npl","National Physical Laboratory (NPL)","npl.co.uk","National measurement standards; quantum, timing and materials with dual-use relevance."),
+   ]),
+ ]),
+
+ B("b_cat","Catapults & RTOs","Independent centres that de-risk and scale technology.",[
+   L("digicat","Digital Catapult","digicatapult.org.uk · Defence Testbed Accelerator","Applies AI, distributed systems and digital twins to defence; connects innovators to MOD & primes."),
+   L("satcat","Satellite Applications Catapult","sa.catapult.org.uk","Accelerates space & satellite applications, including dual-use defence and security."),
+   B("c_hvmc","High Value Manufacturing Catapult (HVMC)","Manufacturing scale-up — a strategic MOD partner.",[
+     L("mtc","Manufacturing Technology Centre (MTC)","Coventry","Manufacturing systems, automation and digital factory for defence programmes."),
+     L("ncc","National Composites Centre (NCC)","Bristol","Composite materials and structures for air, land and sea platforms."),
+     L("amrc","AMRC","Sheffield","Advanced machining and manufacturing research for aerospace and defence."),
+     L("nuamrc","Nuclear AMRC","Sheffield / Derby","Manufacturing for the nuclear and naval propulsion supply chain."),
+     L("cpi","CPI","Wilton / Sedgefield","Process innovation, formulation and advanced materials."),
+   ]),
+   L("csac","Compound Semiconductor Applications Catapult","csa.catapult.org.uk","Semiconductor tech for RF, sensing and secure electronics — a sovereign-capability concern."),
+   L("cpc","Connected Places Catapult","cp.catapult.org.uk","Places, mobility and connected-systems innovation with dual-use overlap."),
+   L("qinetiq","QinetiQ","Via QinetiQ","Test & evaluation, ranges and research services; both supplier and RTO."),
+   L("roke","Roke","Via Roke","Applied research and engineering in sensors, signals and cyber."),
+   L("fnc","Frazer-Nash Consultancy","Via Frazer-Nash","Systems engineering, safety and technical advice across defence programmes."),
+   L("bmt","BMT","Via BMT","Maritime and defence engineering, design and through-life support."),
+   L("rusi","RUSI","rusi.org","Independent defence & security think tank; analysis, convening and policy."),
+ ]),
+
+ B("b_te","Test, Evaluation & Ranges","The physical infrastructure where capability is proven.",[
+   L("atec","ATEC / MOD Boscombe Down","Via QinetiQ ATEC","Aircraft Test & Evaluation Centre — the UK's core air T&E site."),
+   L("hebrides","Hebrides & Aberporth Ranges","Via QinetiQ ranges","Weapons and uncrewed-systems trials ranges and segregated airspace."),
+   L("lulworth","Lulworth & Bovington Ranges","Via Army","Live-fire and armoured-vehicle trials areas in Dorset."),
+   L("porton","Porton Down / Portsdown West","Via Dstl","Dstl's principal science and experimentation sites."),
+   L("shoebury","MOD Shoeburyness","Via QinetiQ","Explosives, munitions and weapons-effects trials range."),
+   L("dorsetpark","Dorset Innovation Park","dorsetinnovationpark.com","Secure enterprise-zone campus hosting the Defence BattleLab and defence firms."),
+ ]),
+
+ B("b_primes","Industry — Primes","The large integrators holding major platform contracts.",[
+   {id:"bae",l:"BAE Systems",entry:"baesystems.com · Via BAE business development",does:"Largest UK prime — combat air, submarines & ships, land, electronics and cyber. Chairs the industry side of the DIJC.",children:[
+     L("bae_air","BAE Systems Air","baesystems.com · Warton & Samlesbury","Combat air — Typhoon, F-35 work-share, and the GCAP/Tempest next-generation programme."),
+     L("bae_ships","BAE Systems Naval Ships","baesystems.com · Govan & Scotstoun","Designs and builds Royal Navy surface warships (Type 26 frigate)."),
+     L("bae_subs","BAE Systems Submarines","baesystems.com · Barrow-in-Furness","Designs and builds the UK's nuclear submarines (Astute, Dreadnought)."),
+     L("bae_maritimeservices","BAE Systems Maritime Services","baesystems.com · Portsmouth","In-service support and upkeep for the surface fleet."),
+     L("bae_land","BAE Systems Land","baesystems.com","Munitions, artillery and combat vehicles; partner in RBSL for Boxer and Challenger 3."),
+     L("bae_es","BAE Systems Electronic Systems","baesystems.com","Electronic warfare, sensors, avionics, and controls & power."),
+     L("bae_di","BAE Systems Digital Intelligence","baesystems.com","Cyber, C4ISR, intelligence and digital services."),
+   ]},
+   {id:"rr",l:"Rolls-Royce",entry:"rolls-royce.com · Via Rolls-Royce Defence",does:"Propulsion for air and naval platforms; naval nuclear reactors; small modular reactor ambitions.",children:[
+     L("rr_defenceaero","Rolls-Royce Defence — Aerospace","rolls-royce.com","Aero-engines for combat air, transport and trainer aircraft."),
+     L("rr_subsystems","Rolls-Royce Submarines (reactors)","rolls-royce.com · Derby","Designs and makes the naval nuclear reactor plants powering the submarine fleet."),
+     L("rr_powersystems","Rolls-Royce Power Systems","rolls-royce.com","Engines, generators and microgrids for land and naval platforms."),
+   ]},
+   {id:"babcock",l:"Babcock International",entry:"babcockinternational.com · Via Babcock",does:"Through-life support, naval dockyards, training and land systems.",children:[
+     L("bab_marine","Babcock Marine","babcockinternational.com · Devonport & Rosyth","Warship and submarine support, refit and the dockyards."),
+     L("bab_nuclear","Babcock Nuclear","babcockinternational.com","Submarine support, decommissioning and nuclear services."),
+     L("bab_land","Babcock Land","babcockinternational.com","Military vehicle fleet management and engineering support."),
+     L("bab_aviation","Babcock Aviation","babcockinternational.com","Military aircraft support and flying training."),
+   ]},
+   {id:"leonardo",l:"Leonardo UK",entry:"leonardo.com · Via Leonardo UK",does:"Helicopters, sensors, radar, electronic warfare and space.",children:[
+     L("leo_helicopters","Leonardo Helicopters","leonardo.com · Yeovil","Military rotary-wing (AW101, AW159) design, build and support."),
+     L("leo_electronics","Leonardo Electronics","leonardo.com · Edinburgh & Luton","Radar, electronic warfare, sensors and laser systems."),
+     L("leo_cyber","Leonardo Cyber & Security","leonardo.com","Secure communications, cyber and mission systems."),
+   ]},
+   L("mbda","MBDA (UK)","Via MBDA","Complex weapons and missiles (UK/European JV, part-owned by BAE)."),
+   L("thales","Thales UK","Via Thales UK","Sensors, sonar, communications, optronics, cyber and UAS."),
+   L("edgewing","Edgewing (GCAP JV)","Via GCAP / GIGO","Design-authority JV (BAE, Leonardo, JAIEC) for the next-generation combat aircraft."),
+   L("airbusds","Airbus Defence & Space UK","Via Airbus","Military space, secure satcom (Skynet) and platforms."),
+   L("lmuk","Lockheed Martin UK","Via Lockheed Martin UK","Combat systems, training, and platform integration."),
+   L("boeinguk","Boeing Defence UK","Via Boeing","Rotary, maritime patrol and support."),
+   L("raytheonuk","Raytheon UK","Via Raytheon UK","Effects, C4ISR, sensors and cyber."),
+   L("gduk","General Dynamics UK","Via General Dynamics UK","Land combat systems, C4ISR and mission systems."),
+   L("chemring","Chemring","Via Chemring","Countermeasures, energetics and sensors."),
+   L("cohort","Cohort / Ultra","Via each company","Specialist electronics, sonar and C2 across group companies."),
+ ]),
+
+ B("b_supply","Industry — Supply Chain & Specialists","The tier-2/3 base supplying subsystems and niche capability.",[
+   B("c_land","Land systems","Vehicles, mobility and survivability.",[
+     L("rbsl","RBSL (Rheinmetall BAE Systems Land)","Via RBSL","Builds Boxer and Challenger 3; armoured vehicle design and manufacture."),
+     L("supacat","Supacat","Via Supacat","High-mobility and special-purpose vehicles."),
+     L("pearson","Pearson Engineering","Via Pearson","Combat engineering equipment and vehicle attachments."),
+     L("npaero","NP Aerospace","Via NP Aerospace","Armour, protection and vehicle integration."),
+     L("marshall","Marshall","Via Marshall","Land systems, shelters and aerospace support."),
+   ]),
+   B("c_mar","Maritime & underwater","Combat systems and subsea.",[
+     L("sea","SEA","Via SEA","Combat systems, torpedo defence and maritime software."),
+     L("survitec","Survitec","Via Survitec","Survival, escape and safety systems."),
+     L("sonardyne","Sonardyne","Via Sonardyne","Subsea positioning, sonar and communications."),
+     L("jfd","JFD","Via JFD","Submarine rescue and diving systems."),
+     L("atlas","Atlas Elektronik UK","Via Atlas Elektronik UK","Sonar, mine countermeasures and maritime autonomy."),
+   ]),
+   B("c_c4","Electronics, C4ISR & EW","Sensors, signals and battle management.",[
+     L("cobham","Cobham","Via Cobham","Antennas, comms and mission systems."),
+     L("systematic","Systematic UK","Via Systematic","Battle-management (SitaWare) and C2 software."),
+     L("ultra","Ultra","Via Ultra","Sonar, C2 and specialist electronics."),
+   ]),
+   B("c_svc","Services & integration","Engineering, logistics and delivery.",[
+     L("serco","Serco","Via Serco","Support services, training and logistics."),
+     L("kbr","KBR","Via KBR","Programme delivery, engineering and technical services."),
+     L("jacobs","Jacobs","Via Jacobs","Systems engineering and infrastructure."),
+     L("leidosuk","Leidos UK","Via Leidos UK","Logistics (LCST) and IT-enabled services."),
+   ]),
+ ]),
+
+ B("b_tech","Defence-Tech & SMEs","Fast-growing, dual-use and AI/autonomy-led firms.",[
+   B("c_ai","AI, autonomy & software","Battlefield AI, C2 and simulation.",[
+     L("helsing","Helsing UK","Direct · via UKDI/DASA","AI and strike-drone software; investing in UK manufacturing (Plymouth)."),
+     L("anduril","Anduril UK","Direct · via UKDI/DASA","Autonomous air and subsea systems and the Lattice software stack."),
+     L("palantir","Palantir UK","Direct","Data integration and decision software; DIJC member."),
+     L("hadean","Hadean","Direct","Distributed computing and large-scale simulation; hosted the first DIJC."),
+     L("adarga","Adarga","Direct","AI for intelligence analysis and knowledge discovery."),
+     L("faculty","Faculty","Direct","Applied AI and decision-support."),
+   ]),
+   B("c_uas","Uncrewed systems & drones","UAS, loitering munitions and ISR.",[
+     L("tekever","Tekever","Direct · via UKDI/DASA","UAS and ISR; supplies uncrewed systems to the RAF; UK factory in Swindon."),
+     L("stark","Stark","Direct","Strike drones; investing in UK manufacturing."),
+     L("quantumsys","Quantum Systems","Direct","Reconnaissance UAS with battlefield-proven designs."),
+     L("malloy","Malloy Aeronautics","Direct","Heavy-lift logistics and multi-role drones."),
+   ]),
+   B("c_deep","Deep tech, space & quantum","Frontier science into defence hardware.",[
+     L("physicsx","PhysicsX","Direct · via catapults","Engineering AI for simulation and design."),
+     L("camaero","Cambridge Aerospace","Direct","Missile-interception and advanced aerospace."),
+     L("riverlane","Riverlane","Direct","Quantum error-correction and computing."),
+     L("iceye","ICEYE","Direct","Radar-satellite ISR and space-based sensing."),
+   ]),
+   B("c_sme","SME support & pathways","Getting smaller firms into the system.",[
+     L("ofsbg","Defence Office for Small Business Growth","GOV.UK · pathfinder cohort","Single front door for SMEs; supports the ~£2.5bn-more-with-SMEs pledge."),
+     L("dtep","Defence Technology Exploitation Programme (DTEP)","Via ADS","Grant scheme helping SME supply-chain collaborations mature technology."),
+     L("makeuk","Make UK Defence","makeukdefence.org","Represents defence manufacturers and SMEs; strong SME onboarding voice."),
+   ]),
+ ]),
+
+ B("b_fund","Funding & Investment","Capital that carries innovation across the ‘valley of death’.",[
+   L("nssif","NSSIF","british-business-bank.co.uk › NSSIF","Government's dual-use corporate venture arm (~£330m FY26–30); direct and fund investments."),
+   L("natofund","NATO Innovation Fund","nif.fund","Multi-sovereign VC in dual-use deep tech; sits on the DIJC."),
+   L("bpc","British Patient Capital / British Business Bank","british-business-bank.co.uk","Government-backed patient capital that anchors deep-tech and dual-use funds."),
+   L("ukef","UK Export Finance (UKEF)","GOV.UK › UKEF","Export credit agency financing defence exports (capacity toward £80bn)."),
+   L("dip","MOD Modernisation Fund / Defence Investment Plan","Internal MOD","DIP commits ~£298bn over 2026–30, incl. £1.6bn for UKDI and a £500m Modernisation Fund."),
+   L("growth","Defence Growth Deals","Via MOD & devolved govts","£250m place-based investment: Plymouth, South Yorkshire, Scotland, Wales & NI."),
+   L("innovateuk","Innovate UK","iuk.ukri.org","Co-funds commercialisation and the catapults; the innovation arm of UKRI."),
+   L("privatevc","Private defence VCs","Founder-facing","Growth equity for dual-use firms (e.g. IQ Capital); co-invest with NSSIF and the NATO fund."),
+ ]),
+
+ B("b_gov","Cross-Government & Regulators","Departments and controls beyond the MOD.",[
+   L("dbt","Department for Business & Trade (DBT)","GOV.UK › DBT","Industrial strategy, exports and the health of the defence industrial base."),
+   L("dsit","Dept. for Science, Innovation & Technology (DSIT)","GOV.UK › DSIT","National S&T strategy and the dual-use tech ecosystem; sponsors NSSIF; oversees UKRI."),
+   L("ukri","UK Research & Innovation (UKRI)","ukri.org","Public research & innovation funder underpinning the science base."),
+   L("ode","Office of Defence Exports","Via MOD","Promotes UK defence exports with a whole-of-government offer; works with UKEF."),
+   L("ho","Home Office","GOV.UK › Home Office","Security & policing technology customer with dual-use overlap; a DASA customer."),
+   L("hmt","HM Treasury","GOV.UK › HMT","Sets budgets and spending-review settlements that size the whole system."),
+   L("cabinet","Cabinet Office / National Security Secretariat","GOV.UK","Coordinates national security strategy across departments."),
+   L("fcdo","FCDO","GOV.UK › FCDO","Foreign policy, diplomacy and export relationships."),
+   L("ecju","Export Control Joint Unit (ECJU)","Via DBT","Licenses strategic and military exports; the gate for selling abroad."),
+   L("isu","Investment Security Unit (ISU)","Cabinet Office","Screens acquisitions under the National Security & Investment Act."),
+ ]),
+
+ B("b_nato","NATO & Multinational Bodies","The Alliance's command, acquisition, science and innovation structures.",[
+   L("nato_hq","NATO Headquarters","nato.int · Brussels","Political and military HQ of the Alliance; the North Atlantic Council sets strategy and coordinates collective defence."),
+   L("natoact","Allied Command Transformation (ACT / SACT)","act.nato.int · Norfolk, Virginia","NATO's warfare development command — concepts, interoperability, experimentation and its Innovation Continuum (SHINE, Beacon)."),
+   L("aco","Allied Command Operations (SHAPE)","shape.nato.int · Mons, Belgium","NATO's operational command; defines operational requirements. MARCOM and the Standing Naval Groups sit under it."),
+   L("diana","NATO DIANA","diana.nato.int · London HQ","Alliance deep-tech accelerator — 23 accelerator sites and 180+ test centres across 28 allies; non-dilutive grants and pathways to market."),
+   L("ncia","NATO Communications & Information Agency (NCI Agency)","ncia.nato.int · Brussels","NATO's C4ISR, cyber and IT acquisition and delivery agency; a major procurement channel via its NITEC industry engagement."),
+   L("nspa","NATO Support & Procurement Agency (NSPA)","nspa.nato.int · Capellen, Luxembourg","NATO's shared acquisition, logistics and life-cycle management agency; runs multinational support programmes."),
+   L("nato_sto","NATO Science & Technology Organization (STO)","sto.nato.int · Brussels","The Alliance's collaborative defence science network; the largest of its kind, spanning seven technical panels."),
+   L("nato_cso","STO Collaboration Support Office (CSO)","sto.nato.int · Paris","Runs STO's collaborative research programme — technical teams, symposia and lecture series across the nations."),
+   L("nato_ocs","Office of the Chief Scientist","nato.int · Brussels","Principal S&T adviser to NATO; steers the science and technology strategy."),
+   L("cmre","Centre for Maritime Research & Experimentation (CMRE)","cmre.nato.int · La Spezia, Italy","STO's sea-going maritime research centre — autonomy, undersea acoustics, AI and mine countermeasures."),
+   L("cnad","Conference of National Armaments Directors (CNAD)","nato.int","Senior forum where national armaments directors coordinate collaborative capability and armaments programmes."),
+   L("niag","NATO Industrial Advisory Group (NIAG)","nato.int","Channel for industry advice to the CNAD on armaments cooperation."),
+   L("nato_edt","Advisory Group on Emerging & Disruptive Technologies","nato.int","External expert advice to NATO on EDTs; feeds the AI, autonomy, quantum, space and biotech strategies."),
+   L("jwc","Joint Warfare Centre (JWC)","jwc.nato.int · Stavanger, Norway","Trains and exercises NATO commands; collective warfare development and experimentation."),
+   L("jftc","Joint Force Training Centre (JFTC)","jftc.nato.int · Bydgoszcz, Poland","Delivers joint and combined training for the Alliance."),
+   L("jallc","Joint Analysis & Lessons Learned Centre (JALLC)","jallc.nato.int · Lisbon, Portugal","NATO's analysis and lessons-learned centre, feeding transformation."),
+   L("jatec","NATO-Ukraine Joint Analysis, Training & Education Centre (JATEC)","nato.int · Bydgoszcz, Poland","Draws battlefield lessons from Ukraine into NATO capability development."),
+   L("nato_coe","Centres of Excellence (COEs)","nato.int","Network of nationally-sponsored specialist COEs (cyber, maritime, CIED, StratCom, cold-weather and more)."),
+ ]),
+
+ B("b_eu","Europe — EU & National Agencies","EU instruments and the national procurement and innovation agencies of key European allies.",[
+   L("eda","European Defence Agency (EDA)","eda.europa.eu · Brussels","EU agency for capability development, research and collaborative armaments."),
+   L("defis","European Commission — DG DEFIS","defence-industry-space.ec.europa.eu","Commission directorate for defence industry and space; runs EU defence-industrial policy."),
+   L("edf","European Defence Fund (EDF)","defence-industry-space.ec.europa.eu","EU R&D and capability co-funding instrument delivered via DG DEFIS."),
+   L("occar","OCCAR","occar.int · Bonn","European joint armaments organisation managing collaborative programmes (e.g. Boxer)."),
+   L("pesco","PESCO","pesco.europa.eu","EU Permanent Structured Cooperation — collaborative capability projects among member states."),
+   L("asd","ASD Europe","asd-europe.org","AeroSpace, Security & Defence Industries Association of Europe — the pan-European industry voice."),
+   L("satcen","EU Satellite Centre (SatCen)","satcen.europa.eu · Torrejón, Spain","EU geospatial intelligence and space-based imagery service."),
+   L("fr_dga","France — DGA","defense.gouv.fr · Paris","Direction générale de l'armement — France's defence procurement and technology agency."),
+   L("fr_aid","France — Agence de l'Innovation de Défense (AID)","defense.gouv.fr","France's defence innovation agency, coordinating S&T and rapid innovation."),
+   L("de_baainbw","Germany — BAAINBw","baainbw.de · Koblenz","Federal Office for Bundeswehr Equipment, IT and In-Service Support — German procurement."),
+   L("de_cihbw","Germany — Cyber Innovation Hub (CIHBw)","cyberinnovationhub.de","The Bundeswehr's innovation unit bridging start-ups and the German armed forces."),
+   L("it_segredifesa","Italy — Segredifesa / DNA","difesa.it · Rome","Italy's Secretariat General of Defence and National Armaments Directorate."),
+   L("nl_dmo","Netherlands — Defence Materiel Organisation (DMO)","defensie.nl","Dutch defence procurement and materiel organisation."),
+   L("nl_tno","Netherlands — TNO","tno.nl","Independent applied-research organisation with a major defence and security programme."),
+   L("se_fmv","Sweden — FMV","fmv.se · Stockholm","Swedish Defence Materiel Administration — procurement and life-cycle management."),
+   L("se_foi","Sweden — FOI","foi.se","Swedish Defence Research Agency."),
+   L("no_ndma","Norway — Defence Materiel Agency (NDMA)","forsvarsmateriell.no","Norwegian defence materiel and procurement agency."),
+   L("no_ffi","Norway — FFI","ffi.no","Norwegian Defence Research Establishment."),
+   L("es_dgam","Spain — DGAM","defensa.gob.es","Directorate-General for Armament and Materiel — Spanish procurement."),
+   L("pl_armament","Poland — Armament Agency","wojsko-polskie.pl","Poland's central defence procurement agency (Agencja Uzbrojenia)."),
+   L("fi_puolustus","Finland — Defence Forces Logistics Command","puolustusvoimat.fi","Finland's defence materiel and logistics procurement authority."),
+   L("dk_dalo","Denmark — Defence Acquisition & Logistics Org. (DALO)","fmi.dk","Denmark's defence procurement and logistics organisation."),
+   L("edirpa","EU — EDIRPA / EDIP","defence-industry-space.ec.europa.eu","EU instruments incentivising joint procurement and scaling defence-industrial capacity."),
+   L("nato_diana_eu","EU — ASAP (ammunition)","defence-industry-space.ec.europa.eu","Act in Support of Ammunition Production — boosts EU munitions manufacturing capacity."),
+ ]),
+
+ B("b_us","United States","The US defence department, its innovation units, research labs, procurement and strategic investors.",[
+   L("us_dod","US Department of Defense (DoD)","defense.gov · Washington DC","The US defence department (also styled the Department of War); the largest defence customer globally."),
+   L("darpa","DARPA","darpa.mil · Arlington, VA","Defense Advanced Research Projects Agency — high-risk, breakthrough defence research and Broad Agency Announcements."),
+   B("us_diu_grp","Defense Innovation Unit (DIU) & network","diu.mil · the DoD's commercial-tech front door.",[
+     L("us_diu","Defense Innovation Unit (DIU)","diu.mil · info@diu.mil · Silicon Valley, Boston, Austin, Chicago, DC","DoD's commercial-tech ‘open front door’; principal liaison to the innovation base. Runs Commercial Solutions Openings and leads Replicator."),
+     L("nsin","National Security Innovation Network (NSIN)","nsin.mil","DIU-aligned network linking the DoD to universities and early-stage founders."),
+     L("nsic","National Security Innovation Capital (NSIC)","diu.mil","DIU programme funding dual-use hardware start-ups where venture capital is thin."),
+     L("replicator","Replicator initiative","diu.mil","DIU-led drive to field thousands of all-domain attritable autonomous systems within 18–24 months."),
+   ]),
+   B("afwerx_grp","AFWERX (Dept. of the Air Force)","afwerx.com · powered by AFRL — four arms.",[
+     L("afwerx","AFWERX","afwerx.com","The Air & Space Force innovation arm; open challenges and SBIR/STTR, transition timelines as short as weeks."),
+     L("afventures","AFVentures","afwerx.com","Runs the DAF SBIR/STTR programme and open-topic solicitations; matches commercial tech to missions."),
+     L("afspark","AFWERX Spark","afwerx.com","Empowers Airmen and Guardians to solve local problems and pull in commercial tech."),
+     L("afprime","AFWERX Prime","afwerx.com","Scales frontier capabilities (e.g. Agility Prime advanced air mobility) toward fielding."),
+     L("spacewerx","SpaceWERX","spacewerx.us","The Space Force innovation arm within AFWERX; STRATFI/TACFI and space challenges."),
+   ]),
+   B("us_service","Service innovation & rapid-capability units","Army, Navy and SOF fronts doors.",[
+     L("navalx","NavalX & Tech Bridges","navalx.navy.mil","Navy agility office; a network of ~18 regional Tech Bridges connecting the fleet to industry and academia."),
+     L("nrl","Naval Research Laboratory (NRL)","nrl.navy.mil","The Navy's corporate research laboratory."),
+     L("aal","Army Applications Laboratory (AAL)","aal.army · Austin, TX","The Army's problem-driven innovation and prototyping unit."),
+     L("xtech","Army xTech","xtech.army.mil","The Army's open prize-competition programme for dual-use tech from non-traditional vendors."),
+     L("rccto","Rapid Capabilities & Critical Technologies Office (RCCTO)","army.mil · RCCTO","The Army's rapid prototyping and fielding office for priority technologies (hypersonics, directed energy)."),
+     L("afc","Army Futures Command","armyfuturescommand.com","Leads Army modernisation and concept-to-capability development."),
+     L("mcwl","Marine Corps Warfighting Laboratory","mcwl.marines.mil","Experiments and develops future Marine Corps capability."),
+   ]),
+   B("us_labs","Research labs & S&T","The federal defence research base.",[
+     L("onr","Office of Naval Research (ONR)","onr.navy.mil","Funds US naval science and technology and university research; issues BAAs."),
+     L("afrl","Air Force Research Laboratory (AFRL)","afrl.af.mil","The Air & Space Force's science and technology laboratory."),
+     L("arl","DEVCOM Army Research Laboratory (ARL)","arl.devcom.army.mil","The Army's foundational research laboratory."),
+     L("sco","Strategic Capabilities Office (SCO)","cto.mil","Re-purposes existing systems for new operational effects at speed."),
+     L("dmea","Defense Microelectronics / trusted supply","defense.gov","Assures trusted access to microelectronics and critical components."),
+   ]),
+   B("us_acq","Acquisition, capital & scaling","How US innovation crosses into procurement.",[
+     L("cdao","Chief Digital & AI Office (CDAO)","ai.mil","DoD's central authority for data, analytics and AI adoption; runs JADC2 experimentation."),
+     L("osc","Office of Strategic Capital (OSC)","defense.gov/osc","Uses loans and guarantees to pull private capital into critical technologies."),
+     L("apfit","APFIT","cto.mil","Accelerate the Procurement and Fielding of Innovative Technologies — bridge funding to cross the valley of death (now permanent)."),
+     L("iqt","In-Q-Tel (IQT)","iqt.org","Strategic, not-for-profit investor for the US intelligence and national-security community."),
+     L("sbir","DoD SBIR/STTR","dodsbirsttr.mil","Small Business Innovation Research — the federal small-business R&D funding gateway."),
+     L("dib","Defense Innovation Board","innovation.defense.gov","Independent advice to DoD leadership on innovation and scaling non-traditional vendors."),
+   ]),
+   B("us_agencies","Specialist agencies","Space, missiles and threat reduction.",[
+     L("sda_us","Space Development Agency (SDA)","sda.mil","Builds the US proliferated warfighter space architecture."),
+     L("ssc","Space Systems Command","ssc.spaceforce.mil","The Space Force's acquisition command; runs the SSC Front Door for industry."),
+     L("mda","Missile Defense Agency (MDA)","mda.mil","Develops US layered missile defence."),
+     L("dtra","Defense Threat Reduction Agency (DTRA)","dtra.mil","Counters weapons of mass destruction and emerging threats."),
+   ]),
+   B("us_primes","US & global primes — divisions","The largest US-headquartered primes, broken down by business segment.",[
+     {id:"lmt",l:"Lockheed Martin",entry:"lockheedmartin.com · Bethesda, MD",does:"The world's largest defence contractor; four business segments.",children:[
+       L("lmt_aero","Lockheed Martin Aeronautics","lockheedmartin.com · Fort Worth, TX","Combat and air-mobility aircraft — F-35, F-16, C-130 — and classified programmes."),
+       L("lmt_mfc","Missiles & Fire Control (MFC)","lockheedmartin.com","Air & missile defence (PAC-3, THAAD), precision fires (JASSM, LRASM)."),
+       L("lmt_rms","Rotary & Mission Systems (RMS)","lockheedmartin.com","Sikorsky helicopters, radars, combat and C2 systems, training."),
+       L("lmt_space","Lockheed Martin Space","lockheedmartin.com","Satellites, strategic missiles and space transportation."),
+     ]},
+     {id:"rtx",l:"RTX (Raytheon)",entry:"rtx.com · Arlington, VA",does:"Aerospace and defence group; three principal businesses.",children:[
+       L("rtx_raytheon","Raytheon","rtx.com","Air & missile defence (Patriot), effectors (Tomahawk, AMRAAM, Standard Missile), C4ISR."),
+       L("rtx_collins","Collins Aerospace","rtx.com","Avionics, mission systems, connected battlespace and aftermarket."),
+       L("rtx_pw","Pratt & Whitney","rtx.com","Military and commercial aero-engines (F135 for the F-35)."),
+     ]},
+     {id:"noc",l:"Northrop Grumman",entry:"northropgrumman.com · Falls Church, VA",does:"Aerospace and defence group; four segments.",children:[
+       L("noc_aero","Aeronautics Systems","northropgrumman.com","Strike and autonomous aircraft (B-21 Raider, unmanned systems)."),
+       L("noc_space","Space Systems","northropgrumman.com","Strategic (Sentinel ICBM), satellites and launch."),
+       L("noc_ms","Mission Systems","northropgrumman.com","Radars, sensors, EW, C4ISR and networking."),
+       L("noc_ds","Defense Systems","northropgrumman.com","Weapons, ammunition and mission readiness/sustainment."),
+     ]},
+     {id:"gd",l:"General Dynamics",entry:"gd.com · Reston, VA",does:"Diversified defence group across land, sea, air and IT.",children:[
+       L("gd_electricboat","Electric Boat","gd.com · Groton, CT","Designs and builds US nuclear submarines (Virginia, Columbia)."),
+       L("gd_landsystems","Land Systems","gdls.com","Main battle tanks and combat vehicles (Abrams, Stryker)."),
+       L("gd_mission","Mission Systems","gdmissionsystems.com","C4ISR, secure comms and mission computing."),
+       L("gd_git","GDIT","gdit.com","IT and digital services to government."),
+     ]},
+     L("boeing_def","Boeing Defense, Space & Security","boeing.com · Arlington, VA","Combat aircraft, rotorcraft, satellites, weapons and autonomy."),
+     L("anduril_us","Anduril Industries","anduril.com · Costa Mesa, CA","Autonomy-first defence-tech prime; the Lattice software platform and autonomous systems."),
+     L("palantir_us","Palantir Technologies","palantir.com · Denver, CO","Data-integration and decision software (Gotham, Foundry) for defence and intelligence."),
+   ]),
+   B("eu_primes","European primes — divisions","The largest European-headquartered defence groups.",[
+     {id:"airbus_grp",l:"Airbus Defence & Space",entry:"airbus.com · Toulouse / Munich",does:"Europe's aerospace champion; military air, space and systems.",children:[
+       L("airbus_air","Military Air Systems","airbus.com","Combat (Eurofighter, FCAS), transport (A400M) and MRTT tankers."),
+       L("airbus_space","Space Systems","airbus.com","Satellites, secure satcom and Earth observation."),
+       L("airbus_cis","Connected Intelligence","airbus.com","Secure communications, ISR and mission systems."),
+     ]},
+     {id:"leonardo_grp",l:"Leonardo S.p.A.",entry:"leonardo.com · Rome",does:"Italian aerospace, defence and security group.",children:[
+       L("leo_g_helis","Helicopters","leonardo.com","Military and civil rotary-wing."),
+       L("leo_g_electronics","Electronics","leonardo.com","Radar, EW, avionics and sensors."),
+       L("leo_g_aircraft","Aircraft & Aerostructures","leonardo.com","Trainers, combat air work-share and structures."),
+     ]},
+     {id:"thales_grp",l:"Thales Group",entry:"thalesgroup.com · Paris",does:"French electronics group across defence, space and digital.",children:[
+       L("thales_dams","Defence & Mission Systems","thalesgroup.com","Air-defence, naval combat systems and radars."),
+       L("thales_lai","Land & Air Systems","thalesgroup.com","Sensors, optronics, air-traffic and battlefield systems."),
+       L("thales_space","Space (Thales Alenia Space)","thalesaleniaspace.com","Satellites and space systems (JV with Leonardo)."),
+       L("thales_cyber","Cyber & Digital","thalesgroup.com","Cybersecurity, secure comms and digital identity."),
+     ]},
+     L("rheinmetall","Rheinmetall","rheinmetall.com · Düsseldorf","German land-systems and munitions champion; vehicles, weapons and ammunition."),
+     L("kmw","KNDS (KMW + Nexter)","knds.com · Munich / Paris","Franco-German land-systems group (Leopard 2, Leclerc, artillery)."),
+     L("saab_grp","Saab AB","saab.com · Stockholm","Swedish group — Gripen combat air, sensors, and naval (Kockums submarines)."),
+     L("mbda_grp","MBDA","mbda-systems.com","European complex-weapons champion (BAE, Airbus, Leonardo JV)."),
+     L("kongsberg","Kongsberg Defence & Aerospace","kongsberg.com · Norway","Missiles (NSM/JSM), remote weapon stations and maritime systems."),
+   ]),
+ ]),
+
+ B("b_5eyes","Five Eyes Partners (CA · AU · NZ)","The procurement, science and innovation bodies of Canada, Australia and New Zealand.",[
+   B("ca_grp","Canada","Canada's defence department, science and procurement.",[
+     L("ca_dnd","Department of National Defence (DND / CAF)","canada.ca/dnd","Canada's defence department and armed forces."),
+     L("ca_ideas","Defence IDEaS","canada.ca (Defence IDEaS)","Innovation for Defence Excellence and Security — Canada's flagship programme: Competitive Projects, Sandboxes, Contests and Test Drives."),
+     L("ca_drdc","Defence Research & Development Canada (DRDC)","canada.ca (DRDC)","The national defence science agency and its research centres."),
+     L("ca_pspc","Public Services & Procurement Canada (PSPC)","canada.ca/pspc","Federal procurement authority that contracts major defence buys."),
+     L("ca_ised","ISED / Industrial & Technological Benefits","ised-isde.canada.ca","Runs the ITB policy that ties major contracts to domestic industrial benefit."),
+   ]),
+   B("au_grp","Australia","Australia's defence department, accelerator, science and acquisition.",[
+     L("au_defence","Department of Defence","defence.gov.au · Canberra","Australia's defence department and the ADF."),
+     L("au_asca","Advanced Strategic Capabilities Accelerator (ASCA)","asca.gov.au","Australia's defence innovation accelerator (replaced the Innovation Hub); mission-led calls with a path to acquisition."),
+     L("au_dstg","Defence Science & Technology Group (DSTG)","dst.defence.gov.au","Australia's national defence science organisation."),
+     L("au_casg","Capability Acquisition & Sustainment Group (CASG)","defence.gov.au","Australian defence procurement and sustainment."),
+     L("au_asa","Australian Submarine Agency (ASA)","asa.gov.au","Delivers Australia's AUKUS conventionally-armed, nuclear-powered submarine programme."),
+     L("au_gweo","Guided Weapons & Explosive Ordnance (GWEO)","defence.gov.au","Stands up a sovereign Australian guided-weapons manufacturing enterprise."),
+   ]),
+   B("nz_grp","New Zealand","New Zealand's defence force, ministry and science agency.",[
+     L("nz_nzdf","NZ Defence Force (NZDF)","nzdf.mil.nz","New Zealand's armed forces."),
+     L("nz_mod","Ministry of Defence","defence.govt.nz","NZ defence policy and capability procurement authority."),
+     L("nz_dta","Defence Technology Agency (DTA)","nzdf.mil.nz","NZDF's science and technology organisation."),
+   ]),
+ ]),
+
+ B("b_multi","Alliances & Multinational Programmes","The partnership structures and joint programmes the UK sits within.",[
+   L("aukus","AUKUS","Via MOD & DNO","UK–US–Australia partnership: submarines (Pillar 1) and advanced capabilities (Pillar 2)."),
+   L("gcap","GCAP / GIGO","GCAP Agency, Reading","Trilateral (UK, Italy, Japan) government organisation for the next-generation combat aircraft; delivered via Edgewing."),
+   L("fiveeyes","Five Eyes","Via MOD international","Intelligence and capability collaboration (UK, US, Canada, Australia, New Zealand)."),
+   L("ttcp","TTCP","Via Dstl","The Technical Cooperation Program — Five Eyes defence science and technology collaboration."),
+ ]),
+
+ B("b_trade","Trade Bodies & Professional Institutions","The collective industry voice and professional standards.",[
+   L("dijc","Defence Industrial Joint Council (DIJC)","Senior membership forum","MOD's main strategic engagement mechanism with the whole industrial base; replaced the DSF."),
+   L("ads","ADS Group","adsgroup.org.uk","Represents aerospace, defence, security & space (1,700+ members); DIJC member."),
+   L("techuk","techUK","techuk.org","Represents the technology sector, including defence & national-security tech."),
+   L("smi","Society of Maritime Industries","maritimeindustries.org","Represents the maritime and naval supply chain."),
+   L("dsei","DSEI","dsei.co.uk","Major UK defence & security exhibition — a marketplace and showcase."),
+   L("imeche","IMechE","imeche.org","Professional registration and standards for mechanical engineers."),
+   L("iet","IET","theiet.org","Professional body for engineering and technology."),
+   L("raes","Royal Aeronautical Society (RAeS)","aerosociety.com","Professional body for aerospace."),
+ ]),
+]);
+
+/* cross-links (secondary dependencies, shown when a node is selected) */
+const XLINK = {
+ nad:["des","dstl","ddig","dio","ukdi"], ukdi:["dasa","dstl","nssif","natofund","des","daic"],
+ dstl:["dasa","daic","ploughshare","udrc","serapis","porton"], daic:["ddig","dstl","fcg","foundry"],
+ des:["bae","fcg","dip","commercial"], sda:["bae","rrsub","babcock","barrow","aukus"],
+ dno:["sda","awe","rrsub"], jhub:["ukdi","csoc"], dcto:["ukdi","navy"],
+ gcap:["edgewing","bae","leonardo","dip"], edgewing:["bae","leonardo","gcap"],
+ dijc:["nad","bae","helsing","ads","makeuk","natofund"], nssif:["dsit","ukdi","bpc"],
+ battlelab:["dstl","diana","dasa","diu"], hvmc:["mtc","ncc","amrc"], barrow:["sda","bae","rrsub","aukus"],
+ diana:["natoact","battlelab","ukdi"], natofund:["dijc","natoact"], ode:["ukef","dbt","ecju"],
+ helsing:["ukdi","nssif","dijc"], bae:["des","sda","mbda","gcap","barrow"],
+};
+
+/* ---------- palette: one harmonised hue-wheel across branches ---------- */
+function hslToHex(h,s,l){ s/=100;l/=100; const a=s*Math.min(l,1-l);
+  const f=n=>{const k=(n+h/30)%12; const c=l-a*Math.max(-1,Math.min(k-3,Math.min(9-k,1)));
+    return Math.round(255*c).toString(16).padStart(2,'0');};
+  return `#${f(0)}${f(8)}${f(4)}`;}
+const BRANCHCOLORS = {};
+TREE.children.forEach((b,i)=>{ const hue=(i*360/TREE.children.length + 6)%360; BRANCHCOLORS[b.id]=hslToHex(hue,60,66); });
+const ROOTCOLOR="#EAF6FF";
+
+/* ---------- index & metadata ---------- */
+const NODE={}, PARENT={}, BRANCHOF={};
+function computeBranch(id){let cur=id;while(PARENT[cur] && PARENT[cur]!=="root")cur=PARENT[cur];return cur;}
+function indexTree(){
+  for(const k in NODE)delete NODE[k]; for(const k in PARENT)delete PARENT[k]; for(const k in BRANCHOF)delete BRANCHOF[k];
+  (function index(n,parent){ NODE[n.id]=n; PARENT[n.id]=parent; if(n.children)n.children.forEach(c=>index(c,n.id)); })(TREE,null);
+  Object.keys(NODE).forEach(id=>{ if(id!=="root") BRANCHOF[id]=computeBranch(id); });
+}
+indexTree();
+function colorOf(id){ if(id==="root")return ROOTCOLOR; return BRANCHCOLORS[BRANCHOF[id]]||"#8fa"; }
+function depthOf(id){let d=0,cur=id;while(PARENT[cur]!=null){d++;cur=PARENT[cur];}return d;}
+function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
+
+/* ---------- open calls / opportunities ---------- */
+const OPPS = {
+ ukdi:"UKDI competitions — Open Call for Innovation, Themed Competitions and Defence Innovation Loans. The consolidated service reopens ahead of UKDI Full Operating Capability (~July 2026); live calls appear on gov.uk and the UKDI submission service.",
+ dasa:"DASA Open Call for Innovation runs in year-round cycles, plus themed competitions. Note: the Open Call is paused during the UKDI transition and reopens by ~July 2026 — current and themed competitions are listed on gov.uk (search ‘DASA competitions’). Contact accelerator@dstl.gov.uk.",
+ dstl:"Research opportunities via the Serapis framework and R-Cloud; tenders on Contracts Finder (contractsfinder.service.gov.uk).",
+ des:"Tenders via the Defence Sourcing Portal (Jaggaer) and Find a Tender (find-tender.service.gov.uk).",
+ commercial:"MOD requirements advertised on the Defence Sourcing Portal and Find a Tender (find-tender.service.gov.uk).",
+ fcg:"Robotics and autonomy calls routed via UKDI/DASA competitions and DE&S tenders (find-tender.service.gov.uk).",
+ daic:"AI challenges and pilots via UKDI/DASA and Defence Digital — see gov.uk.",
+ battlelab:"Hosts collaboration challenges and DIANA test activity — see the Defence BattleLab and diana.nato.int.",
+ jhub:"Problem-led calls run through CSOC; routed via UKDI/DASA competitions.",
+ dcto:"Maritime autonomy trials and calls via the Royal Navy; routed through UKDI/DASA.",
+ armyx:"Army experimentation calls via the Land Warfare Centre; routed through UKDI/DASA.",
+ rafrco:"Rapid air and space requirements via the RAF; often classified — engage via UKDI/DASA.",
+ ncsc:"NCSC For Startups and challenge calls at ncsc.gov.uk.",
+ innovateuk:"Innovate UK funding competitions at iuk.ukri.org (Innovation Funding Service).",
+ nssif:"Pitch for investment via accredited NSSIF fund managers (british-business-bank.co.uk).",
+ ofsbg:"SME calls and pathways via the Defence Office for Small Business Growth — see gov.uk and Find a Tender (find-tender.service.gov.uk).",
+ dtep:"Defence Technology Exploitation Programme grant calls via ADS (adsgroup.org.uk).",
+ makeuk:"SME supply-chain opportunities and events via Make UK Defence (makeukdefence.org).",
+ ads:"Supply-chain opportunities, DTEP grants and events via ADS (adsgroup.org.uk).",
+ diana:"NATO DIANA runs annual Challenge programmes with open calls for dual-use deep tech — live challenges at diana.nato.int.",
+ natofund:"Founder applications for investment at nif.fund.",
+ nspa:"Business opportunities and e-tenders at nspa.nato.int.",
+ ncia:"C4ISR and IT procurement via the NCIA e-procurement portal (ncia.nato.int).",
+ natoact:"Innovation challenges and experimentation via NATO ACT (act.nato.int) and DIANA.",
+ eda:"Procurement and project calls at eda.europa.eu; EU-wide calls via the EU Funding & Tenders portal (ec.europa.eu).",
+ edf:"European Defence Fund annual calls via the EU Funding & Tenders portal (ec.europa.eu).",
+ defis:"EDF and EU defence-industry calls via the EU Funding & Tenders portal (ec.europa.eu).",
+ us_dod:"US requirements posted on SAM.gov; small-business R&D via DoD SBIR/STTR (dodsbirsttr.mil).",
+ us_diu:"DIU posts Commercial Solutions Openings (CSOs) and Areas of Interest — see ‘Work With Us’ at diu.mil.",
+ darpa:"DARPA Broad Agency Announcements and opportunities via sam.gov and darpa.mil.",
+ afwerx:"AFWERX Challenges and SBIR/STTR open topics at afwerx.com.",
+ sofwerx:"SOFWERX collaboration events and opportunities at sofwerx.org.",
+ onr:"ONR Broad Agency Announcements and funding at onr.navy.mil and grants.gov.",
+ sbir:"DoD SBIR/STTR open topics and solicitations at dodsbirsttr.mil.",
+ osc:"Office of Strategic Capital loan and guarantee programmes at defense.gov/osc.",
+ iqt:"Submit your technology to In-Q-Tel at iqt.org.",
+ ca_ideas:"IDEaS calls — Competitive Projects, Sandboxes, Contests and Test Drives — via Defence IDEaS (canada.ca).",
+ au_asca:"ASCA Missions and open calls at asca.gov.au.",
+ afventures:"DAF SBIR/STTR and open-topic solicitations via AFVentures (afwerx.com) and dodsbirsttr.mil.",
+ spacewerx:"SpaceWERX challenges plus STRATFI/TACFI matching funds at spacewerx.us.",
+ navalx:"Engage the fleet through NavalX and your regional Tech Bridge (navalx.navy.mil).",
+ xtech:"Army xTech prize competitions for non-traditional vendors at xtech.army.mil.",
+ apfit:"APFIT bridge-funding rounds for fielding innovative tech — see cto.mil.",
+ ssc:"Space Force acquisition via the SSC Front Door (ssc.spaceforce.mil) and SAM.gov.",
+ ca_drdc:"DRDC research calls and IDEaS competitions via canada.ca.",
+ au_casg:"Australian defence tenders via AusTender (tenders.gov.au).",
+ gcap:"GCAP supply-chain opportunities via the partners (BAE Systems, Leonardo, Edgewing) and Team GCAP.",
+ edgewing:"Supply-chain opportunities via Edgewing and the GCAP partners' portals.",
+ aukus:"Pillar 2 industry engagement via the AUKUS nations' innovation channels (DIU, ASCA, UKDI)."
+};
+function oppsFor(id){
+  if(OPPS[id]) return OPPS[id];
+  const br=BRANCHOF[id]||id;
+  if(id.startsWith('ca_')) return "Canada — federal tenders via CanadaBuys (canadabuys.canada.ca); defence innovation calls via Defence IDEaS (canada.ca).";
+  if(id.startsWith('au_')) return "Australia — tenders via AusTender (tenders.gov.au); innovation calls via ASCA (asca.gov.au).";
+  if(id.startsWith('nz_')) return "New Zealand — government tenders via GETS (gets.govt.nz).";
+  if(/^(fr|de|it|nl|se|no|es|pl)_/.test(id)) return "National and EU calls via the EU Funding & Tenders portal (ec.europa.eu) and TED (ted.europa.eu).";
+  switch(br){
+    case 'b_nato': return "NATO calls to industry — NSPA business opportunities (nspa.nato.int) and NCIA e-procurement (ncia.nato.int).";
+    case 'b_eu': return "EU calls — EU Funding & Tenders portal (ec.europa.eu) and TED (ted.europa.eu).";
+    case 'b_us': return "US opportunities — SAM.gov and DoD SBIR/STTR (dodsbirsttr.mil).";
+    case 'b_5eyes': return "Allied tenders via the relevant national portal — CanadaBuys, AusTender or GETS.";
+    case 'b_multi': return "Programme calls via the partner nations' portals and the programme office.";
+    case 'b_primes': case 'b_supply': return "Supply-chain and subcontract opportunities via the company's supplier portal; prime requirements flow from DE&S tenders (find-tender.service.gov.uk).";
+    case 'b_tech': return "Engages via UKDI/DASA competitions and direct MOD pilots; UK tenders on Find a Tender (find-tender.service.gov.uk).";
+    default: return "UK tenders and calls — Find a Tender (find-tender.service.gov.uk) and Contracts Finder (contractsfinder.service.gov.uk); MOD suppliers via the Defence Sourcing Portal. Innovation via UKDI/DASA competitions.";
+  }
+}
+
+/* ---------- collapse state ---------- */
+const collapsed=new Set();
+// default: collapse everything below the branches (branches visible, collapsed)
+TREE.children.forEach(b=>collapsed.add(b.id));
+
+/* ---------- layout ---------- */
+const cx=0, cy=0; // world centre
+let positions={}; // id -> {x,y}
+let RINGR=[];
+function visibleLeaves(n){ if(!n.children||collapsed.has(n.id))return 1; return n.children.reduce((s,c)=>s+visibleLeaves(c),0); }
+function layout(){
+  const nB=TREE.children.length;
+  const r1=Math.max(380, nB*116/(2*Math.PI));
+  const step=Math.max(250, visibleLeaves(TREE)*3.0);
+  RINGR=[0, r1, r1+step, r1+step*1.85, r1+step*2.65];
+  positions={};
+  function place(n,a0,a1,depth){
+    const a=(a0+a1)/2;
+    const r=RINGR[Math.min(depth,RINGR.length-1)];
+    positions[n.id]={x:cx+r*Math.cos(a), y:cy+r*Math.sin(a), a, depth};
+    if(n.children && !collapsed.has(n.id)){
+      const tot=n.children.reduce((s,c)=>s+visibleLeaves(c),0);
+      let cur=a0;
+      n.children.forEach(c=>{
+        const span=(a1-a0)*(visibleLeaves(c)/tot);
+        place(c,cur,cur+span,depth+1); cur+=span;
+      });
+    }
+  }
+  // root spans full circle starting top, tiny gap
+  const start=-Math.PI/2+0.06, end=start+Math.PI*2-0.12;
+  positions[TREE.id]={x:cx,y:cy,a:0,depth:0};
+  const tot=TREE.children.reduce((s,c)=>s+visibleLeaves(c),0);
+  let cur=start;
+  TREE.children.forEach(c=>{ const span=(end-start)*(visibleLeaves(c)/tot); place(c,cur,cur+span,1); cur+=span; });
+}
+
+/* ---------- render ---------- */
+const world=document.getElementById('world'), svg=document.getElementById('edges');
+let nodeEls={};
+function isVisible(id){ let cur=PARENT[id]; while(cur!=null){ if(collapsed.has(cur))return false; cur=PARENT[cur]; } return true; }
+
+function build(){
+  // create node elements once
+  Object.values(NODE).forEach(n=>{
+    const el=document.createElement('div');
+    const kind = n.id==="root"?"root": (BRANCHCOLORS[n.id]?"branch": (n.children?"cat":"leaf"));
+    el.className=`node kind-${kind}`; el.tabIndex=0; el.dataset.id=n.id;
+    el.setAttribute('role','button'); el.setAttribute('aria-label', n.l + (n.children&&n.children.length?' — expandable':''));
+    if(n.custom)el.classList.add('custom');
+    const col=colorOf(n.id);
+    el.style.setProperty('--c',col);
+    const hasKids=!!(n.children&&n.children.length);
+    const dot = kind!=="root" ? `<span class="cdot"></span>`:"";
+    const badge = hasKids && kind!=="root" ? `<span class="badge">${countLeaves(n)}</span>`:"";
+    const tri = hasKids ? `<span class="tri">▾</span>`:"";
+    el.innerHTML = `${dot}<span class="lab">${n.l}</span>${badge}${tri}`;
+    world.appendChild(el); nodeEls[n.id]=el;
+    el.addEventListener('click',ev=>{ ev.stopPropagation();
+      if(hasKids && (ev.target.classList.contains('tri')|| kind==='branch'|| kind==='cat'|| kind==='root')){ toggle(n.id); }
+      select(n.id);
+    });
+    el.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); if(hasKids)toggle(n.id); select(n.id);} });
+  });
+  refresh();
+}
+function hexA(hex,a){const h=hex.replace('#','');return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;}
+
+function refresh(){
+  layout();
+  // nodes
+  Object.values(NODE).forEach(n=>{
+    const el=nodeEls[n.id]; const vis=isVisible(n.id); 
+    el.style.display=vis?'flex':'none';
+    if(vis){ const p=positions[n.id]; el.style.left=(p.x)+'px'; el.style.top=(p.y)+'px'; }
+    el.classList.toggle('collapsed', collapsed.has(n.id));
+  });
+  drawEdges();
+}
+function drawEdges(){
+  const NS="http://www.w3.org/2000/svg";
+  svg.innerHTML='';
+  // radar range rings
+  const gr=document.createElementNS(NS,'g');
+  [1,2,3].forEach(i=>{ if(!RINGR[i])return; const c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',0);c.setAttribute('cy',0);c.setAttribute('r',RINGR[i]);c.setAttribute('class','ring'); gr.appendChild(c);});
+  svg.appendChild(gr);
+  const gGlow=document.createElementNS(NS,'g'); gGlow.setAttribute('class','glow');
+  const gCrisp=document.createElementNS(NS,'g'); gCrisp.setAttribute('class','crisp');
+  function edge(s,t,col,a,b){
+    const rm=(Math.hypot(s.x,s.y)+Math.hypot(t.x,t.y))/2;
+    const c1x=rm*Math.cos(s.a), c1y=rm*Math.sin(s.a), c2x=rm*Math.cos(t.a), c2y=rm*Math.sin(t.a);
+    const dd=`M${s.x},${s.y} C${c1x},${c1y} ${c2x},${c2y} ${t.x},${t.y}`;
+    [gGlow,gCrisp].forEach(g=>{const p=document.createElementNS(NS,'path');p.setAttribute('d',dd);p.setAttribute('stroke',col);p.dataset.a=a;p.dataset.b=b;g.appendChild(p);});
+  }
+  (function walk(n){ if(n.children && !collapsed.has(n.id)){ n.children.forEach(c=>{ if(isVisible(c.id)) edge(positions[n.id],positions[c.id],colorOf(c.id),n.id,c.id); walk(c); }); } })(TREE);
+  svg.appendChild(gGlow); svg.appendChild(gCrisp);
+  // size svg to content
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  Object.keys(positions).forEach(id=>{if(!isVisible(id)&&id!=="root")return;const p=positions[id];minx=Math.min(minx,p.x);miny=Math.min(miny,p.y);maxx=Math.max(maxx,p.x);maxy=Math.max(maxy,p.y);});
+  BOUNDS={minx,miny,maxx,maxy};
+}
+let BOUNDS={minx:-700,miny:-700,maxx:700,maxy:700};
+
+/* ---------- interactions ---------- */
+function toggle(id){ if(collapsed.has(id))collapsed.delete(id); else collapsed.add(id); refresh(); }
+let selected=null;
+function select(id){
+  selected=id;
+  const isLeaf=!(NODE[id].children&&NODE[id].children.length);
+  const rel=new Set([id]); if(PARENT[id])rel.add(PARENT[id]);
+  if(NODE[id].children)NODE[id].children.forEach(c=>rel.add(c.id));
+  (XLINK[id]||[]).forEach(x=>rel.add(x));
+  Object.values(NODE).forEach(n=>{ const el=nodeEls[n.id]; el.classList.remove('sel','dim');
+    if(n.id===id)el.classList.add('sel'); else if(isLeaf && !rel.has(n.id)) el.classList.add('dim'); });
+  svg.querySelectorAll('path').forEach(p=>{ const on=p.dataset.a===id||p.dataset.b===id;
+    p.classList.toggle('lit',on); p.classList.toggle('faded',isLeaf && !on); });
+  openPanel(id);
+}
+document.getElementById('stage').addEventListener('click',()=>{ if(!dragMoved){ selected=null; Object.values(nodeEls).forEach(el=>el.classList.remove('sel','dim')); closePanel(); }});
+
+/* panel */
+const panel=document.getElementById('panel');
+function linkifyContact(entry){
+  const emailRe=/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+  const emails=[...new Set(entry.match(emailRe)||[])];
+  let rest=entry.replace(emailRe,' ');
+  const urlRe=/\b(?:[a-z0-9-]+\.)+[a-z]{2,6}(?:\/[^\s·,)]*)?/gi;
+  const urls=[...new Set(rest.match(urlRe)||[])].filter(u=>u.indexOf('.')>0);
+  let rest2=rest.replace(urlRe,' ');
+  const phoneRe=/\+?\d[\d\s()\-]{6,}\d/g;
+  const phones=[...new Set((rest2.match(phoneRe)||[]).map(p=>p.trim()))].filter(p=>p.replace(/\D/g,'').length>=7);
+  let note=rest2.replace(phoneRe,' ').replace(/[·›|]/g,' ').replace(/\s+/g,' ').replace(/^[\s,]+|[\s,]+$/g,'').trim();
+  const WEB='<svg viewBox="0 0 20 20" class="ci"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.4 2.3 2.4 12.7 0 15M10 2.5c-2.4 2.3-2.4 12.7 0 15"/></svg>';
+  const MAIL='<svg viewBox="0 0 20 20" class="ci"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5l7 5 7-5"/></svg>';
+  const TEL='<svg viewBox="0 0 20 20" class="ci"><path d="M5 3c1 0 1.6 2.7 1.6 3.2 0 .5-1.4 1.5-1.4 1.9 0 1 2.8 3.8 3.8 3.8.4 0 1.4-1.4 1.9-1.4.5 0 3.2.6 3.2 1.6v2.5c0 1-1 1.5-2 1.4C6.6 15.7 4.3 13.4 3.1 6 3 5 3.9 3 5 3z"/></svg>';
+  let html='';
+  urls.forEach(u=>{ const href=/^https?:\/\//i.test(u)?u:('https://'+u); html+=`<a class="cchip" href="${href}" target="_blank" rel="noopener noreferrer">${WEB}<span>${u}</span></a>`; });
+  emails.forEach(e=>{ html+=`<a class="cchip mail" href="mailto:${e}">${MAIL}<span>${e}</span></a>`; });
+  phones.forEach(p=>{ const tel=p.replace(/[^\d+]/g,''); html+=`<a class="cchip" href="tel:${tel}">${TEL}<span>${p}</span></a>`; });
+  if(note && note.length>1) html+=`<div class="cnote">${note}</div>`;
+  if(!html){ html=`<div class="cnote">${entry}</div>`; }
+  else if(urls.length||emails.length||phones.length){ html+=`<div class="chint">Opens in your browser — or click to copy.</div>`; }
+  return html;
+}
+function linkifyProse(t){
+  const mails=[];
+  t=t.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, m=>{ mails.push(m); return `@@M${mails.length-1}@@`; });
+  t=t.replace(/\b(?:[a-z0-9-]+\.)+[a-z]{2,6}(?:\/[^\s·,)]*)?/gi, m=>{ const href=/^https?:\/\//i.test(m)?m:('https://'+m); return `<a class="ilink" href="${href}" target="_blank" rel="noopener noreferrer">${m}</a>`; });
+  t=t.replace(/@@M(\d+)@@/g,(_,i)=>{ const e=mails[+i]; return `<a class="ilink mail" href="mailto:${e}">${e}</a>`; });
+  return t;
+}
+function openPanel(id){
+  const n=NODE[id]; const br=BRANCHOF[id]||id; const brName = NODE[br]?NODE[br].l:"";
+  document.getElementById('peye').textContent = id==="root"?"Ecosystem root": (BRANCHCOLORS[id]?"Branch":(brName));
+  document.getElementById('pname').textContent=n.l;
+  const tag=document.getElementById('ptag'); tag.querySelector('i').style.background=colorOf(id);
+  tag.querySelector('span').textContent=(BRANCHCOLORS[id]||id==="root")?"branch":(n.children?"category":"organisation");
+  const se=document.getElementById('s-entry'), sd=document.getElementById('s-does'), sk=document.getElementById('s-kids');
+  if(n.entry){se.style.display=''; document.getElementById('pentry').innerHTML=linkifyContact(n.entry);} else se.style.display='none';
+  document.getElementById('pdoes').textContent=n.does||"";
+  const sfit=document.getElementById('s-fit');
+  if(isDoorNode(n)){
+    const t=tagsFor(id); sfit.style.display='';
+    document.getElementById('pfit').innerHTML =
+      `For ${t.w.map(x=>WHOLAB[x]).join(', ')} · TRL ${t.t[0]}–${t.t[1]} · ${t.d.map(x=>DOMLAB[x]).join(', ')} · `+
+      `<span style="color:${ACCESSCOL[t.a]}">${ACCESSLAB[t.a]}</span>`;
+  } else sfit.style.display='none';
+  document.getElementById('popps').innerHTML = linkifyProse(oppsFor(id)) + '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>';
+  const kids=document.getElementById('pkids'); kids.innerHTML='';
+  const list=[];
+  if(n.children)n.children.forEach(c=>list.push(c.id));
+  (XLINK[id]||[]).forEach(x=>{if(!list.includes(x))list.push(x);});
+  if(!list.length){sk.style.display='none';}else{
+    sk.style.display='';
+    list.forEach(cid=>{ if(!NODE[cid])return; const b=document.createElement('button'); b.textContent=NODE[cid].l;
+      b.onclick=()=>{ // ensure visible: expand ancestors
+        let cur=PARENT[cid]; while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];}
+        refresh(); select(cid); centerOn(cid);
+      }; kids.appendChild(b); });
+  }
+  renderContacts(id);
+  renderPanelExtras(id);
+  const ps=document.getElementById('paddsub'); if(ps) ps.style.display='';
+  panel.classList.add('open');
+}
+function closePanel(){panel.classList.remove('open');}
+document.getElementById('pclose').onclick=()=>{selected=null;Object.values(nodeEls).forEach(el=>el.classList.remove('sel','dim'));closePanel();};
+
+/* search */
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{
+  const v=q.value.trim().toLowerCase();
+  Object.values(nodeEls).forEach(el=>el.classList.remove('hit','dim'));
+  if(!v)return;
+  let hits=[];
+  Object.values(NODE).forEach(n=>{ if((n.l+' '+(n.does||'')).toLowerCase().includes(v))hits.push(n.id); });
+  // expand ancestors of hits
+  hits.forEach(id=>{let cur=PARENT[id];while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];}});
+  refresh();
+  Object.values(NODE).forEach(n=>{ const el=nodeEls[n.id]; const hit=hits.includes(n.id);
+    if(isVisible(n.id)){ el.classList.toggle('hit',hit); el.classList.toggle('dim',!hit && hits.length>0);} });
+  if(hits.length) centerOn(hits[0],false);
+});
+
+/* legend */
+const lg=document.getElementById('lg');
+TREE.children.forEach(b=>{
+  const row=document.createElement('div'); row.className='lg';
+  row.innerHTML=`<span class="dot" style="background:${BRANCHCOLORS[b.id]}"></span><span class="nm">${b.l}</span><span class="ct">${countLeaves(b)}</span>`;
+  row.onclick=()=>{ collapsed.delete(b.id); refresh(); select(b.id); centerOn(b.id); };
+  lg.appendChild(row);
+});
+
+/* expand / collapse all */
+document.getElementById('expand').onclick=()=>{ collapsed.clear(); refresh(); fit(); };
+document.getElementById('collapse').onclick=()=>{ collapsed.clear(); TREE.children.forEach(b=>collapsed.add(b.id)); refresh(); fit(); };
+
+/* ---------- pan & zoom ---------- */
+const stage=document.getElementById('stage');
+let scale=1,px=0,py=0,dragging=false,dragMoved=false,sx=0,sy=0,spx=0,spy=0;
+function apply(){world.style.transform=`translate(${px}px,${py}px) scale(${scale})`;}
+function fit(){
+  const vw=stage.clientWidth,vh=stage.clientHeight;
+  const w=(BOUNDS.maxx-BOUNDS.minx)||1400, h=(BOUNDS.maxy-BOUNDS.miny)||1400;
+  const pad=140;
+  scale=Math.max(.08,Math.min(1.3,Math.min(vw/(w+pad),vh/(h+pad))));
+  const midx=(BOUNDS.minx+BOUNDS.maxx)/2, midy=(BOUNDS.miny+BOUNDS.maxy)/2;
+  px=vw/2 - midx*scale; py=vh/2 - midy*scale; apply();
+}
+function centerOn(id,zoom=true){ const p=positions[id]; if(!p)return; const vw=stage.clientWidth,vh=stage.clientHeight;
+  if(zoom)scale=Math.max(scale,.5); px=vw/2-p.x*scale; py=vh/2-p.y*scale; apply(); }
+stage.addEventListener('pointerdown',e=>{dragging=true;dragMoved=false;stage.classList.add('drag');sx=e.clientX;sy=e.clientY;spx=px;spy=py;stage.setPointerCapture(e.pointerId);});
+stage.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>4)dragMoved=true;px=spx+dx;py=spy+dy;apply();});
+stage.addEventListener('pointerup',()=>{dragging=false;stage.classList.remove('drag');});
+stage.addEventListener('pointercancel',()=>{dragging=false;stage.classList.remove('drag');});
+stage.addEventListener('wheel',e=>{e.preventDefault();const rect=stage.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const ns=Math.max(.06,Math.min(2.4,scale*(e.deltaY<0?1.12:0.89)));const wx=(mx-px)/scale,wy=(my-py)/scale;px=mx-wx*ns;py=my-wy*ns;scale=ns;apply();},{passive:false});
+document.getElementById('zin').onclick=()=>zoomBtn(1.18);
+document.getElementById('zout').onclick=()=>zoomBtn(.85);
+document.getElementById('fit').onclick=()=>{q.value='';q.dispatchEvent(new Event('input'));fit();};
+function zoomBtn(f){const vw=stage.clientWidth/2,vh=stage.clientHeight/2;const ns=Math.max(.06,Math.min(2.4,scale*f));const wx=(vw-px)/scale,wy=(vh-py)/scale;px=vw-wx*ns;py=vh-wy*ns;scale=ns;apply();}
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){
+  const w=document.getElementById('welcome'), ab=document.getElementById('about'), fd=document.getElementById('finder'), pw=document.getElementById('pathway');
+  const cr=document.getElementById('crm'), an=document.getElementById('addnode');
+  const rec=document.getElementById('reconcile');
+  const lv=document.getElementById('listview'), cmp=document.getElementById('compare'), cor=document.getElementById('correct');
+  if(cor.classList.contains('open')){closeCorrect();return;}
+  if(cmp.classList.contains('open')){cmp.classList.remove('open');return;}
+  if(lv.classList.contains('open')){lv.classList.remove('open');return;}
+  if(rec.classList.contains('open')){closeReconcile();return;}
+  if(an.classList.contains('open')){closeAddNode();return;}
+  if(cr.classList.contains('open')){closeCRM();return;}
+  if(pw.classList.contains('open')){closePathway();return;}
+  if(ab.classList.contains('open')){closeAbout();return;}
+  if(w&&!w.classList.contains('hide')){closeWelcome();return;}
+  if(fd.classList.contains('open')){fd.classList.remove('open');return;}
+  q.value='';q.dispatchEvent(new Event('input'));selected=null;Object.values(nodeEls).forEach(el=>el.classList.remove('sel','dim'));closePanel();
+}});
+
+/* contact chips: copy-to-clipboard fallback + toast (works even where the preview sandbox blocks new-tab / mailto) */
+let toastT;
+function showToast(msg){ const el=document.getElementById('toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),1700); }
+function fallbackCopy(t){ try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);}catch(_){}}
+function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t)); return; } }catch(_){} fallbackCopy(t); }
+document.getElementById('panel').addEventListener('click',e=>{
+  const a=e.target.closest('.cchip,.ilink'); if(!a)return;
+  const val=(a.getAttribute('href')||'').replace(/^mailto:/,'').replace(/^tel:/,'');
+  copyText(val); showToast('Copied  ·  '+val);
+  // navigation is NOT prevented, so links still open normally in a real browser
+});
+
+/* ============ FIND YOUR DOOR — faceted tags + router ============ */
+const WHOLAB={sme:'SMEs',startup:'Start-ups',academic:'Academia',prime:'Primes',investor:'Investors',govmil:'Gov / military'};
+const NEEDLAB={grant:'Grant funding',investment:'Investment',contract:'Route to contract',research:'Research partner',test:'Test & evaluation',export:'Export support',advice:'Advice',procurement:'Procurement'};
+const DOMLAB={air:'Air',land:'Land',maritime:'Maritime',space:'Space',cyber:'Cyber',c4isr:'C4ISR/EW',ai:'AI & autonomy',weapons:'Weapons/effects',nuclear:'Nuclear',medical:'Human/medical',materials:'Materials/mfg',quantum:'Quantum',xcut:'Cross-cutting'};
+const GEOLAB={uk:'UK',nato:'NATO',eu:'Europe',us:'USA',ca:'Canada',au:'Australia',nz:'New Zealand'};
+const ACCESSLAB={open:'Open front door',prime:'Via a prime',invite:'Invite / classified',portal:'Tender portal'};
+const ACCESSCOL={open:'#57D9A3',prime:'#E3A24B',invite:'#E36C6C',portal:'#5FB0E0'};
+const NODOOR=new Set(['sdr','dis','reform','headoffice','ai','uas','deeptech','fiveeyes','ttcp','aukus','gcap','nato_hq','aco','cnad','niag','pesco','asd']);
+function isDoorNode(n){ if(!n||NODOOR.has(n.id))return false; const k=n.children&&n.children.length; return !k || !!TAGS[n.id]; }
+
+const TAGS={
+ ukdi:{w:['sme','startup','academic','prime'],o:['grant','contract','advice'],t:[3,8],d:['xcut'],a:'open',g:'uk'},
+ dasa:{w:['sme','startup','academic'],o:['grant','advice'],t:[3,7],d:['xcut'],a:'open',g:'uk'},
+ dstl:{w:['academic','sme','prime'],o:['research','contract'],t:[1,6],d:['xcut'],a:'open',g:'uk'},
+ daic:{w:['sme','startup','academic','prime'],o:['research','advice'],t:[2,7],d:['ai'],a:'open',g:'uk'},
+ battlelab:{w:['sme','startup','academic'],o:['test','advice'],t:[3,7],d:['xcut'],a:'open',g:'uk'},
+ ploughshare:{w:['startup','sme'],o:['advice'],t:[2,6],d:['xcut'],a:'open',g:'uk'},
+ des:{w:['prime','sme'],o:['contract','procurement'],t:[6,9],d:['xcut'],a:'portal',g:'uk'},
+ fcg:{w:['sme','prime'],o:['contract','research'],t:[4,8],d:['land','ai'],a:'open',g:'uk'},
+ commercial:{w:['prime','sme'],o:['procurement','contract'],t:[5,9],d:['xcut'],a:'portal',g:'uk'},
+ ncsc:{w:['startup','sme','academic'],o:['advice','grant'],t:[3,8],d:['cyber'],a:'open',g:'uk'},
+ innovateuk:{w:['sme','startup','academic'],o:['grant'],t:[2,7],d:['xcut'],a:'open',g:'uk'},
+ nssif:{w:['startup','investor'],o:['investment'],t:[4,9],d:['xcut'],a:'open',g:'uk'},
+ ofsbg:{w:['sme','startup'],o:['advice','contract'],t:[3,9],d:['xcut'],a:'open',g:'uk'},
+ dtep:{w:['sme'],o:['grant'],t:[4,7],d:['xcut'],a:'open',g:'uk'},
+ ukef:{w:['prime','sme'],o:['export'],t:[7,9],d:['xcut'],a:'open',g:'uk'},
+ ode:{w:['prime','sme'],o:['export','advice'],t:[7,9],d:['xcut'],a:'open',g:'uk'},
+ jhub:{w:['sme','startup'],o:['advice','contract'],t:[5,8],d:['xcut'],a:'open',g:'uk'},
+ dcto:{w:['sme','startup'],o:['test','contract'],t:[4,8],d:['maritime','ai'],a:'open',g:'uk'},
+ armyx:{w:['sme','prime'],o:['test','contract'],t:[4,8],d:['land'],a:'open',g:'uk'},
+ rafrco:{w:['prime','sme'],o:['contract'],t:[5,9],d:['air','space'],a:'invite',g:'uk'},
+ digicat:{w:['sme','startup','academic'],o:['research','test','advice'],t:[3,7],d:['ai','cyber','c4isr'],a:'open',g:'uk'},
+ satcat:{w:['sme','startup','academic'],o:['research','test','advice'],t:[3,7],d:['space'],a:'open',g:'uk'},
+ hvmc:{w:['sme','prime','academic'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
+ mtc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
+ ncc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
+ amrc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
+ csac:{w:['sme','startup','academic'],o:['research','test'],t:[3,7],d:['materials','c4isr'],a:'open',g:'uk'},
+ qinetiq:{w:['prime','govmil'],o:['test','research','contract'],t:[3,9],d:['xcut'],a:'open',g:'uk'},
+ roke:{w:['prime','govmil'],o:['research','advice'],t:[3,8],d:['c4isr','cyber'],a:'open',g:'uk'},
+ fnc:{w:['prime','govmil'],o:['research','advice'],t:[3,8],d:['xcut'],a:'open',g:'uk'},
+ rusi:{w:['academic','govmil'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'uk'},
+ atec:{w:['prime','sme'],o:['test'],t:[5,9],d:['air'],a:'portal',g:'uk'},
+ hebrides:{w:['prime','sme'],o:['test'],t:[5,9],d:['weapons','air'],a:'portal',g:'uk'},
+ lulworth:{w:['prime','sme'],o:['test'],t:[5,9],d:['land'],a:'portal',g:'uk'},
+ porton:{w:['academic','prime'],o:['test','research'],t:[3,8],d:['xcut'],a:'open',g:'uk'},
+ shoebury:{w:['prime'],o:['test'],t:[5,9],d:['weapons'],a:'portal',g:'uk'},
+ dorsetpark:{w:['sme','startup'],o:['test','advice'],t:[3,7],d:['xcut'],a:'open',g:'uk'},
+ cranfield:{w:['academic','govmil'],o:['research','advice'],t:[1,5],d:['xcut'],a:'open',g:'uk'},
+ kcl:{w:['academic','govmil'],o:['research','advice'],t:[1,4],d:['xcut'],a:'open',g:'uk'},
+ udrc:{w:['academic'],o:['research'],t:[1,4],d:['c4isr','ai'],a:'open',g:'uk'},
+ unis:{w:['academic','sme'],o:['research'],t:[1,4],d:['xcut'],a:'open',g:'uk'},
+ turing:{w:['academic','sme'],o:['research'],t:[1,5],d:['ai'],a:'open',g:'uk'},
+ npl:{w:['academic','prime'],o:['research','test'],t:[2,7],d:['materials','quantum'],a:'open',g:'uk'},
+ ads:{w:['sme','prime'],o:['advice','grant'],t:[1,9],d:['xcut'],a:'open',g:'uk'},
+ techuk:{w:['sme','startup'],o:['advice'],t:[1,9],d:['cyber','ai'],a:'open',g:'uk'},
+ makeuk:{w:['sme'],o:['advice'],t:[1,9],d:['materials'],a:'open',g:'uk'},
+ diana:{w:['startup','sme','academic'],o:['grant','test','advice'],t:[3,7],d:['xcut'],a:'open',g:'nato'},
+ natofund:{w:['startup','investor'],o:['investment'],t:[4,9],d:['xcut'],a:'open',g:'nato'},
+ nspa:{w:['prime','sme'],o:['procurement','contract'],t:[6,9],d:['xcut'],a:'portal',g:'nato'},
+ ncia:{w:['prime','sme'],o:['procurement','contract'],t:[6,9],d:['c4isr','cyber'],a:'portal',g:'nato'},
+ natoact:{w:['govmil','prime'],o:['research','advice'],t:[3,8],d:['xcut'],a:'invite',g:'nato'},
+ nato_sto:{w:['academic'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'nato'},
+ eda:{w:['sme','academic','prime'],o:['grant','research','contract'],t:[2,8],d:['xcut'],a:'open',g:'eu'},
+ edf:{w:['sme','academic','prime'],o:['grant','research'],t:[2,7],d:['xcut'],a:'open',g:'eu'},
+ defis:{w:['sme','prime'],o:['grant','contract'],t:[2,8],d:['xcut'],a:'open',g:'eu'},
+ us_diu:{w:['startup','sme'],o:['contract','advice'],t:[6,9],d:['xcut'],a:'open',g:'us'},
+ darpa:{w:['academic','startup'],o:['research','grant'],t:[1,5],d:['xcut'],a:'open',g:'us'},
+ afwerx:{w:['startup','sme'],o:['grant','contract'],t:[3,8],d:['air','space'],a:'open',g:'us'},
+ sofwerx:{w:['startup','sme'],o:['advice','contract'],t:[4,8],d:['xcut'],a:'open',g:'us'},
+ onr:{w:['academic'],o:['research','grant'],t:[1,5],d:['maritime'],a:'open',g:'us'},
+ sbir:{w:['sme','startup'],o:['grant'],t:[2,6],d:['xcut'],a:'open',g:'us'},
+ osc:{w:['startup','investor'],o:['investment'],t:[5,9],d:['xcut'],a:'open',g:'us'},
+ iqt:{w:['startup','investor'],o:['investment'],t:[4,9],d:['xcut'],a:'open',g:'us'},
+ ca_ideas:{w:['sme','startup','academic'],o:['grant','test'],t:[2,7],d:['xcut'],a:'open',g:'ca'},
+ au_asca:{w:['sme','startup'],o:['grant','contract'],t:[3,8],d:['xcut'],a:'open',g:'au'},
+ bae:{w:['prime','sme'],o:['contract','procurement'],t:[6,9],d:['xcut'],a:'prime',g:'uk'},
+ rr:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','maritime'],a:'prime',g:'uk'},
+ babcock:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime'],a:'prime',g:'uk'},
+ leonardo:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','c4isr'],a:'prime',g:'uk'},
+ bae_air:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'uk'},
+ bae_subs:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime','nuclear'],a:'prime',g:'uk'},
+ bae_ships:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime'],a:'prime',g:'uk'},
+ bae_land:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'uk'},
+ bae_di:{w:['prime','sme'],o:['contract'],t:[5,9],d:['cyber','c4isr'],a:'prime',g:'uk'},
+ bae_es:{w:['prime','sme'],o:['contract'],t:[5,9],d:['c4isr'],a:'prime',g:'uk'},
+ leo_helicopters:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'uk'},
+ leo_electronics:{w:['prime','sme'],o:['contract'],t:[5,9],d:['c4isr'],a:'prime',g:'uk'},
+ bab_marine:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime'],a:'prime',g:'uk'},
+ afventures:{w:['startup','sme'],o:['grant','contract'],t:[3,8],d:['air','space'],a:'open',g:'us'},
+ spacewerx:{w:['startup','sme'],o:['grant','contract'],t:[3,8],d:['space'],a:'open',g:'us'},
+ afspark:{w:['startup','sme'],o:['advice','contract'],t:[3,7],d:['air'],a:'open',g:'us'},
+ afprime:{w:['startup','sme'],o:['contract'],t:[5,9],d:['air'],a:'open',g:'us'},
+ navalx:{w:['startup','sme'],o:['advice','contract'],t:[4,8],d:['maritime'],a:'open',g:'us'},
+ nrl:{w:['academic'],o:['research'],t:[1,5],d:['maritime'],a:'open',g:'us'},
+ xtech:{w:['sme','startup'],o:['grant','contract'],t:[3,8],d:['land'],a:'open',g:'us'},
+ rccto:{w:['prime','sme'],o:['contract'],t:[5,9],d:['land','space'],a:'invite',g:'us'},
+ afc:{w:['prime','sme'],o:['contract'],t:[4,9],d:['land'],a:'invite',g:'us'},
+ mcwl:{w:['sme','startup'],o:['test','contract'],t:[4,8],d:['land'],a:'open',g:'us'},
+ sco:{w:['prime'],o:['research','contract'],t:[5,9],d:['xcut'],a:'invite',g:'us'},
+ apfit:{w:['sme','startup'],o:['grant'],t:[6,9],d:['xcut'],a:'open',g:'us'},
+ dib:{w:['prime','sme'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+ ssc:{w:['prime','sme'],o:['contract','procurement'],t:[6,9],d:['space'],a:'portal',g:'us'},
+ replicator:{w:['startup','sme'],o:['contract'],t:[6,9],d:['ai'],a:'open',g:'us'},
+ nato_cso:{w:['academic'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'nato'},
+ jatec:{w:['govmil','prime'],o:['advice','research'],t:[4,9],d:['xcut'],a:'invite',g:'nato'},
+ ca_drdc:{w:['academic','sme'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'ca'},
+ ca_pspc:{w:['prime','sme'],o:['procurement','contract'],t:[6,9],d:['xcut'],a:'portal',g:'ca'},
+ au_dstg:{w:['academic','sme'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'au'},
+ au_casg:{w:['prime','sme'],o:['procurement','contract'],t:[6,9],d:['xcut'],a:'portal',g:'au'},
+ nz_dta:{w:['academic','sme'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'nz'},
+ edf:{w:['sme','academic','prime'],o:['grant','research'],t:[2,7],d:['xcut'],a:'open',g:'eu'},
+ lmt:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','space'],a:'prime',g:'us'},
+ rtx:{w:['prime','sme'],o:['contract'],t:[6,9],d:['weapons','c4isr'],a:'prime',g:'us'},
+ noc:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','space'],a:'prime',g:'us'},
+ gd:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land','maritime'],a:'prime',g:'us'},
+ boeing_def:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','space'],a:'prime',g:'us'},
+ anduril_us:{w:['prime','startup'],o:['contract'],t:[6,9],d:['ai'],a:'open',g:'us'},
+ palantir_us:{w:['prime','startup'],o:['contract'],t:[6,9],d:['ai','c4isr'],a:'open',g:'us'},
+ lmt_aero:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'us'},
+ lmt_mfc:{w:['prime','sme'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'us'},
+ lmt_space:{w:['prime','sme'],o:['contract'],t:[6,9],d:['space'],a:'prime',g:'us'},
+ gd_electricboat:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime','nuclear'],a:'prime',g:'us'},
+ gd_landsystems:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'us'},
+ airbus_grp:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','space'],a:'prime',g:'eu'},
+ leonardo_grp:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','c4isr'],a:'prime',g:'eu'},
+ thales_grp:{w:['prime','sme'],o:['contract'],t:[6,9],d:['c4isr','space'],a:'prime',g:'eu'},
+ rheinmetall:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land','weapons'],a:'prime',g:'eu'},
+ kmw:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'eu'},
+ saab_grp:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','maritime'],a:'prime',g:'eu'},
+ mbda_grp:{w:['prime','sme'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
+ kongsberg:{w:['prime','sme'],o:['contract'],t:[6,9],d:['weapons','maritime'],a:'prime',g:'eu'}
+};
+function tagsFor(id){
+  if(TAGS[id]) return TAGS[id];
+  const nd=NODE[id]; if(nd&&nd.tags) return nd.tags;
+  const br=BRANCHOF[id]||id;
+  const d={w:['govmil'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'uk'};
+  if(/^ca_/.test(id)){d.g='ca';d.o=['procurement'];d.a='portal';}
+  else if(/^au_/.test(id)){d.g='au';d.o=['procurement'];d.a='portal';}
+  else if(/^nz_/.test(id)){d.g='nz';d.o=['procurement'];d.a='portal';}
+  else if(/^(fr|de|it|nl|se|no|es|pl)_/.test(id)){d.g='eu';d.o=['procurement','research'];d.a='portal';}
+  switch(br){
+    case 'b_primes': d.w=['prime','sme'];d.o=['contract','procurement'];d.t=[6,9];d.a='prime';break;
+    case 'b_supply': d.w=['sme','prime'];d.o=['contract'];d.t=[5,9];d.a='prime';break;
+    case 'b_tech': d.w=['startup'];d.o=['contract'];d.t=[5,9];d.a='open';break;
+    case 'b_acad': d.w=['academic'];d.o=['research'];d.t=[1,4];d.a='open';break;
+    case 'b_cat': d.w=['sme','academic'];d.o=['research','test'];d.t=[3,8];d.a='open';break;
+    case 'b_te': d.w=['prime','sme'];d.o=['test'];d.t=[5,9];d.a='portal';break;
+    case 'b_nato': d.g=(d.g==='uk'?'nato':d.g);d.o=['procurement'];d.a='portal';break;
+    case 'b_eu': d.g=(d.g==='uk'?'eu':d.g);d.o=['procurement'];d.a='portal';break;
+    case 'b_us': d.g='us';d.o=['procurement'];d.a='portal';break;
+    case 'b_fund': d.o=['investment','grant'];d.w=['startup','sme','investor'];break;
+    case 'b_trade': d.o=['advice'];d.w=['sme','prime'];break;
+  }
+  return d;
+}
+function scoreNode(id,sel){
+  const t=tagsFor(id); let s=0; const why=[];
+  if(sel.role){ if(t.w.includes(sel.role)){s+=3; why.push(WHOLAB[sel.role]);}
+    else if((sel.role==='sme'&&t.w.includes('startup'))||(sel.role==='startup'&&t.w.includes('sme'))){s+=1;}
+    else {s-=0.5;} }
+  let needHit=false;
+  (sel.needs||[]).forEach(nd=>{ const ok=t.o.includes(nd)||(nd==='contract'&&t.o.includes('procurement')); if(ok){s+=3;needHit=true;why.push(NEEDLAB[nd]);} });
+  if((sel.needs||[]).length && !needHit) s-=2.5;
+  if(sel.trl){ const lo=t.t[0],hi=t.t[1]; if(sel.trl>=lo&&sel.trl<=hi){s+=2;why.push('TRL '+lo+'–'+hi+' fit');} else {const dist=sel.trl<lo?lo-sel.trl:sel.trl-hi; s-= dist>=3?2:1;} }
+  if((sel.domains||[]).length){ const isX=t.d.includes('xcut'); const hits=sel.domains.filter(x=>t.d.includes(x)); if(hits.length){s+=Math.min(3,hits.length*2); hits.forEach(x=>why.push(DOMLAB[x]));} else if(isX){s+=0.5;} else {s-=1;} }
+  if(sel.geo&&sel.geo!=='any'){ if(t.g===sel.geo){s+=2;why.push(GEOLAB[sel.geo]);} else {s-=1.5;} }
+  if(sel.role==='sme'||sel.role==='startup'){ if(t.a==='open')s+=1.5; else if(t.a==='prime')s-=1; else if(t.a==='invite')s-=2; }
+  return {s,why};
+}
+function focusNode(id){ let cur=PARENT[id]; while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];} refresh(); select(id); centerOn(id); }
+
+function readFinder(){
+  const sel={role:null,trl:null,domains:[],needs:[],geo:'any'};
+  document.querySelectorAll('#finder .fgroup').forEach(g=>{
+    const facet=g.dataset.facet; const on=[...g.querySelectorAll('.fchip.on')].map(c=>c.dataset.v);
+    if(facet==='role') sel.role=on[0]||null;
+    else if(facet==='trl'){ const v=parseInt(on[0]); sel.trl=isNaN(v)?null:v; }
+    else if(facet==='geo') sel.geo=on[0]||'any';
+    else if(facet==='domains') sel.domains=on;
+    else if(facet==='needs') sel.needs=on;
+  });
+  return sel;
+}
+let lastScored=[],lastSel=null;
+function renderFinderResults(sel){
+  const cands=Object.values(NODE).filter(n=>isDoorNode(n));
+  const scored=cands.map(n=>({id:n.id,...scoreNode(n.id,sel)})).filter(x=>x.s>2).sort((a,b)=>b.s-a.s).slice(0,8);
+  lastScored=scored; lastSel=sel;
+  const box=document.getElementById('finderResults');
+  if(!scored.length){ box.innerHTML=`<div class="fnone">No strong match yet — try widening the region to <b>Any</b>, removing a domain, or selecting fewer needs. The general way in for most UK innovators is <b>UKDI / DASA</b>.</div>`; return; }
+  let html=`<div class="ractions"><button class="rbtn" id="dlCsv">⤓ Download CSV</button><button class="rbtn" id="shareFind">⤴ Share results</button><button class="rbtn" id="saveFind">★ Save search</button></div><div class="rcount">${scored.length} best-fit ${scored.length===1?'door':'doors'}</div>`;
+  scored.forEach(r=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
+    const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
+    const ac=ACCESSCOL[t.a], al=ACCESSLAB[t.a];
+    html+=`<div class="rcard" data-id="${r.id}">
+      <div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${n.l}</span>
+        <span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div>
+      <div class="rwhy">${why}</div>
+      <div class="ract">First step: ${linkifyProse(n.entry||oppsFor(r.id))}</div>
+    </div>`;
+  });
+  const exclude=new Set(scored.map(x=>x.id));
+  const cons=pickConnectors(sel,exclude);
+  if(cons.length){
+    html+=`<div class="rnet"><div class="rnhead">Network — who can point you onward</div><div class="rnsub">These may not fund or buy your thing directly, but they convene the community and can introduce you to who does.</div>`;
+    cons.forEach(c=>{ html+=`<div class="rncard" data-id="${c.id}"><span class="rndot"></span><div><div class="rnname">${NODE[c.id].l}</div><div class="rnwhy">${CONNECT_WHY[c.id]||NODE[c.id].does||''}</div></div></div>`; });
+    html+=`</div>`;
+  }
+  box.innerHTML=html;
+  box.querySelectorAll('.rcard').forEach(card=>{
+    card.addEventListener('click',e=>{ if(e.target.closest('a'))return; const id=card.dataset.id; document.getElementById('finder').classList.remove('open'); focusNode(id); });
+  });
+  box.querySelectorAll('.rncard').forEach(card=>{ card.addEventListener('click',()=>{ document.getElementById('finder').classList.remove('open'); focusNode(card.dataset.id); }); });
+  const dl=document.getElementById('dlCsv'); if(dl) dl.onclick=exportShortlist;
+  const sh=document.getElementById('shareFind'); if(sh) sh.onclick=()=>shareHash(currentFinderHash());
+  const sv=document.getElementById('saveFind'); if(sv) sv.onclick=()=>{ const s=readFinder(); (CRM.saved=CRM.saved||[]).push({name:summariseSel(s),sel:s}); saveCRM(); renderSaved(); showToast('Search saved'); };
+}
+/* finder wiring */
+document.querySelectorAll('#finder .fgroup').forEach(g=>{
+  const single=g.dataset.mode==='single';
+  g.addEventListener('click',e=>{ const c=e.target.closest('.fchip'); if(!c)return;
+    const was=c.classList.contains('on');
+    if(single){ g.querySelectorAll('.fchip').forEach(x=>x.classList.remove('on')); if(!was)c.classList.add('on'); }
+    else c.classList.toggle('on');
+  });
+});
+document.getElementById('findBtn').onclick=()=>{ const f=document.getElementById('finder'); f.classList.toggle('open'); if(f.classList.contains('open'))closePanel(); };
+document.getElementById('fclose').onclick=()=>document.getElementById('finder').classList.remove('open');
+document.getElementById('finderGo').onclick=()=>renderFinderResults(readFinder());
+document.getElementById('finderReset').onclick=()=>{
+  document.querySelectorAll('#finder .fchip').forEach(c=>c.classList.remove('on'));
+  document.querySelector('#finder .fgroup[data-facet="geo"] .fchip[data-v="any"]').classList.add('on');
+  document.getElementById('finderResults').innerHTML='';
+};
+
+/* ---- product layer: deep links, CSV export, welcome & about ---- */
+function firstUrl(s){ const m=(s||'').match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,6}(?:\/[^\s·,)]*)?/i); return m?m[0]:''; }
+function firstEmail(s){ const m=(s||'').match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); return m?m[0]:''; }
+function currentFinderHash(){ const sel=readFinder(); const p=new URLSearchParams();
+  if(sel.role)p.set('role',sel.role); if(sel.trl)p.set('trl',sel.trl); if(sel.geo&&sel.geo!=='any')p.set('geo',sel.geo);
+  if(sel.domains.length)p.set('dom',sel.domains.join(',')); if(sel.needs.length)p.set('need',sel.needs.join(','));
+  return p.toString(); }
+function shareHash(hash){ try{ location.hash=hash; }catch(_){} copyText(location.href); showToast('Link copied · paste to share'); }
+function setChipsFromParams(p){
+  const single=(facet,val)=>{ const g=document.querySelector('#finder .fgroup[data-facet="'+facet+'"]'); if(!g||val==null)return; g.querySelectorAll('.fchip').forEach(c=>c.classList.toggle('on', c.dataset.v===String(val))); };
+  const multi=(facet,vals)=>{ const g=document.querySelector('#finder .fgroup[data-facet="'+facet+'"]'); if(!g)return; g.querySelectorAll('.fchip').forEach(c=>c.classList.toggle('on', vals.includes(c.dataset.v))); };
+  if(p.get('role'))single('role',p.get('role'));
+  if(p.get('trl'))single('trl',p.get('trl'));
+  single('geo',p.get('geo')||'any');
+  multi('domains',(p.get('dom')||'').split(',').filter(Boolean));
+  multi('needs',(p.get('need')||'').split(',').filter(Boolean));
+}
+function applyHash(){
+  const raw=location.hash.replace(/^#/,''); if(!raw)return;
+  let p; try{ p=new URLSearchParams(raw); }catch(_){ return; }
+  const hasFinder=p.get('role')||p.get('dom')||p.get('need')||p.get('trl')||p.get('geo');
+  if(hasFinder){ closeWelcome(); setChipsFromParams(p); document.getElementById('finder').classList.add('open'); renderFinderResults(readFinder()); }
+  const node=p.get('node'); if(node && NODE[node]){ closeWelcome(); focusNode(node); }
+}
+function exportShortlist(){
+  if(!lastScored.length)return;
+  const head=['Rank','Organisation','Branch','Access','TRL band','Domains','Website','Email','Why it matched'];
+  const rows=[head];
+  lastScored.forEach((r,i)=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const brName=(NODE[BRANCHOF[r.id]]||{}).l||'';
+    rows.push([ i+1, n.l, brName, ACCESSLAB[t.a], 'TRL '+t.t[0]+'-'+t.t[1], t.d.map(x=>DOMLAB[x]).join('; '),
+      firstUrl(n.entry), firstEmail(n.entry), [...new Set(r.why)].join('; ') ]); });
+  const csv=rows.map(row=>row.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  try{
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='defence-ecosystem-shortlist.csv';
+    document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},600);
+    showToast('Shortlist downloaded');
+  }catch(_){ showToast('Download blocked here — open the file in a browser'); }
+}
+/* welcome & about */
+function closeWelcome(){ const w=document.getElementById('welcome'); if(w&&!w.classList.contains('hide')){ w.classList.add('hide'); try{sessionStorage.setItem('tde_seen','1');}catch(_){}}}
+function openAbout(){ document.getElementById('about').classList.add('open'); }
+function closeAbout(){ document.getElementById('about').classList.remove('open'); }
+try{ if(sessionStorage.getItem('tde_seen')) document.getElementById('welcome').classList.add('hide'); }catch(_){}
+document.getElementById('wEnter').onclick=closeWelcome;
+document.getElementById('welcome').addEventListener('click',e=>{ if(e.target.id==='welcome')closeWelcome(); });
+document.getElementById('wFind').onclick=()=>{ closeWelcome(); document.getElementById('finder').classList.add('open'); };
+document.getElementById('wExplore').onclick=()=>{ closeWelcome(); };
+document.getElementById('wSearch').onclick=()=>{ closeWelcome(); document.getElementById('q').focus(); };
+document.getElementById('wAboutLink').onclick=openAbout;
+document.getElementById('aboutBtn').onclick=openAbout;
+document.getElementById('aClose').onclick=closeAbout;
+document.getElementById('about').addEventListener('click',e=>{ if(e.target.id==='about')closeAbout(); });
+document.getElementById('plink').onclick=()=>{ if(selected) shareHash('node='+selected); };
+
+/* ---- innovation pathway / valley of death ---- */
+const STAGES=[
+ {n:'Idea & research', trl:'TRL 1–3', b:'Fundamental science and early concepts. Grants and research partners de-risk the idea.',
+   o:['cranfield','sheffield','bristol','dstl','udrc','turing','npl','innovateuk','ukri','darpa','onr','sbir','edf']},
+ {n:'Concept & de-risk', trl:'TRL 3–6', b:'Prototype and prove it against a real defence problem through competitions and accelerators.',
+   o:['dasa','ukdi','daic','battlelab','digicat','satcat','mtc','csac','diana','us_diu','afwerx','ca_ideas','au_asca','dtep','ploughshare']},
+ {n:'Pilot & trials', trl:'TRL 5–7', b:'Get a user. Front-line units and test ranges trial the prototype in a realistic setting.',
+   o:['jhub','dcto','lwc','rafrco','fcg','atec','hebrides','lulworth','dorsetpark','qinetiq','sofwerx']},
+ {n:'Transition & scaling', trl:'TRL 6–8', b:'Crossing from a successful pilot into a funded programme. Most innovations stall here.', valley:true,
+   o:['fcg','des','nssif','natofund','osc','iqt','ofsbg','dijc','bae']},
+ {n:'Procurement & production', trl:'TRL 7–9', b:'Adoption into a programme of record: a contract, a funding line, or integration by a prime. Exports open new markets.',
+   o:['des','sda','commercial','dip','bae','rr','babcock','leonardo','mbda','thales','rbsl','ukef','ode','nspa','ncia']},
+ {n:'In-service & sustainment', trl:'In service', b:'Fielded capability, maintained and upgraded through life — with spiral routes back to earlier stages.',
+   o:['des','babcock','qinetiq','serco','kbr','leidosuk']}
+];
+const HANDOFFS=[
+ 'Win a funded competition or research grant; prove the concept.',
+ 'Secure a prototype contract and a user or command willing to trial it.',
+ 'Get a front-line sponsor and trial evidence — the hand-off toward a programme.',
+ 'Cross into a programme of record: a DE&S/SDA contract or DIP funding line, often bridged by investment and spiral development.',
+ 'Enter service with a through-life support arrangement.'
+];
+function renderPathway(){
+  const row=document.getElementById('prow'); const n=STAGES.length; let html='';
+  STAGES.forEach((s,i)=>{
+    const hue = Math.round(198 - i*(198-34)/(n-1));
+    const sc = s.valley ? '#E36C6C' : hslToHex(hue,58,62);
+    const chips = s.o.filter(id=>NODE[id]).map(id=>`<button class="pchip" data-id="${id}">${NODE[id].l}</button>`).join('');
+    html += `<div class="pstage${s.valley?' valley':''}" style="--sc:${sc}">
+      ${s.valley?'<div class="vrib">⚠ Valley of death</div>':''}
+      <div class="ptrl">${s.trl}</div><div class="phead">${s.n}</div>
+      <div class="pblurb">${s.b}</div><div class="porgs">${chips}</div></div>`;
+    if(i<n-1) html += `<div class="phandoff"><div class="parrow">→</div><div class="phtext">${HANDOFFS[i]}</div></div>`;
+  });
+  row.innerHTML=html;
+  document.getElementById('vcallout').innerHTML =
+    `<div class="vtitle">⚠ Why good technology dies here — and what bridges it</div>`+
+    `<p>A successful trial rarely arrives with a budget line to buy at scale; the user who trialled it often isn't the buyer; and programmes of record are planned years ahead. Innovations that clear the science and prototype stages still stall for want of a funded route into procurement.</p>`+
+    `<p><b>What bridges the gap:</b> a front-line command sponsor with a committed requirement; transition funding (NSSIF, the NATO Innovation Fund, the DIP Modernisation Fund); a prime willing to integrate the capability; and spiral or iterative acquisition so it enters service in increments rather than waiting for a perfect end-state.</p>`;
+  row.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>{ document.getElementById('pathway').classList.remove('open'); focusNode(c.dataset.id); }));
+}
+function openPathway(){ renderPathway(); document.getElementById('pathway').classList.add('open'); }
+function closePathway(){ document.getElementById('pathway').classList.remove('open'); }
+document.getElementById('pathwayBtn').onclick=openPathway;
+document.getElementById('pwClose').onclick=closePathway;
+document.getElementById('pathway').addEventListener('click',e=>{ if(e.target.id==='pathway')closePathway(); });
+
+/* ============ CRM + custom nodes ============ */
+let CRM={contacts:{},custom:[],favs:[],saved:[],verified:{},usersources:{},corrections:[]};
+function saveCRM(){ try{ localStorage.setItem('tde_crm',JSON.stringify(CRM)); }catch(_){}}
+function loadCRM(){ try{ const s=localStorage.getItem('tde_crm'); if(s){ const d=JSON.parse(s); CRM.contacts=d.contacts||{}; CRM.custom=d.custom||[]; CRM.favs=d.favs||[]; CRM.saved=d.saved||[]; CRM.verified=d.verified||{}; CRM.usersources=d.usersources||{}; CRM.corrections=d.corrections||[]; } }catch(_){ } }
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function slugify(s){ return (s||'org').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,24)||'org'; }
+function mergeCustom(){ (CRM.custom||[]).forEach(c=>{ const parent=NODE[c.parent]||TREE; if(!parent.children)parent.children=[]; if(!parent.children.some(x=>x.id===c.id)) parent.children.push({id:c.id,l:c.l,entry:c.entry||'',does:c.does||'',custom:true,tags:c.tags||null}); }); }
+function rebuildAll(){ mergeCustom(); indexTree(); Object.values(nodeEls).forEach(el=>el.remove()); nodeEls={}; build(); saveCRM(); }
+
+function totalContacts(){ let n=0; for(const k in CRM.contacts)n+=(CRM.contacts[k]||[]).length; return n; }
+function updateCrmBadge(){ const b=document.getElementById('crmBadge'); if(!b)return; const n=totalContacts(); b.textContent=n||''; b.style.display=n?'inline-block':'none'; }
+
+function renderContacts(id){
+  const wrap=document.getElementById('pcrm'); if(!wrap)return;
+  const list=CRM.contacts[id]||[];
+  let html=`<div class="crmhead"><span>My contacts</span><span class="crmn">${list.length||''}</span></div>`;
+  html+=list.map((c,i)=>`<div class="ccard"><button class="cdel" data-i="${i}" title="Delete">×</button>
+     <div class="cn">${esc(c.name)}${c.role?` · <span class="cr">${esc(c.role)}</span>`:''}</div>
+     ${(c.email||c.phone)?`<div class="cc">${c.email?`<a class="ilink mail" href="mailto:${esc(c.email)}">${esc(c.email)}</a>`:''}${c.email&&c.phone?' · ':''}${c.phone?esc(c.phone):''}</div>`:''}
+     ${c.note?`<div class="cnote2">${esc(c.note)}</div>`:''}</div>`).join('');
+  html+=`<button class="caddtog" id="caddtog">＋ Log a contact</button>
+   <div class="caddform" id="caddform" style="display:none">
+     <input class="finput" id="cf_name" placeholder="Name *">
+     <input class="finput" id="cf_role" placeholder="Role / title">
+     <input class="finput" id="cf_email" placeholder="Email">
+     <input class="finput" id="cf_phone" placeholder="Phone">
+     <textarea class="finput" id="cf_note" rows="2" placeholder="Notes — what you discussed, next steps…"></textarea>
+     <button class="fgo" id="cf_save">Save contact</button></div>`;
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('.cdel').forEach(b=>b.onclick=()=>{ CRM.contacts[id].splice(+b.dataset.i,1); if(!CRM.contacts[id].length)delete CRM.contacts[id]; saveCRM(); renderContacts(id); updateCrmBadge(); });
+  const tog=document.getElementById('caddtog'); if(tog)tog.onclick=()=>{ const f=document.getElementById('caddform'); f.style.display=f.style.display==='none'?'block':'none'; if(f.style.display==='block')document.getElementById('cf_name').focus(); };
+  const sv=document.getElementById('cf_save'); if(sv)sv.onclick=()=>{
+    const name=v('cf_name'); if(!name){showToast('Name is required');return;}
+    (CRM.contacts[id]=CRM.contacts[id]||[]).push({name,role:v('cf_role'),email:v('cf_email'),phone:v('cf_phone'),note:v('cf_note'),ts:Date.now()});
+    saveCRM(); renderContacts(id); updateCrmBadge(); showToast('Contact saved');
+  };
+}
+
+function openCRM(){
+  const n=totalContacts(); const orgs=Object.keys(CRM.contacts).filter(k=>(CRM.contacts[k]||[]).length);
+  let html=`<div class="crmstat"><b>${n}</b> contact${n===1?'':'s'} logged across <b>${orgs.length}</b> organisation${orgs.length===1?'':'s'}</div>`;
+  if(orgs.length){ html+=orgs.map(id=>`<div class="crmorg" data-id="${id}"><span class="crmdot" style="color:${colorOf(id)};background:${colorOf(id)}"></span><span class="crmname">${NODE[id]?esc(NODE[id].l):esc(id)}</span><span class="crmc">${CRM.contacts[id].length}</span></div>`).join(''); }
+  else html+=`<div class="crmempty">No contacts yet. Open any organisation and use <b>＋ Log a contact</b> to build your directory as you explore the ecosystem.</div>`;
+  if((CRM.custom||[]).length){ html+=`<div class="crmsub">Your added organisations</div>`+CRM.custom.map(c=>`<div class="crmorg" data-id="${c.id}"><span class="crmdot" style="color:${colorOf(c.id)||'#889'};background:${colorOf(c.id)||'#889'}"></span><span class="crmname">${esc(c.l)}</span><button class="crmdel" data-cid="${c.id}">remove</button></div>`).join(''); }
+  document.getElementById('crmBody').innerHTML=html;
+  document.getElementById('crm').classList.add('open');
+  document.querySelectorAll('#crmBody .crmorg').forEach(r=>r.addEventListener('click',e=>{ if(e.target.closest('.crmdel'))return; const id=r.dataset.id; closeCRM(); if(NODE[id])focusNode(id); }));
+  document.querySelectorAll('#crmBody .crmdel').forEach(b=>b.onclick=e=>{ e.stopPropagation(); removeCustom(b.dataset.cid); openCRM(); });
+}
+function closeCRM(){ document.getElementById('crm').classList.remove('open'); }
+function removeCustom(cid){
+  CRM.custom=(CRM.custom||[]).filter(c=>c.id!==cid);
+  for(const id in NODE){ const nd=NODE[id]; if(nd.children){ const i=nd.children.findIndex(x=>x.id===cid); if(i>=0)nd.children.splice(i,1); } }
+  delete CRM.contacts[cid];
+  rebuildAll(); updateCrmBadge();
+}
+function exportCRM(){ try{ const blob=new Blob([JSON.stringify(CRM,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='defence-ecosystem-crm.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); showToast('CRM exported'); }catch(_){ showToast('Export blocked here — open the file in a browser'); } }
+let pendingImport=null;
+function importCRM(file){ const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); pendingImport={contacts:d.contacts||{},custom:d.custom||[]}; closeCRM(); openReconcile(); }catch(_){ showToast('Could not read that file'); } }; r.readAsText(file); }
+
+function openAddNode(presetParent){
+  const sel=document.getElementById('an_parent'); sel.innerHTML='';
+  const opt=(id,label,indent)=>{ const o=document.createElement('option'); o.value=id; o.textContent=(indent?'   › ':'')+label; sel.appendChild(o); };
+  opt('root','— Top level —',false);
+  TREE.children.forEach(b=>{ opt(b.id,b.l,false); (b.children||[]).forEach(c=>{ opt(c.id,c.l,true); (c.children||[]).forEach(g=>opt(g.id,g.l,true)); }); });
+  sel.value = presetParent && NODE[presetParent] ? presetParent : 'root';
+  document.getElementById('an_name').value=''; document.getElementById('an_does').value=''; document.getElementById('an_entry').value='';
+  document.getElementById('an_dupes').innerHTML=''; document.getElementById('an_access').value='';
+  document.querySelectorAll('#an_dom .fchip,#an_offer .fchip').forEach(c=>c.classList.remove('on'));
+  dupeConfirmed=false; document.getElementById('an_save').textContent='Add to map';
+  document.getElementById('addnode').classList.add('open');
+  setTimeout(()=>document.getElementById('an_name').focus(),50);
+}
+function closeAddNode(){ document.getElementById('addnode').classList.remove('open'); }
+function saveNewNode(){
+  const name=v('an_name'); if(!name){showToast('Name is required');return;}
+  const sims=findSimilar(name,1);
+  if(sims.length && sims[0].score>=0.80 && !dupeConfirmed){ showReconcileAdd(sims[0].id); return; }
+  const parent=document.getElementById('an_parent').value||'root';
+  let base='u-'+slugify(name), id=base, k=1; while(NODE[id]||(CRM.custom||[]).some(c=>c.id===id)){ id=base+'-'+(k++); }
+  const dom=chipVals('an_dom'), offer=chipVals('an_offer'), access=document.getElementById('an_access').value;
+  const tags = (dom.length||offer.length||access) ? {
+    w:deriveWho(offer), o:offer.length?offer:['advice'],
+    t: offer.includes('research')?[1,5]:(offer.includes('test')?[4,8]:[3,8]),
+    d: dom.length?dom:['xcut'], a: access||'open', g: geoOfBranch(parent)
+  } : null;
+  CRM.custom=CRM.custom||[]; CRM.custom.push({id,l:name,parent,entry:v('an_entry'),does:v('an_does'),tags});
+  rebuildAll(); updateCrmBadge(); closeAddNode(); focusNode(id); showToast('Added: '+name);
+  document.getElementById('an_save').textContent='Add to map'; dupeConfirmed=false;
+}
+document.getElementById('crmBtn').onclick=openCRM;
+document.getElementById('crmClose').onclick=closeCRM;
+document.getElementById('crm').addEventListener('click',e=>{ if(e.target.id==='crm')closeCRM(); });
+document.getElementById('crmExport').onclick=exportCRM;
+document.getElementById('crmImport').onclick=()=>document.getElementById('crmFile').click();
+document.getElementById('crmFile').onchange=e=>{ if(e.target.files[0])importCRM(e.target.files[0]); e.target.value=''; };
+document.getElementById('crmAdd').onclick=()=>{ closeCRM(); openAddNode(null); };
+document.getElementById('an_save').onclick=saveNewNode;
+document.getElementById('an_cancel').onclick=closeAddNode;
+document.getElementById('an_cancel2').onclick=closeAddNode;
+document.getElementById('addnode').addEventListener('click',e=>{ if(e.target.id==='addnode')closeAddNode(); });
+document.getElementById('paddsub').onclick=()=>{ if(selected)openAddNode(selected); };
+
+/* ---- deduplication, network-of-networks connectors, CSV ---- */
+let dupeConfirmed=false;
+const STOP=new Set(['the','of','and','for','uk','ltd','limited','plc','group','defence','systems','international','company','co','inc','a','an']);
+function normTokens(s){ return new Set(String(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w))); }
+function simScore(a,b){ const A=normTokens(a),B=normTokens(b); if(!A.size||!B.size)return 0; let inter=0; A.forEach(x=>{if(B.has(x))inter++;}); const uni=A.size+B.size-inter; const j=inter/uni; const sub=([...A].every(x=>B.has(x))||[...B].every(x=>A.has(x))); return Math.min(1, j+(sub?0.3:0)); }
+function findSimilar(name,limit){ const out=[]; for(const id in NODE){ if(id==='root'||/^b_|^c_/.test(id))continue; const sc=simScore(name,NODE[id].l); if(sc>=0.5) out.push({id,score:sc}); } out.sort((a,b)=>b.score-a.score); return out.slice(0,limit||4); }
+function chipVals(gid){ return [...document.querySelectorAll('#'+gid+' .fchip.on')].map(c=>c.dataset.v); }
+function deriveWho(offer){ offer=offer||[]; if(offer.includes('investment'))return ['startup','investor']; if(offer.includes('research'))return ['academic','sme']; if(offer.includes('grant'))return ['sme','startup','academic']; return ['sme','prime']; }
+function geoOfBranch(pid){ if(/^ca_/.test(pid))return 'ca'; if(/^au_/.test(pid))return 'au'; if(/^nz_/.test(pid))return 'nz'; const br=BRANCHOF[pid]||pid; if(br==='b_us')return 'us'; if(br==='b_eu')return 'eu'; if(br==='b_nato')return 'nato'; return 'uk'; }
+function refreshDupes(){ const box=document.getElementById('an_dupes'); if(!box)return; const name=v('an_name'); dupeConfirmed=false; const sv=document.getElementById('an_save'); if(sv)sv.textContent='Add to map';
+  if(name.length<3){box.innerHTML='';return;} const sims=findSimilar(name,4); if(!sims.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="dupwarn"><div class="dupt">Possible existing entries — check before adding a duplicate:</div>`+sims.map(s=>`<div class="dupitem" data-id="${s.id}"><span>${esc(NODE[s.id].l)}</span><span class="dupgo">open →</span></div>`).join('')+`</div>`;
+  box.querySelectorAll('.dupitem').forEach(it=>it.onclick=()=>{ closeAddNode(); focusNode(it.dataset.id); });
+}
+const CONNECTORS=['ads','techuk','makeuk','smi','growth','dijc','ofsbg','rusi','battlelab','dorsetpark','digicat','satcat','c_hvmc','nstix','dsei','natoact','eda'];
+const CONNECT_WHY={
+ ads:'Represents 1,700+ aerospace, defence & security firms — supply-chain introductions and events.',
+ techuk:'Convenes the defence-tech sector — routes you to members, buyers and working groups.',
+ makeuk:'SME manufacturing network and MOD interlocutor.',
+ smi:'Maritime & naval supply-chain network.',
+ rdsc:'Regional clusters linking SMEs, primes, academia and local government.',
+ growth:'Place-based deals connecting regional industry with government.',
+ dijc:'The top-table MOD–industry forum — shapes who is in the room.',
+ ofsbg:'The MOD front door for small firms — points you to the right route.',
+ rusi:'Convening and analysis — introductions across the community.',
+ battlelab:'Open collaboration hub — co-locates innovators, MOD and primes.',
+ dorsetpark:'Secure campus and cluster of defence firms.',
+ digicat:'Brokers deep-tech innovators into defence programmes.',
+ satcat:'Connects the space community to defence users.',
+ c_hvmc:'Your link into the manufacturing scale-up network.',
+ nstix:'Bridges national-security science & technology across government.',
+ dsei:'Major exhibition — a marketplace to meet the whole ecosystem.',
+ natoact:'Allied warfare-development hub — gateway to NATO innovation and DIANA.',
+ eda:'EU capability network — connects national agencies and industry.'
+};
+function pickConnectors(sel,exclude){ const region=(sel.geo&&sel.geo!=='any')?sel.geo:'uk';
+  return CONNECTORS.filter(id=>NODE[id]&&!exclude.has(id)).map(id=>{ const t=tagsFor(id); let s=1;
+    if(t.g===region)s+=2; else if(t.g==='uk'&&region==='uk')s+=1; else if(t.g!=='uk'&&region==='uk')s-=1;
+    if((sel.domains||[]).length){ if(t.d.includes('xcut'))s+=0.4; else if(sel.domains.some(d=>t.d.includes(d)))s+=1.5; }
+    return {id,s}; }).sort((a,b)=>b.s-a.s).slice(0,4); }
+function downloadFile(name,text,type){ try{ const blob=new Blob([text],{type:type||'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }catch(_){ showToast('Download blocked here — open the file in a browser'); } }
+function exportCRMCsv(){ const head=['Organisation','Area','Contact','Role','Email','Phone','Notes','Logged']; const rows=[head];
+  for(const id in CRM.contacts){ const org=NODE[id]?NODE[id].l:id; const area=(NODE[BRANCHOF[id]]||{}).l||''; (CRM.contacts[id]||[]).forEach(c=>rows.push([org,area,c.name,c.role||'',c.email||'',c.phone||'',c.note||'',c.ts?new Date(c.ts).toISOString().slice(0,10):''])); }
+  if(rows.length===1){ showToast('No contacts to export yet'); return; }
+  const csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  downloadFile('defence-ecosystem-contacts.csv',csv,'text/csv;charset=utf-8'); showToast('Contacts CSV downloaded');
+}
+['an_dom','an_offer'].forEach(gid=>{ const g=document.getElementById(gid); if(g)g.addEventListener('click',e=>{ const c=e.target.closest('.fchip'); if(c)c.classList.toggle('on'); }); });
+(function(){ const nm=document.getElementById('an_name'); if(nm){ let t; nm.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(refreshDupes,180); }); } })();
+document.getElementById('crmCsv').onclick=exportCRMCsv;
+
+/* ---- reconcile: merge-or-keep-both at add time, and import merge/replace ---- */
+function showReconcileAdd(id){
+  const box=document.getElementById('an_dupes');
+  box.innerHTML=`<div class="dupwarn"><div class="dupt">“${esc(NODE[id].l)}” already exists — avoid a duplicate:</div>
+    <div class="recrow"><button class="rbtn" id="rc_merge">Log my contact there</button><button class="rbtn" id="rc_both">Keep both</button><button class="rbtn" id="rc_cancel">Cancel</button></div></div>`;
+  document.getElementById('rc_merge').onclick=()=>{ closeAddNode(); focusNode(id); setTimeout(()=>{ const f=document.getElementById('caddform'); if(f){ f.style.display='block'; const nm=document.getElementById('cf_name'); if(nm)nm.focus(); } },150); };
+  document.getElementById('rc_both').onclick=()=>{ dupeConfirmed=true; saveNewNode(); };
+  document.getElementById('rc_cancel').onclick=()=>{ box.innerHTML=''; };
+}
+function openReconcile(){
+  const d=pendingImport; if(!d)return;
+  let cc=0,orgs=0; for(const k in d.contacts){ const n=(d.contacts[k]||[]).length; if(n){orgs++;cc+=n;} }
+  const dups=(d.custom||[]).map(c=>{ const s=findSimilar(c.l,1); return (s.length&&s[0].score>=0.86)?{name:c.l,match:(NODE[s[0].id]?NODE[s[0].id].l:s[0].id)}:null; }).filter(Boolean);
+  let html=`<div class="crmstat">This file has <b>${cc}</b> contact${cc===1?'':'s'} across <b>${orgs}</b> organisation${orgs===1?'':'s'}, and <b>${(d.custom||[]).length}</b> added organisation${(d.custom||[]).length===1?'':'s'}.</div>`;
+  if(dups.length){ html+=`<div class="crmsub">Already in your map — folded in, not duplicated</div>`+dups.map(x=>`<div class="dupitem"><span>${esc(x.name)}</span><span class="dupgo">→ ${esc(x.match)}</span></div>`).join(''); }
+  html+=`<div class="crmnote"><b>Merge</b> keeps your current CRM and adds this file in, skipping duplicate contacts and folding matching organisations together. <b>Replace</b> discards your current CRM and uses this file instead.</div>`;
+  document.getElementById('recBody').innerHTML=html;
+  document.getElementById('reconcile').classList.add('open');
+}
+function closeReconcile(){ document.getElementById('reconcile').classList.remove('open'); pendingImport=null; }
+function doImport(mode){
+  const d=pendingImport; if(!d){closeReconcile();return;}
+  if(mode==='replace'){ CRM.contacts=d.contacts||{}; CRM.custom=d.custom||[]; }
+  else {
+    const remap={};
+    (d.custom||[]).forEach(c=>{ const s=findSimilar(c.l,1);
+      if(s.length&&s[0].score>=0.86){ remap[c.id]=s[0].id; }
+      else { let id=c.id,k=1; while(NODE[id]||(CRM.custom||[]).some(x=>x.id===id)){ id=c.id+'-'+(k++); } remap[c.id]=id; CRM.custom.push(Object.assign({},c,{id})); } });
+    mergeCustom(); indexTree();
+    for(const oid in (d.contacts||{})){ const target=remap[oid]||oid; const cur=CRM.contacts[target]=CRM.contacts[target]||[]; (d.contacts[oid]||[]).forEach(ct=>{ if(!cur.some(x=>x.name===ct.name&&(x.email||'')===(ct.email||''))) cur.push(ct); }); }
+  }
+  rebuildAll(); updateCrmBadge(); closeReconcile(); openCRM(); showToast(mode==='merge'?'CRM merged':'CRM replaced');
+}
+document.getElementById('recMerge').onclick=()=>doImport('merge');
+document.getElementById('recReplace').onclick=()=>doImport('replace');
+document.getElementById('recCancel').onclick=closeReconcile;
+document.getElementById('recCancel2').onclick=closeReconcile;
+document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
+
+/* ================= v2 engine ================= */
+let DATA_AS_OF='August 2026';
+const SOURCES={
+ dasa:'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
+ des:'https://des.mod.uk', dstl:'https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory',
+ ukdi:'https://www.gov.uk/government/organisations/uk-defence-innovation', us_diu:'https://www.diu.mil',
+ diana:'https://www.diana.nato.int', natofund:'https://www.nif.fund'
+};
+/* ---- themes ---- */
+const THEMES=['dark','light','hc']; let themeIdx=0;
+function applyTheme(){ const t=THEMES[themeIdx]; document.documentElement.setAttribute('data-theme',t);
+  const b=document.getElementById('themeBtn'); if(b) b.textContent = t==='dark'?'◐ Dark':(t==='light'?'◑ Light':'◒ High-contrast');
+  try{ localStorage.setItem('tde_theme',t); }catch(_){}}
+document.getElementById('themeBtn').onclick=()=>{ themeIdx=(themeIdx+1)%THEMES.length; applyTheme(); };
+
+/* ---- favourites & compare ---- */
+function isFav(id){ return (CRM.favs||[]).includes(id); }
+function toggleFav(id){ if(isFav(id)) CRM.favs=CRM.favs.filter(x=>x!==id); else (CRM.favs=CRM.favs||[]).push(id); saveCRM(); }
+let compareList=[];
+function updateCompareBadge(){ const b=document.getElementById('compareBadge'); if(!b)return; b.textContent=compareList.length||''; b.style.display=compareList.length?'inline-block':'none'; }
+function togglePin(id){ if(compareList.includes(id)){compareList=compareList.filter(x=>x!==id);} else { if(compareList.length>=4){showToast('Compare holds four — remove one first');return;} compareList.push(id); } updateCompareBadge(); }
+
+/* ---- panel extras: source, verify, actions ---- */
+function verifiedLine(id){ const uv=(CRM.verified||{})[id];
+  let s=`Organisation facts: data as of <b>${DATA_AS_OF}</b>.`;
+  if(uv) s+=` You marked this verified on <b>${uv}</b>.`;
+  return s; }
+function renderPanelExtras(id){
+  const src=(CRM.usersources||{})[id]||SOURCES[id];
+  document.getElementById('psource').innerHTML = src?`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Source</span> ${linkifyProse(src)}`:'';
+  document.getElementById('pverify').innerHTML = verifiedLine(id);
+  const a=document.getElementById('pactions');
+  a.innerHTML =
+    `<button class="pabtn ${isFav(id)?'on':''}" id="pa_fav">${isFav(id)?'★ Favourited':'☆ Favourite'}</button>`+
+    `<button class="pabtn ${compareList.includes(id)?'on':''}" id="pa_pin">${compareList.includes(id)?'⇄ In compare':'⇄ Compare'}</button>`+
+    `<button class="pabtn" id="pa_ver">✓ Mark verified</button>`+
+    `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`;
+  document.getElementById('pa_fav').onclick=()=>{ toggleFav(id); renderPanelExtras(id); showToast(isFav(id)?'Added to favourites':'Removed from favourites'); };
+  document.getElementById('pa_pin').onclick=()=>{ togglePin(id); renderPanelExtras(id); };
+  document.getElementById('pa_ver').onclick=()=>{ (CRM.verified=CRM.verified||{})[id]=new Date().toISOString().slice(0,10); saveCRM(); renderPanelExtras(id); showToast('Marked verified today'); };
+  document.getElementById('pa_cor').onclick=()=>openCorrect(id);
+}
+
+/* ---- suggest a correction ---- */
+let correctId=null;
+function openCorrect(id){ correctId=id; document.getElementById('corTitle').textContent='Correction — '+(NODE[id]?NODE[id].l:id);
+  document.getElementById('cor_text').value=''; document.getElementById('cor_name').value='';
+  document.getElementById('correct').classList.add('open'); setTimeout(()=>document.getElementById('cor_text').focus(),50); }
+function closeCorrect(){ document.getElementById('correct').classList.remove('open'); }
+document.getElementById('cor_cancel').onclick=closeCorrect;
+document.getElementById('corClose').onclick=closeCorrect;
+document.getElementById('correct').addEventListener('click',e=>{ if(e.target.id==='correct')closeCorrect(); });
+document.getElementById('cor_save').onclick=()=>{
+  const text=v('cor_text'); if(!text){showToast('Add the correction first');return;}
+  const note={organisation:NODE[correctId]?NODE[correctId].l:correctId, id:correctId, field:document.getElementById('cor_field').value, correction:text, from:v('cor_name'), date:new Date().toISOString().slice(0,10)};
+  (CRM.corrections=CRM.corrections||[]).push(note); saveCRM();
+  downloadFile('correction-'+correctId+'.json', JSON.stringify(note,null,2), 'application/json');
+  closeCorrect(); showToast('Correction downloaded — email it to the maintainer');
+};
+
+/* ---- explore / list view with facet filters ---- */
+const LVF={ dom:new Set(), trl:null, access:new Set(), geo:null, favs:false, q:'' };
+let lvSort={col:'name',dir:1};
+function lvMatch(id){ const t=tagsFor(id);
+  if(LVF.favs && !isFav(id)) return false;
+  if(LVF.dom.size){ const ok=t.d.includes('xcut')||[...LVF.dom].some(d=>t.d.includes(d)); if(!ok)return false; }
+  if(LVF.trl){ const [lo,hi]=LVF.trl; if(hi<t.t[0]||lo>t.t[1])return false; }
+  if(LVF.access.size && !LVF.access.has(t.a)) return false;
+  if(LVF.geo && t.g!==LVF.geo) return false;
+  if(LVF.q){ const n=NODE[id]; if(!((n.l+' '+(n.does||'')).toLowerCase().includes(LVF.q))) return false; }
+  return true;
+}
+function buildLvFilters(){
+  const box=document.getElementById('lvFilters');
+  const doms=['air','land','maritime','space','cyber','c4isr','ai','weapons','nuclear','medical','materials'];
+  const trls=[['1-3',[1,3]],['4-6',[4,6]],['7-9',[7,9]]];
+  const acc=['open','prime','invite','portal']; const geos=['uk','nato','eu','us','ca','au','nz'];
+  let h=`<div class="lvfg"><input class="lvsearch" id="lvSearch" placeholder="Search…" aria-label="Search organisations"></div>`;
+  h+=`<div class="lvfg"><span class="lvlab">Domain</span>`+doms.map(d=>`<button class="lvchip" data-k="dom" data-v="${d}">${DOMLAB[d]}</button>`).join('')+`</div>`;
+  h+=`<div class="lvfg"><span class="lvlab">TRL</span>`+trls.map(t=>`<button class="lvchip" data-k="trl" data-v="${t[0]}">${t[0]}</button>`).join('')+`</div>`;
+  h+=`<div class="lvfg"><span class="lvlab">Access</span>`+acc.map(a=>`<button class="lvchip" data-k="access" data-v="${a}">${ACCESSLAB[a]}</button>`).join('')+`</div>`;
+  h+=`<div class="lvfg"><span class="lvlab">Region</span>`+geos.map(g=>`<button class="lvchip" data-k="geo" data-v="${g}">${GEOLAB[g]}</button>`).join('')+`</div>`;
+  h+=`<div class="lvfg"><button class="lvchip" data-k="favs" data-v="1">★ Favourites</button></div>`;
+  h+=`<div class="lvfg"><button class="lvbtn" id="lvApply">Apply to map</button><button class="lvbtn" id="lvClear">Clear</button><button class="lvbtn" id="lvCsv">⤓ CSV</button></div>`;
+  box.innerHTML=h;
+  box.querySelectorAll('.lvchip').forEach(c=>c.onclick=()=>{ const k=c.dataset.k,val=c.dataset.v;
+    if(k==='trl'){ const map={'1-3':[1,3],'4-6':[4,6],'7-9':[7,9]}; const cur=LVF.trl&&LVF.trl[0]==map[val][0]; LVF.trl=cur?null:map[val]; box.querySelectorAll('[data-k=trl]').forEach(x=>x.classList.toggle('on',!cur&&x===c)); }
+    else if(k==='geo'){ const cur=LVF.geo===val; LVF.geo=cur?null:val; box.querySelectorAll('[data-k=geo]').forEach(x=>x.classList.toggle('on',!cur&&x===c)); }
+    else if(k==='favs'){ LVF.favs=!LVF.favs; c.classList.toggle('on',LVF.favs); }
+    else { const set=LVF[k]; if(set.has(val)){set.delete(val);c.classList.remove('on');} else {set.add(val);c.classList.add('on');} }
+    renderLvTable();
+  });
+  const si=document.getElementById('lvSearch'); si.value=LVF.q; let t; si.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ LVF.q=si.value.trim().toLowerCase(); renderLvTable(); },150); };
+  document.getElementById('lvApply').onclick=()=>{ applyMapFilter(); document.getElementById('listview').classList.remove('open'); showToast('Filter applied to map — press FIT or Clear'); };
+  document.getElementById('lvClear').onclick=()=>{ LVF.dom.clear();LVF.access.clear();LVF.trl=null;LVF.geo=null;LVF.favs=false;LVF.q=''; clearMapFilter(); buildLvFilters(); renderLvTable(); };
+  document.getElementById('lvCsv').onclick=exportListCsv;
+}
+function lvRows(){ const ids=Object.values(NODE).filter(n=>isDoorNode(n)).map(n=>n.id).filter(lvMatch);
+  ids.sort((a,b)=>{ let x,y; if(lvSort.col==='name'){x=NODE[a].l;y=NODE[b].l;} else if(lvSort.col==='area'){x=(NODE[BRANCHOF[a]]||{}).l||'';y=(NODE[BRANCHOF[b]]||{}).l||'';} else if(lvSort.col==='access'){x=tagsFor(a).a;y=tagsFor(b).a;} else {x=tagsFor(a).t[0];y=tagsFor(b).t[0];} return (x>y?1:x<y?-1:0)*lvSort.dir; });
+  return ids;
+}
+function renderLvTable(){
+  const ids=lvRows();
+  const th=(c,label)=>`<th data-c="${c}" tabindex="0" role="button" aria-label="Sort by ${label}">${label}${lvSort.col===c?(lvSort.dir>0?' ▲':' ▼'):''}</th>`;
+  let h=`<thead><tr><th aria-label="Favourite"></th>${th('name','Organisation')}${th('area','Area')}${th('access','Access')}${th('trl','TRL')}<th>Domains</th><th>Contact</th><th aria-label="Compare"></th></tr></thead><tbody>`;
+  ids.forEach(id=>{ const t=tagsFor(id); const n=NODE[id]; const ac=ACCESSCOL[t.a];
+    h+=`<tr data-id="${id}" tabindex="0" role="button" aria-label="${esc(n.l)}">`+
+      `<td><button class="lvstar ${isFav(id)?'on':''}" data-act="fav" aria-label="Favourite">${isFav(id)?'★':'☆'}</button></td>`+
+      `<td><div class="lvname">${esc(n.l)}</div></td>`+
+      `<td class="lvarea">${esc((NODE[BRANCHOF[id]]||{}).l||'')}</td>`+
+      `<td><span class="lvbadge" style="color:${ac};border-color:${ac}55">${ACCESSLAB[t.a]}</span></td>`+
+      `<td>${t.t[0]}–${t.t[1]}</td>`+
+      `<td>${t.d.map(x=>DOMLAB[x]).join(', ')}</td>`+
+      `<td>${firstUrl(n.entry)?`<a class="ilink" href="https://${firstUrl(n.entry).replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">site</a>`:''}${firstUrl(n.entry)&&firstEmail(n.entry)?' · ':''}${firstEmail(n.entry)?`<a class="ilink mail" href="mailto:${firstEmail(n.entry)}">email</a>`:''}</td>`+
+      `<td><button class="lvpin ${compareList.includes(id)?'on':''}" data-act="pin" aria-label="Add to compare">⇄</button></td></tr>`;
+  });
+  h+=`</tbody>`;
+  const tbl=document.getElementById('lvTable'); tbl.innerHTML=h;
+  tbl.querySelectorAll('thead th[data-c]').forEach(th=>{ const go=()=>{ const c=th.dataset.c; if(lvSort.col===c)lvSort.dir*=-1; else {lvSort.col=c;lvSort.dir=1;} renderLvTable(); }; th.onclick=go; th.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}}; });
+  tbl.querySelectorAll('tbody tr').forEach(tr=>{ const id=tr.dataset.id;
+    const open=()=>{ document.getElementById('listview').classList.remove('open'); focusNode(id); };
+    tr.addEventListener('click',e=>{ const a=e.target.closest('[data-act]'); if(a){ if(a.dataset.act==='fav'){toggleFav(id);renderLvTable();} else {togglePin(id);renderLvTable();} return; } open(); });
+    tr.addEventListener('keydown',e=>{ if(e.key==='Enter'){open();} });
+  });
+}
+function openList(){ buildLvFilters(); renderLvTable(); document.getElementById('listview').classList.add('open'); }
+function exportListCsv(){ const ids=lvRows(); if(!ids.length){showToast('Nothing to export');return;}
+  const rows=[['Organisation','Area','Access','TRL','Domains','Website','Email']];
+  ids.forEach(id=>{ const t=tagsFor(id),n=NODE[id]; rows.push([n.l,(NODE[BRANCHOF[id]]||{}).l||'',ACCESSLAB[t.a],'TRL '+t.t[0]+'-'+t.t[1],t.d.map(x=>DOMLAB[x]).join('; '),firstUrl(n.entry),firstEmail(n.entry)]); });
+  downloadFile('defence-ecosystem-list.csv','\ufeff'+rows.map(r=>r.map(x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8'); showToast('List exported'); }
+document.getElementById('listBtn').onclick=openList;
+document.getElementById('lvClose').onclick=()=>document.getElementById('listview').classList.remove('open');
+document.getElementById('listview').addEventListener('click',e=>{ if(e.target.id==='listview')document.getElementById('listview').classList.remove('open'); });
+
+/* map filtering */
+function applyMapFilter(){ Object.values(nodeEls).forEach(el=>{ const id=el.dataset.id; if(!isDoorNode(NODE[id])){el.classList.remove('dim');return;} el.classList.toggle('dim',!lvMatch(id)); }); }
+function clearMapFilter(){ Object.values(nodeEls).forEach(el=>el.classList.remove('dim')); }
+
+/* ---- compare view ---- */
+function openCompare(){ renderCompare(); document.getElementById('compare').classList.add('open'); }
+function renderCompare(){
+  const body=document.getElementById('cmpBody');
+  if(!compareList.length){ body.innerHTML=`<div class="cmpempty">Nothing pinned yet. Add organisations with the <b>⇄ Compare</b> button on any panel, result, or list row (up to four), then reopen this to see them side by side.</div>`; return; }
+  const rowsDef=[['Area',id=>esc((NODE[BRANCHOF[id]]||{}).l||'')],
+    ['Access',id=>{const t=tagsFor(id);return `<span class="lvbadge" style="color:${ACCESSCOL[t.a]};border-color:${ACCESSCOL[t.a]}55">${ACCESSLAB[t.a]}</span>`;}],
+    ['TRL band',id=>{const t=tagsFor(id);return 'TRL '+t.t[0]+'–'+t.t[1];}],
+    ['Domains',id=>tagsFor(id).d.map(x=>DOMLAB[x]).join(', ')],
+    ['Best for',id=>tagsFor(id).w.map(x=>WHOLAB[x]).join(', ')],
+    ['Offers',id=>tagsFor(id).o.map(x=>NEEDLAB[x]||x).join(', ')],
+    ['Contact',id=>{const e=NODE[id].entry;return `${firstUrl(e)?`<a class="ilink" href="https://${firstUrl(e).replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">${firstUrl(e)}</a>`:''}${firstEmail(e)?`<br><a class="ilink mail" href="mailto:${firstEmail(e)}">${firstEmail(e)}</a>`:''}`;}],
+    ['Your contacts',id=>String(((CRM.contacts||{})[id]||[]).length)]];
+  let h=`<table class="cmptable"><thead><tr><th class="rl"></th>`+compareList.map(id=>`<th>${esc(NODE[id].l)}<button class="cmprm" data-id="${id}">×</button></th>`).join('')+`</tr></thead><tbody>`;
+  rowsDef.forEach(rd=>{ h+=`<tr><td class="rl">${rd[0]}</td>`+compareList.map(id=>`<td>${rd[1](id)||'—'}</td>`).join('')+`</tr>`; });
+  h+=`</tbody></table>`;
+  body.innerHTML=h;
+  body.querySelectorAll('.cmprm').forEach(b=>b.onclick=()=>{ togglePin(b.dataset.id); renderCompare(); });
+}
+document.getElementById('compareBtn').onclick=openCompare;
+document.getElementById('cmpClose').onclick=()=>document.getElementById('compare').classList.remove('open');
+document.getElementById('compare').addEventListener('click',e=>{ if(e.target.id==='compare')document.getElementById('compare').classList.remove('open'); });
+
+/* ---- saved searches (in finder) ---- */
+function summariseSel(sel){ const p=[]; if(sel.role)p.push(WHOLAB[sel.role]); if(sel.trl)p.push('TRL'+sel.trl); (sel.domains||[]).forEach(d=>p.push(DOMLAB[d])); (sel.needs||[]).forEach(n=>p.push(NEEDLAB[n])); if(sel.geo&&sel.geo!=='any')p.push(GEOLAB[sel.geo]); return p.join(' · ')||'Any'; }
+function renderSaved(){ const box=document.getElementById('savedBox'); if(!box)return; const list=CRM.saved||[];
+  box.innerHTML = list.length?(`<div class="crmsub">Saved searches</div>`+list.map((s,i)=>`<div class="crmorg" data-i="${i}"><span class="crmname">${esc(s.name)}</span><button class="crmdel" data-i="${i}">remove</button></div>`).join('')):'';
+  box.querySelectorAll('.crmorg').forEach(r=>r.addEventListener('click',e=>{ if(e.target.closest('.crmdel'))return; const s=CRM.saved[+r.dataset.i]; setChipsFromParams(new URLSearchParams(finderSelToParams(s.sel))); renderFinderResults(readFinder()); }));
+  box.querySelectorAll('.crmdel').forEach(b=>b.onclick=e=>{ e.stopPropagation(); CRM.saved.splice(+b.dataset.i,1); saveCRM(); renderSaved(); });
+}
+function finderSelToParams(sel){ const p=new URLSearchParams(); if(sel.role)p.set('role',sel.role); if(sel.trl)p.set('trl',sel.trl); if(sel.geo&&sel.geo!=='any')p.set('geo',sel.geo); if((sel.domains||[]).length)p.set('dom',sel.domains.join(',')); if((sel.needs||[]).length)p.set('need',sel.needs.join(',')); return p.toString(); }
+
+/* ---- external data (optional refresh without rebuilding) ---- */
+function applyExternalData(d){
+  if(d.asOf) DATA_AS_OF=d.asOf;
+  if(d.orgs) Object.entries(d.orgs).forEach(([id,o])=>{ if(NODE[id]){ if(o.entry!=null)NODE[id].entry=o.entry; if(o.does!=null)NODE[id].does=o.does; if(o.tags)NODE[id].tags=o.tags; } if(o&&o.opps!=null)OPPS[id]=o.opps; if(o&&o.src)SOURCES[id]=o.src; });
+  if(Array.isArray(d.add)) d.add.forEach(n=>{ if(!NODE[n.id]){ const parent=NODE[n.parent]||TREE; (parent.children=parent.children||[]).push({id:n.id,l:n.l,entry:n.entry||'',does:n.does||'',tags:n.tags||null,custom:true}); } });
+  indexTree();
+}
+function tryExternalData(){ try{ fetch('./defence-ecosystem-data.json',{cache:'no-store'}).then(r=>r&&r.ok?r.json():null).then(d=>{ if(d){ applyExternalData(d); Object.values(nodeEls).forEach(el=>el.remove()); nodeEls={}; build(); showToast('Data refreshed · as of '+DATA_AS_OF); } }).catch(()=>{}); }catch(_){}
+}
+
+/* init */
+loadCRM();
+mergeCustom();
+indexTree();
+build();
+updateCrmBadge();
+updateCompareBadge();
+try{ const st=localStorage.getItem('tde_theme'); if(st){ themeIdx=Math.max(0,THEMES.indexOf(st)); } }catch(_){}
+applyTheme();
+renderSaved();
+setTimeout(()=>{ fit(); applyHash(); tryExternalData(); },70);
+window.addEventListener('hashchange',applyHash);
+</script>
+</body>
+</html>
