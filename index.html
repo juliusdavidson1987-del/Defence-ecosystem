@@ -1361,9 +1361,9 @@ function fit(){
 }
 function centerOn(id,zoom=true){ const p=positions[id]; if(!p)return; const vw=stage.clientWidth,vh=stage.clientHeight;
   if(zoom)scale=Math.max(scale,.5); px=vw/2-p.x*scale; py=vh/2-p.y*scale; apply(); }
-stage.addEventListener('pointerdown',e=>{dragging=true;dragMoved=false;stage.classList.add('drag');sx=e.clientX;sy=e.clientY;spx=px;spy=py;stage.setPointerCapture(e.pointerId);});
+stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.node'))return; dragging=true;dragMoved=false;stage.classList.add('drag');sx=e.clientX;sy=e.clientY;spx=px;spy=py;stage.setPointerCapture(e.pointerId);});
 stage.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>4)dragMoved=true;px=spx+dx;py=spy+dy;apply();});
-stage.addEventListener('pointerup',()=>{dragging=false;stage.classList.remove('drag');});
+stage.addEventListener('pointerup',e=>{dragging=false;stage.classList.remove('drag');try{stage.releasePointerCapture(e.pointerId);}catch(_){}});
 stage.addEventListener('pointercancel',()=>{dragging=false;stage.classList.remove('drag');});
 stage.addEventListener('wheel',e=>{e.preventDefault();const rect=stage.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
   const ns=Math.max(.06,Math.min(2.4,scale*(e.deltaY<0?1.12:0.89)));const wx=(mx-px)/scale,wy=(my-py)/scale;px=mx-wx*ns;py=my-wy*ns;scale=ns;apply();},{passive:false});
