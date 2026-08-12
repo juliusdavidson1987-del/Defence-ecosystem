@@ -619,8 +619,8 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
  B("b_sti","Science, Technology & Innovation","Where new capability is found, funded and de-risked.",[
    L("dstl","Dstl","dstl.gov.uk · centralenquiries@dstl.gov.uk · 01980 950000","MOD's in-house S&T authority — research, experimentation and technical assurance. Parent of DASA."),
    L("ukdi","UK Defence Innovation (UKDI)","Single front door · GOV.UK submission service","Consolidated innovation body (£400m/yr; £1.6bn in the DIP); runs Open Call, Themed and Loan competitions."),
-   L("dasa","Defence & Security Accelerator (DASA)","GOV.UK › DASA · accelerator@dstl.gov.uk · online submission service","Finds and funds exploitable innovation fast; the established SME competition route (now within UKDI)."),
-   L("diu","Defence Innovation Unit (DIU)","Via UKDI","Legacy innovation unit now folded into UKDI; brokered problems to solutions."),
+   L("dasa","Defence & Security Accelerator (DASA)","GOV.UK › DASA · accelerator@dstl.gov.uk · online submission service","Finds and funds exploitable innovation fast; the established SME competition route. Became part of UKDI in February 2026 and continues to run its competitions."),
+   L("diu","Defence Innovation Unit (DIU)","Via UKDI","Former standalone innovation unit, now consolidated into UKDI; brokered defence problems to commercial solutions."),
    L("daic","Defence AI Centre (DAIC)","Federated · led by CSOC","Champions, enables and scales AI across defence — a federation of Defence Digital, Dstl and DE&S FCG."),
    L("battlelab","Defence BattleLab","Dorset Innovation Park","Open collaboration hub for MOD, SMEs and academia; an affiliated NATO DIANA test centre."),
    L("ploughshare","Ploughshare Innovations","ploughshareinnovations.com","Dstl's technology-transfer company — spins MOD IP out into commercial and dual-use ventures."),
@@ -636,7 +636,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("nelson","NELSON","Via Navy Command","Royal Navy's digital & data service delivering software to the fleet."),
    L("army","Army — Field Army / Army Futures","Via Army HQ","Sets land requirements; drives the ‘ten-times more lethal’ Army vision."),
    L("lwc","Land Warfare Centre","Via Army HQ","Runs the Army Warfighting Experiment and land capability development."),
-   L("atdu","Armoured Trials & Development Unit (ATDU)","Bovington","Trials and develops armoured vehicles and land systems for the Army."),
+   L("etg","Experimentation & Trials Group (ETG)","army.mod.uk · Bovington","The Field Army's experimentation and trials organisation; commands the Army's Trials & Development Units (including the former ATDU at Bovington) and an Experimentation Battalion to trial and develop new capability under Future Soldier."),
    L("air","RAF — Air Command","Via RAF Air Command","Sets air & space requirements; end-user for combat air and uncrewed systems."),
    L("rafrco","RAF Rapid Capabilities Office (RCO)","Via RAF Air Command","Fast, often classified delivery of urgent air & space capability outside the standard cycle."),
    L("astra","RAF ASTRA","Via RAF","The RAF's transformation programme building the ‘next-generation air force’."),
@@ -656,7 +656,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
  B("b_nuke","Nuclear Enterprise","The deterrent and naval nuclear propulsion pillar.",[
    L("dno","Defence Nuclear Organisation (DNO)","Via MOD Head Office","Sets policy and sponsors the deterrent and naval nuclear propulsion; oversees the enterprise."),
    L("sda","Submarine Delivery Agency (SDA)","GOV.UK › SDA","Procures, builds and supports the submarine flotilla — Dreadnought and Astute/SSN."),
-   L("awe","AWE (Atomic Weapons Establishment)","awe.co.uk","Designs, makes and maintains warheads; deep science in materials, HPC and physics."),
+   L("awe","AWE Nuclear Security Technologies (AWE)","awe.co.uk · Aldermaston","Designs, makes and maintains the UK's nuclear warheads; deep science in materials, HPC and physics. An arm's-length body owned by the MOD."),
    L("rrsub","Rolls-Royce Submarines","Via Rolls-Royce","Designs and makes the naval nuclear reactors that power the submarine fleet."),
    L("barrow","Plan for Barrow","Via MOD & local partners","Long-term place-based investment around the Barrow submarine industrial base."),
  ]),
@@ -993,9 +993,9 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("au_defence","Department of Defence","defence.gov.au · Canberra","Australia's defence department and the ADF."),
      L("au_asca","Advanced Strategic Capabilities Accelerator (ASCA)","asca.gov.au","Australia's defence innovation accelerator (replaced the Innovation Hub); mission-led calls with a path to acquisition."),
      L("au_dstg","Defence Science & Technology Group (DSTG)","dst.defence.gov.au","Australia's national defence science organisation."),
-     L("au_casg","Capability Acquisition & Sustainment Group (CASG)","defence.gov.au","Australian defence procurement and sustainment."),
+     L("au_casg","Capability Acquisition & Sustainment Group (CASG)","defence.gov.au","Australian defence procurement and sustainment. Merging with GWEO and Naval Shipbuilding into the new Defence Delivery Agency (forming from July 2026, led by an Australian National Armaments Director)."),
      L("au_asa","Australian Submarine Agency (ASA)","asa.gov.au","Delivers Australia's AUKUS conventionally-armed, nuclear-powered submarine programme."),
-     L("au_gweo","Guided Weapons & Explosive Ordnance (GWEO)","defence.gov.au","Stands up a sovereign Australian guided-weapons manufacturing enterprise."),
+     L("au_gweo","Guided Weapons & Explosive Ordnance (GWEO)","defence.gov.au","Building a sovereign Australian guided-weapons manufacturing enterprise; folding into the Defence Delivery Agency from 2026."),
    ]),
    B("nz_grp","New Zealand","New Zealand's defence force, ministry and science agency.",[
      L("nz_nzdf","NZ Defence Force (NZDF)","nzdf.mil.nz","New Zealand's armed forces."),
@@ -1060,8 +1060,8 @@ function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.c
 
 /* ---------- open calls / opportunities ---------- */
 const OPPS = {
- ukdi:"UKDI competitions — Open Call for Innovation, Themed Competitions and Defence Innovation Loans. The consolidated service reopens ahead of UKDI Full Operating Capability (~July 2026); live calls appear on gov.uk and the UKDI submission service.",
- dasa:"DASA Open Call for Innovation runs in year-round cycles, plus themed competitions. Note: the Open Call is paused during the UKDI transition and reopens by ~July 2026 — current and themed competitions are listed on gov.uk (search ‘DASA competitions’). Contact accelerator@dstl.gov.uk.",
+ ukdi:"UKDI competitions — including the multi-cycle ‘Innovation Support to Operations’ themed competition (fast, TRL 6+, months not years) plus wider themed and loan routes. Live cycles and the five innovation themes appear on gov.uk and the UKDI submission service.",
+ dasa:"DASA finds and funds exploitable innovation through themed and open competitions; now part of UKDI and running its cycles. Current competitions are listed on gov.uk (search ‘DASA’ or ‘UKDI competitions’). Contact accelerator@dstl.gov.uk.",
  dstl:"Research opportunities via the Serapis framework and R-Cloud; tenders on Contracts Finder (contractsfinder.service.gov.uk).",
  des:"Tenders via the Defence Sourcing Portal (Jaggaer) and Find a Tender (find-tender.service.gov.uk).",
  commercial:"MOD requirements advertised on the Defence Sourcing Portal and Find a Tender (find-tender.service.gov.uk).",
@@ -1935,7 +1935,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026';
+let DATA_AS_OF='August 2026 (accuracy pass)';
 const SOURCES={
  dasa:'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
  des:'https://des.mod.uk', dstl:'https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory',
