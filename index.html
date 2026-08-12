@@ -43,6 +43,14 @@
     background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
   .viewsel:hover,.viewsel:focus{border-color:var(--phos);color:#fff;outline:none;box-shadow:0 0 14px color-mix(in srgb,var(--phos) 22%,transparent)}
   .viewsel.on{border-color:var(--phos);color:#fff;box-shadow:0 0 12px color-mix(in srgb,var(--phos) 26%,transparent)}
+  .lensseg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;height:34px;background:rgba(12,20,36,.9)}
+  .lensseg button{background:none;border:none;color:var(--mut);cursor:pointer;font-size:11px;font-family:"IBM Plex Mono",monospace;
+    letter-spacing:.3px;padding:0 11px;transition:.14s;border-right:1px solid var(--line)}
+  .lensseg button:last-child{border-right:none}
+  .lensseg button:hover{color:#fff}
+  .lensseg button.on{background:color-mix(in srgb,var(--phos) 20%,transparent);color:#fff}
+  html[data-theme="light"] .lensseg{background-color:#fff}
+  html[data-theme="hc"] .lensseg{background-color:#000}
   .viewsel optgroup{background:#0c1424;color:var(--faint);font-style:normal}
   .viewsel option{background:#0c1424;color:var(--txt)}
   html[data-theme="light"] .viewsel{background-color:#fff}
@@ -134,6 +142,9 @@
   #panel .cchip.mail:hover{background:rgba(147,227,180,.14);border-color:#93E3B4;box-shadow:0 0 14px rgba(147,227,180,.22)}
   #panel .cnote{font-size:12px;color:var(--mut);line-height:1.5;padding:1px 2px}
   #panel #popps{font-size:12.5px;line-height:1.62;color:#D2DCEE}
+  .pcoverage{margin-top:10px;padding:8px 10px;background:rgba(12,20,36,.6);border:1px solid var(--line);border-radius:8px;font-size:11.5px;color:var(--mut)}
+  .pcoverage .covdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .pcoverage .covnote{color:var(--faint);font-size:10.5px}
   #panel .ilink{color:var(--phos);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--phos) 42%,transparent);transition:.12s;cursor:pointer}
   #panel .ilink:hover{color:#fff;border-bottom-color:#fff}
   #panel .ilink.mail{color:#93E3B4;border-bottom-color:color-mix(in srgb,#93E3B4 45%,transparent)}
@@ -209,6 +220,13 @@
   #welcome .whome{margin:0 0 20px;padding:14px 15px;background:rgba(12,20,36,.55);border:1px solid var(--line);border-radius:13px}
   #welcome .whomeq{font-size:12px;color:var(--txt);margin-bottom:11px;font-weight:500}
   #welcome .whomeq span{color:var(--faint);font-weight:400}
+  #welcome .whomesel{width:100%;background:rgba(12,20,36,.85);border:1px solid var(--line);color:var(--txt);border-radius:9px;
+    padding:11px 12px;cursor:pointer;font-size:13px;font-family:"IBM Plex Mono",monospace;letter-spacing:.3px;-webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%2358f0c8' fill='none' stroke-width='1.5'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center}
+  #welcome .whomesel:hover,#welcome .whomesel:focus{border-color:var(--phos);outline:none;box-shadow:0 0 12px color-mix(in srgb,var(--phos) 22%,transparent)}
+  #welcome .whomesel optgroup{background:#0c1424;color:var(--faint);font-style:normal}
+  #welcome .whomesel option{background:#0c1424;color:var(--txt)}
   #welcome .whomerow{display:flex;flex-wrap:wrap;gap:8px}
   #welcome .whomeb{background:rgba(12,20,36,.85);border:1px solid var(--line);color:var(--txt);border-radius:9px;
     padding:8px 12px;cursor:pointer;font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.3px;transition:.14s}
@@ -392,6 +410,11 @@
     <button class="btn" id="zin">+</button>
     <button class="btn" id="zout">–</button>
     <button class="btn" id="fit" aria-label="Fit map to screen">FIT</button>
+    <div class="lensseg" id="lensSeg" role="group" aria-label="Choose how the map is organised" title="Organise the whole map by nation, or by technology">
+      <button data-lens="alliance" class="on">✹ Alliance &amp; country</button>
+      <button data-lens="tech">◈ Technology</button>
+      <button data-lens="full">⌂ UK detail</button>
+    </div>
     <select class="viewsel" id="viewSel" aria-label="Choose a default view of the network" title="Focus the map on a nation, a function or a technology">
       <option value="">◈ View: All nations</option>
       <optgroup label="By nation / bloc" id="viewNations">
@@ -517,7 +540,7 @@
   <div class="pactions" id="pactions"></div>
   <button class="plink" id="plink">⤴ Copy shareable link</button>
   <div class="sect" id="s-entry"><div class="lab">Point of entry / contact</div><p id="pentry"></p></div>
-  <div class="sect" id="s-does"><div class="lab">What they do</div><p id="pdoes"></p></div>
+  <div class="sect" id="s-does"><div class="lab">What they do</div><p id="pdoes"></p><div id="pcoverage" class="pcoverage" style="display:none"></div></div>
   <div class="sect" id="s-opps"><div class="lab">Open calls &amp; opportunities</div><div id="popps"></div></div>
   <div class="sect" id="s-kids"><div class="lab">Contains / connects to</div><div class="kids" id="pkids"></div></div>
   <div class="sect" id="s-crm"><div id="pcrm"></div></div>
@@ -534,16 +557,9 @@
     <p class="lead">A shared, navigable map of the organisations behind defence innovation and procurement across NATO and allied nations — the UK, United States, Europe, Canada, Australia, New Zealand and the alliance bodies that connect them. No single nation sits at the centre: choose your starting point and find the right door for a technology, a research idea, a problem, or capital.</p>
     <div class="whome">
       <div class="whomeq">Where are you starting from? <span>— sets your default view; change it anytime</span></div>
-      <div class="whomerow" id="whomeRow">
-        <button class="whomeb" data-v="geo:uk">🇬🇧 UK</button>
-        <button class="whomeb" data-v="geo:us">🇺🇸 USA</button>
-        <button class="whomeb" data-v="geo:eu">🇪🇺 Europe</button>
-        <button class="whomeb" data-v="geo:ca">🇨🇦 Canada</button>
-        <button class="whomeb" data-v="geo:au">🇦🇺 Australia</button>
-        <button class="whomeb" data-v="geo:nz">🇳🇿 NZ</button>
-        <button class="whomeb" data-v="geo:nato">✹ NATO-wide</button>
-        <button class="whomeb" data-v="">◈ Everything</button>
-      </div>
+      <select class="whomesel" id="whomeSel" aria-label="Choose your home nation or bloc">
+        <option value="">◈ Everything — show all nations</option>
+      </select>
     </div>
     <div class="wgrid">
       <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door</div><div class="wd">Describe your thing and get a ranked shortlist of who to approach — in any allied nation.</div></div>
@@ -561,6 +577,8 @@
     <div class="ak">◎ About</div>
     <h2>The Defence Ecosystem</h2>
     <p>A shared, interactive map of the organisations involved in defence innovation and procurement across NATO and allied nations — strategy and acquisition bodies, science and innovation units, front-line commands, academia, catapults, test facilities, industry, capital, and the alliance structures that connect them. It began as a UK map and is being extended so every allied nation can be represented to the same depth; no nation is treated as the centre.</p>
+    <h4>Two ways to explore — pick your lens</h4>
+    <p>Use the lens toggle in the header to re-organise the entire map. <b>✹ Alliance &amp; country</b> puts NATO, the EU and every nation as equal peers — open a country to see its bodies grouped by what they do; no nation is the trunk. <b>◈ Technology</b> re-roots the same organisations by capability — AI, space, cyber, maritime, uncrewed and more — so you see who works on a problem across every allied nation at once. <b>⌂ UK detail</b> keeps the original UK-structured map, which currently holds the deepest content. The same organisations appear in every lens; only the structure changes.</p>
     <h4>Make it yours — choose your starting point</h4>
     <p>On first use, pick the nation you're starting from; the map opens there and remembers it. The <b>◈ View</b> dropdown lets you switch that any time — view a single <b>nation or bloc</b> (UK, USA, NATO, Europe, Canada, Australia, New Zealand), a <b>function across all nations</b> (every procurement body, every innovation accelerator, every VC, every research base, side by side), an <b>organisation type</b>, or a <b>technology interest</b>. The ⌂ Home entry returns you to your nation in one click.</p>
     <h4>How to use it</h4>
@@ -1035,18 +1053,32 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("satcen","EU Satellite Centre (SatCen)","satcen.europa.eu · Torrejón, Spain","EU geospatial intelligence and space-based imagery service."),
      L("asd","ASD Europe","asd-europe.org","AeroSpace, Security & Defence Industries Association of Europe — the pan-European industry voice."),
    ]),
-   B("eu_fr","France","Procurement, innovation and research.",[
+   B("eu_fr","France","Procurement, innovation, research and industry.",[
      L("fr_dga","DGA (Direction générale de l'armement)","defense.gouv.fr · Paris","France's powerful defence procurement and technology agency."),
      L("fr_aid","Agence de l'Innovation de Défense (AID)","defense.gouv.fr","France's defence innovation agency — coordinates S&T, runs challenges and rapid innovation."),
      L("fr_definvest","Definvest","bpifrance.fr","Defence-investment fund (with Bpifrance) backing strategic French defence SMEs."),
      L("fr_onera","ONERA","onera.fr","The French aerospace research centre."),
+     L("fr_cnes","CNES","cnes.fr","France's space agency; military space in partnership with the CDE (Commandement de l'Espace)."),
+     L("fr_dassault","Dassault Aviation","dassault-aviation.com","Combat air prime — Rafale fighter and lead on the FCAS/NGF."),
+     L("fr_naval","Naval Group","naval-group.com","France's naval prime — submarines and surface combatants (35% Thales-owned)."),
+     L("fr_safran","Safran","safran-group.com","Aero-engines, optronics and electronics (Safran Electronics & Defense)."),
+     L("fr_mbda","MBDA France","mbda-systems.com","French arm of the European complex-weapons champion."),
+     L("fr_exail","Exail","exail.com","Robotics, autonomy, navigation and drones (formerly ECA/iXblue)."),
+     L("fr_arquus","Arquus","arquus-defense.com","Military land vehicles and mobility."),
    ]),
-   B("eu_de","Germany","A fast-reforming procurement and innovation system.",[
+   B("eu_de","Germany","A fast-reforming procurement and innovation system, with a strong industrial base.",[
      L("de_baainbw","BAAINBw","baainbw.de · Koblenz","Federal Office for Bundeswehr Equipment, IT and In-Service Support — German defence procurement, now moving to an agile matrix structure."),
      L("de_cihbw","Cyber Innovation Hub (CIHBw)","cyberinnovationhub.de","The Bundeswehr's innovation ‘do-tank’, bridging start-ups and the German armed forces."),
      L("de_izbw","Innovationszentrum Bundeswehr","bundeswehr.de","New armed-forces innovation centre network (Erding/space, Kiel/naval, Bremen, Dresden/IT) launched 2026."),
      L("de_bwi","BWI","bwi.de","The Bundeswehr's IT systems house delivering digital capability."),
      L("de_dtec","dtec.bw / Cyber Cluster","dtecbw.de","Bundeswehr universities' research and transfer centre for dual-use tech."),
+     L("de_dlr","DLR","dlr.de","The German aerospace centre — aeronautics, space and security research."),
+     L("de_fraunhofer","Fraunhofer VVS (defence institutes)","vvs.fraunhofer.de","Fraunhofer's defence- and security-research institute group."),
+     L("de_hensoldt","HENSOLDT","hensoldt.net","Sensor prime — radar, electronic warfare and optronics."),
+     L("de_diehl","Diehl Defence","diehl.com","Effectors and air defence (IRIS-T family)."),
+     L("de_tkms","thyssenkrupp Marine Systems (TKMS)","thyssenkrupp-marinesystems.com","Submarines and naval surface vessels."),
+     L("de_renk","Renk","renk.com","Military transmissions and drive systems."),
+     L("de_arx","ARX Robotics","arxrobotics.com","Uncrewed ground vehicles and autonomy for land forces."),
    ]),
    B("eu_it","Italy","Armaments and national research.",[
      L("it_segredifesa","Segredifesa / DNA","difesa.it · Rome","Italy's Secretariat General of Defence and National Armaments Directorate."),
@@ -1075,12 +1107,30 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("lt_dmf","Lithuania — Defence Materiel Agency","kam.lt","Lithuania's defence materiel and acquisition agency."),
      L("lt_nib","Baltic dual-use finance (NIB facility)","nib.int","Nordic Investment Bank credit facilities funding Baltic defence tech (counter-drone, cyber, IT)."),
    ]),
-   B("eu_central","Central & Southern Europe","Poland, Czechia, and southern allies.",[
+   B("eu_central","Central & Southern Europe","Poland, Czechia, and southern & south-eastern allies.",[
      L("pl_armament","Poland — Armament Agency","wojsko-polskie.pl","Poland's central defence procurement agency (Agencja Uzbrojenia)."),
-     L("pl_wb","Poland — Łukasiewicz / PGZ innovation","lukasiewicz.gov.pl","Polish research network and state defence group driving domestic innovation."),
+     L("pl_wb","Poland — Łukasiewicz / research network","lukasiewicz.gov.pl","Polish research network driving domestic innovation and technology transfer."),
+     L("pl_pgz","Poland — PGZ (Polska Grupa Zbrojeniowa)","pgzsa.pl","Poland's state defence-industrial group; ~50 companies across land, air and naval."),
+     L("pl_wbgroup","Poland — WB Group","wbgroup.pl","Poland's largest private defence firm — drones (Warmate), C2 and communications."),
      L("cz_avz","Czechia — Defence Armament & Acquisition Agency","army.cz","Czech defence procurement agency."),
      L("es_dgam","Spain — DGAM","defensa.gob.es","Directorate-General for Armament and Materiel — Spanish procurement."),
      L("gr_gdaeed","Greece — GDAEED","mod.mil.gr","Greek defence armaments and investments directorate."),
+     L("pt_idd","Portugal — idD Portugal Defence","iddportugal.pt","Manages the state's defence industrial holdings and connects the armed forces, companies and research; NATO Innovation Fund partner."),
+     L("pt_dgrdn","Portugal — DGRDN","defesa.gov.pt","Directorate-General for National Defence Resources — Portuguese defence resources and procurement."),
+     L("ro_mapn","Romania — Ministry of National Defence (MApN)","mapn.ro","Plans and executes Romania's major NATO-standard acquisition programmes; contracts supervised by the National Agency for Public Procurement."),
+     L("ro_romarm","Romania — ROMARM","romarm.ro","Romania's state-owned defence industrial conglomerate (15 subsidiaries)."),
+     L("be_dgmr","Belgium — Defence, General Directorate Material Resources (DG MR)","mil.be","Belgium's defence procurement and materiel directorate."),
+   ]),
+   B("eu_turkey","Türkiye","A fast-rising NATO defence producer — 11th largest globally.",[
+     L("tr_ssb","Presidency of Defence Industries (SSB)","ssb.gov.tr · Ankara","Türkiye's central authority for developing and procuring defence capability; drives the localisation (yerlilik) strategy."),
+     L("tr_baykar","Baykar","baykartech.com","Uncrewed systems leader (Bayraktar TB2/TB3, Kızılelma jet UCAV); owns Italy's Piaggio Aerospace."),
+     L("tr_tusas","Turkish Aerospace Industries (TUSAŞ/TAI)","tusas.com","National aerospace prime — KAAN fighter, HÜRJET trainer, ANKA UAS, ATAK helicopter."),
+     L("tr_aselsan","ASELSAN","aselsan.com","Electronics prime — radar, electronic warfare, electro-optics, C4ISR and crypto."),
+     L("tr_roketsan","Roketsan","roketsan.com.tr","Missiles and rockets — ATMACA, SOM, TAYFUN, air-defence effectors."),
+     L("tr_havelsan","Havelsan","havelsan.com.tr","Software, C4ISR, simulation and training systems."),
+     L("tr_stm","STM","stm.com.tr","Naval platforms, cyber and systems engineering; also a defence-tech investor."),
+     L("tr_tubitak","TÜBİTAK (SAGE / UZAY / BİLGEM)","tubitak.gov.tr","National research council — munitions (SAGE), space (UZAY) and IT/security (BİLGEM) institutes feeding defence S&T."),
+     L("tr_teknofest","TEKNOFEST / T3 Foundation","teknofest.org","National technology festival and talent pipeline; a major innovation-convening and recruitment platform."),
    ]),
    B("eu_ukraine","Ukraine","Battle-tested innovation at wartime speed.",[
      L("ua_brave1","Brave1","brave1.gov.ua · Kyiv","Ukraine's defence-tech cluster — a government platform matching innovators, funding, testing and military users at speed."),
@@ -1121,6 +1171,27 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("arl","DEVCOM Army Research Laboratory (ARL)","arl.devcom.army.mil","The Army's foundational research laboratory."),
      L("sco","Strategic Capabilities Office (SCO)","cto.mil","Re-purposes existing systems for new operational effects at speed."),
      L("dmea","Defense Microelectronics / trusted supply","defense.gov","Assures trusted access to microelectronics and critical components."),
+   ]),
+   B("us_ffrdc","FFRDCs & research institutes","Federally-funded R&D centres and analysis bodies.",[
+     L("mitre","MITRE","mitre.org","Operates multiple FFRDCs for defence, intelligence and cyber; systems engineering and advisory."),
+     L("lincoln","MIT Lincoln Laboratory","ll.mit.edu","MIT-run FFRDC for advanced sensors, air defence, space and rapid prototyping."),
+     L("jhuapl","Johns Hopkins Applied Physics Laboratory (APL)","jhuapl.edu","Large university-affiliated research centre for strategic systems, space and undersea."),
+     L("aerospace","The Aerospace Corporation","aerospace.org","FFRDC for national-security space architecture and launch assurance."),
+     L("rand_us","RAND / Project AIR FORCE","rand.org","Policy and analysis FFRDCs supporting DoD decision-making."),
+     L("ida","Institute for Defense Analyses (IDA)","ida.org","Analytic FFRDC supporting OSD and the Joint Staff."),
+     L("sandia","Sandia / Los Alamos / Livermore Labs","energy.gov","DOE national laboratories underpinning the nuclear enterprise and defence science."),
+   ]),
+   B("us_dtech","US defence-tech scaleups","Venture-backed firms reshaping US capability.",[
+     L("shieldai","Shield AI","shield.ai","Autonomous flight (Hivemind) and the V-BAT uncrewed aircraft."),
+     L("saronic","Saronic","saronic.com","Autonomous surface vessels and the Port Alpha autonomous shipyard."),
+     L("skydio","Skydio","skydio.com","Autonomous drones with anti-jamming for defence and public safety."),
+     L("epirus","Epirus","epirussystems.com","High-power microwave directed-energy counter-drone systems (Leonidas)."),
+     L("scaleai","Scale AI","scale.com","Data and AI infrastructure for defence (e.g. Defense Llama)."),
+     L("appliedintuition","Applied Intuition","appliedintuition.com","Simulation and autonomy software for ground, air and space systems."),
+     L("vannevar","Vannevar Labs","vannevarlabs.com","Intelligence and operational software for national security."),
+     L("hermeus","Hermeus","hermeus.com","Hypersonic aircraft for defence and commercial use."),
+     L("castelion","Castelion","castelion.com","Low-cost hypersonic strike weapons at production scale."),
+     L("govini","Govini","govini.com","Decision-science software for defence acquisition and supply chains."),
    ]),
    B("us_acq","Acquisition, capital & scaling","How US innovation crosses into procurement.",[
      L("cdao","Chief Digital & AI Office (CDAO)","ai.mil","DoD's central authority for data, analytics and AI adoption; runs JADC2 experimentation."),
@@ -1215,7 +1286,29 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    ]),
  ]),
 
- B("b_multi","Alliances & Multinational Programmes","The partnership structures and joint programmes the UK sits within.",[
+ B("b_partners","Indo-Pacific & Other Allies","Key non-NATO allied and partner nations with major defence-industrial bases.",[
+   B("pt_kr","South Korea","A fast-rising defence exporter.",[
+     L("kr_dapa","DAPA","dapa.go.kr","Defense Acquisition Program Administration — South Korea's central procurement agency."),
+     L("kr_add","Agency for Defense Development (ADD)","add.re.kr","South Korea's national defence research agency; leads indigenous weapons development."),
+     L("kr_hanwha","Hanwha Aerospace","hanwha.com","Aerospace, land systems (K9 howitzer) and missiles; a leading Korean exporter."),
+     L("kr_kai","Korea Aerospace Industries (KAI)","koreaaero.com","Aircraft prime — FA-50, KF-21 fighter and rotary-wing."),
+     L("kr_lignex1","LIG Nex1","lignex1.com","Missiles, air defence (KM-SAM/L-SAM) and electronic warfare."),
+   ]),
+   B("pt_jp","Japan","Rebuilding a defence-industrial and export posture.",[
+     L("jp_atla","ATLA","mod.go.jp/atla","Acquisition, Technology & Logistics Agency — Japan's defence procurement and R&D agency."),
+     L("jp_mhi","Mitsubishi Heavy Industries (MHI)","mhi.com","Japan's largest defence prime — aircraft, naval and missiles."),
+     L("jp_kawasaki","Kawasaki Heavy Industries","khi.co.jp","Aircraft, submarines and defence systems."),
+     L("jp_melco","Mitsubishi Electric","mitsubishielectric.com","Radar, missiles and space/defence electronics."),
+   ]),
+   B("pt_il","Israel","A dense, export-driven defence-tech ecosystem.",[
+     L("il_mafat","DDR&D (MAFAT)","mod.gov.il","Directorate of Defense R&D within the Israeli MoD; drives national defence innovation."),
+     L("il_rafael","Rafael","rafael.co.il","Advanced defence systems — Iron Dome, Spike missiles, active protection."),
+     L("il_iai","Israel Aerospace Industries (IAI)","iai.co.il","Aerospace and systems prime — UAS, radar, missiles and space."),
+     L("il_elbit","Elbit Systems","elbitsystems.com","Land, air, C4ISR and electro-optics; a major global exporter."),
+   ]),
+ ]),
+
+ B("b_multi","Alliances & Multinational Programmes","The partnership structures and joint programmes allies sit within.",[
    L("aukus","AUKUS","Via MOD & DNO","UK–US–Australia partnership: submarines (Pillar 1) and advanced capabilities (Pillar 2)."),
    L("gcap","GCAP / GIGO","GCAP Agency, Reading","Trilateral (UK, Italy, Japan) government organisation for the next-generation combat aircraft; delivered via Edgewing."),
    L("fiveeyes","Five Eyes","Via MOD international","Intelligence and capability collaboration (UK, US, Canada, Australia, New Zealand)."),
@@ -1268,6 +1361,180 @@ function indexTree(){
   Object.keys(NODE).forEach(id=>{ if(id!=="root") BRANCHOF[id]=computeBranch(id); });
 }
 indexTree();
+
+/* ================= LENS ENGINE — view the same data by alliance/country or by technology ================= */
+/* Snapshot the original UK-structured tree so it remains available as a lens and as the content source. */
+const ORIGINAL_CHILDREN = TREE.children.slice();
+let LENS = 'alliance'; // 'alliance' | 'tech' | 'full'
+
+/* nation model */
+const NATION_ORDER = ['nato','eu_inst','uk','us','fr','de','it','nl','be','se','no','fi','dk','ee','lv','lt','pl','cz','es','pt','gr','ro','tr','ua','ca','au','nz','kr','jp','il','multi'];
+const NATION_META = {
+  nato:{l:'✹ NATO & multinational',c:'#4da6ff'}, eu_inst:{l:'⛭ EU institutions',c:'#5b8cff'},
+  uk:{l:'🇬🇧 United Kingdom',c:'#6fd3c8'}, us:{l:'🇺🇸 United States',c:'#e86a6a'},
+  fr:{l:'🇫🇷 France',c:'#6a86e8'}, de:{l:'🇩🇪 Germany',c:'#d1a54a'}, it:{l:'🇮🇹 Italy',c:'#67c37a'},
+  nl:{l:'🇳🇱 Netherlands',c:'#e8934a'}, be:{l:'🇧🇪 Belgium',c:'#c9a04a'}, se:{l:'🇸🇪 Sweden',c:'#4a9fe8'}, no:{l:'🇳🇴 Norway',c:'#e85a7a'},
+  fi:{l:'🇫🇮 Finland',c:'#7aa8e8'}, dk:{l:'🇩🇰 Denmark',c:'#e86a5a'}, ee:{l:'🇪🇪 Estonia',c:'#5ac8e8'},
+  lv:{l:'🇱🇻 Latvia',c:'#c86a6a'}, lt:{l:'🇱🇹 Lithuania',c:'#e8c04a'}, pl:{l:'🇵🇱 Poland',c:'#e85a5a'},
+  cz:{l:'🇨🇿 Czechia',c:'#5a8ce8'}, es:{l:'🇪🇸 Spain',c:'#e8b84a'}, pt:{l:'🇵🇹 Portugal',c:'#5ac88a'}, gr:{l:'🇬🇷 Greece',c:'#4a9fe8'},
+  ro:{l:'🇷🇴 Romania',c:'#e8c85a'}, tr:{l:'🇹🇷 Türkiye',c:'#e85a4a'},
+  ua:{l:'🇺🇦 Ukraine',c:'#4ab8e8'}, ca:{l:'🇨🇦 Canada',c:'#e86a6a'}, au:{l:'🇦🇺 Australia',c:'#d1a54a'},
+  nz:{l:'🇳🇿 New Zealand',c:'#67c37a'}, kr:{l:'🇰🇷 South Korea',c:'#5a9ce8'}, jp:{l:'🇯🇵 Japan',c:'#e85a6a'}, il:{l:'🇮🇱 Israel',c:'#5ab0e8'},
+  multi:{l:'⚑ Multinational programmes',c:'#9a7ae8'}
+};
+const PREFIX_NATION = {fr:'fr',de:'de',it:'it',nl:'nl',be:'be',se:'se',no:'no',fi:'fi',dk:'dk',ee:'ee',lv:'lv',lt:'lt',pl:'pl',cz:'cz',es:'es',pt:'pt',gr:'gr',ro:'ro',tr:'tr',ua:'ua',ca:'ca',au:'au',nz:'nz',kr:'kr',jp:'jp',il:'il'};
+
+function nationForOrg(id, ctxBranch, ctxNation){
+  // explicit overrides for known home nations (primes and firms placed outside their national group)
+  const OV={ airbus_grp:'eu_inst', thales_grp:'fr', leonardo_grp:'it', rheinmetall:'de', kmw:'de', saab_grp:'se', mbda_grp:'eu_inst', kongsberg:'no' };
+  if(OV[id]) return OV[id];
+  const m = id.match(/^([a-z]{2})_/); if(m && PREFIX_NATION[m[1]]) return PREFIX_NATION[m[1]];
+  if(ctxNation) return ctxNation;
+  if(ctxBranch==='b_us') return 'us';
+  if(ctxBranch==='b_nato') return 'nato';
+  if(ctxBranch==='b_multi') return 'multi';
+  const t=tagsFor(id);
+  if(t){ if(t.g==='us')return 'us'; if(t.g==='nato')return 'nato'; if(t.g==='ca')return 'ca'; if(t.g==='au')return 'au'; if(t.g==='nz')return 'nz'; }
+  return 'uk';
+}
+
+/* function buckets within a nation (lens A) and cross-cutting groups (lens B) */
+const FUNC_ORDER = ['policy','procurement','science','innovation','industry','capital','test','other'];
+const FUNC_META = {
+  policy:{l:'Command, strategy & policy',c:'#8fb7ff'}, procurement:{l:'Acquisition & procurement',c:'#7fd0ff'},
+  science:{l:'Science & research',c:'#8ad6a8'}, innovation:{l:'Innovation & accelerators',c:'#ffd27f'},
+  industry:{l:'Industry & primes',c:'#ff9e9e'}, capital:{l:'Funding & capital',c:'#c9a8ff'},
+  test:{l:'Test, evaluation & ranges',c:'#9ad8d0'}, other:{l:'Other bodies',c:'#b8c2d0'}
+};
+function funcForOrg(id){
+  const t=tagsFor(id); if(!t) return 'other';
+  const o=t.o||[], w=t.w||[], a=t.a;
+  if(o.includes('investment')) return 'capital';
+  if(a==='prime'||w.includes('prime')) return 'industry';
+  if(o.includes('procurement')) return 'procurement';
+  if(o.includes('test')) return 'test';
+  if(o.includes('research')||w.includes('academic')) return 'science';
+  if(o.includes('grant')) return 'innovation';
+  if(w.includes('govmil')) return 'policy';
+  return 'other';
+}
+
+/* technology model (lens B) */
+const TECH_ORDER = ['ai','space','cyber','c4isr','maritime','land','air','weapons','directed','hypersonic','nuclear','human','xfund','xtest','xacad','xproc','xother'];
+const TECH_META = {
+  ai:{l:'AI, autonomy & software',c:'#7fe0c8'}, space:{l:'Space & ISR',c:'#7fb0ff'}, cyber:{l:'Cyber & quantum',c:'#b89aff'},
+  c4isr:{l:'C4ISR, sensors & EW',c:'#7fd0ff'}, maritime:{l:'Maritime & undersea',c:'#5ec8e0'}, land:{l:'Land systems',c:'#c9b06a'},
+  air:{l:'Air & uncrewed',c:'#9ad0ff'}, weapons:{l:'Weapons & effects',c:'#ff9e7f'},
+  directed:{l:'Directed energy',c:'#ffb84a'}, hypersonic:{l:'Hypersonics',c:'#ff7a5a'}, nuclear:{l:'Nuclear',c:'#ffcf6a'}, human:{l:'Human performance & medical',c:'#8ad6c8'},
+  xfund:{l:'Funding & capital (all)',c:'#c9a8ff'}, xtest:{l:'Test & evaluation (all)',c:'#9ad8d0'},
+  xacad:{l:'Academia & research (all)',c:'#8ad6a8'}, xproc:{l:'Procurement & policy (all)',c:'#8fb7ff'}, xother:{l:'Cross-cutting bodies',c:'#b8c2d0'}
+};
+function techForOrg(id){
+  const t=tagsFor(id); if(!t) return 'xother';
+  const d=t.d||[], o=t.o||[], w=t.w||[];
+  const prim=d.find(x=>TECH_META[x]);
+  if(prim) return prim;
+  // cross-cutting: route by function
+  if(o.includes('investment')) return 'xfund';
+  if(o.includes('test')) return 'xtest';
+  if(o.includes('research')||w.includes('academic')) return 'xacad';
+  if(o.includes('procurement')) return 'xproc';
+  return 'xother';
+}
+
+/* extract placeable org-units (real orgs; keep their sub-trees e.g. prime divisions) with nation+tech computed */
+let ORG_UNITS = [];
+const ORG_NATION = {};
+function extractOrgs(){
+  ORG_UNITS = [];
+  (function walk(n, ctxBranch, ctxNation){
+    (n.children||[]).forEach(c=>{
+      let nb=ctxBranch, nn=ctxNation;
+      if(PARENT_ORIG[c.id]==='root' || ORIGINAL_CHILDREN.some(x=>x.id===c.id)) nb=c.id;
+      const groupNation={eu_fr:'fr',eu_de:'de',eu_it:'it',eu_nl:'nl',eu_ukraine:'ua',eu_turkey:'tr',ca_grp:'ca',au_grp:'au',nz_grp:'nz',pt_kr:'kr',pt_jp:'jp',pt_il:'il'}[c.id];
+      if(groupNation) nn=groupNation;
+      if(c.id==='eu_inst') nn='eu_inst';
+      if(c.entry){ const nat=nationForOrg(c.id, nb, nn); ORG_NATION[c.id]=nat; ORG_UNITS.push({node:c, nation:nat, func:funcForOrg(c.id), tech:techForOrg(c.id)});
+        // divisions inherit their parent org's nation
+        (function marknat(x){ (x.children||[]).forEach(d=>{ ORG_NATION[d.id]=nat; marknat(d); }); })(c);
+      }
+      else if(c.children){ walk(c, nb, nn); }
+    });
+  })(TREE, null, null);
+}
+/* capture original parent map for context detection */
+const PARENT_ORIG = {};
+(function idx(n,p){ PARENT_ORIG[n.id]=p; if(n.children)n.children.forEach(c=>idx(c,n.id)); })(TREE,'root');
+
+function synthBranch(id,l,does){ return {id,l,does,children:[],synthetic:true}; }
+
+function buildAllianceTree(){
+  const byNation={};
+  ORG_UNITS.forEach(u=>{ (byNation[u.nation]=byNation[u.nation]||[]).push(u); });
+  const top=[];
+  NATION_ORDER.forEach(nat=>{
+    const list=byNation[nat]; if(!list||!list.length) return;
+    const meta=NATION_META[nat]||{l:nat.toUpperCase(),c:'#8fa'};
+    const nb=synthBranch('nat_'+nat, meta.l, 'Defence innovation & procurement bodies — '+meta.l.replace(/^[^A-Za-z]+/,'')+'.');
+    nb._color=meta.c;
+    // group that nation's orgs by function
+    const byFunc={};
+    list.forEach(u=>{ (byFunc[u.func]=byFunc[u.func]||[]).push(u.node); });
+    FUNC_ORDER.forEach(f=>{
+      const orgs=byFunc[f]; if(!orgs||!orgs.length) return;
+      if(list.length<=6){ orgs.forEach(o=>nb.children.push(o)); } // small nations: flat, no sub-groups
+      else { const fb=synthBranch('nat_'+nat+'_'+f, FUNC_META[f].l, FUNC_META[f].l+'.'); orgs.forEach(o=>fb.children.push(o)); nb.children.push(fb); }
+    });
+    top.push(nb);
+  });
+  return top;
+}
+function buildTechTree(){
+  const byTech={};
+  ORG_UNITS.forEach(u=>{ (byTech[u.tech]=byTech[u.tech]||[]).push(u); });
+  const top=[];
+  TECH_ORDER.forEach(tk=>{
+    const list=byTech[tk]; if(!list||!list.length) return;
+    const meta=TECH_META[tk];
+    const tb=synthBranch('tech_'+tk, meta.l, meta.l+' — organisations across all allied nations.');
+    tb._color=meta.c;
+    // within a tech area, group by nation for navigability
+    const byNat={};
+    list.forEach(u=>{ (byNat[u.nation]=byNat[u.nation]||[]).push(u.node); });
+    if(list.length<=8){ list.forEach(u=>tb.children.push(u.node)); }
+    else { NATION_ORDER.forEach(nat=>{ const orgs=byNat[nat]; if(!orgs||!orgs.length)return; const meta2=NATION_META[nat]||{l:nat.toUpperCase()}; const nb=synthBranch('tech_'+tk+'_'+nat, meta2.l, orgs.length+' in '+meta2.l.replace(/^[^A-Za-z]+/,'')+'.'); orgs.forEach(o=>nb.children.push(o)); tb.children.push(nb); }); }
+    top.push(tb);
+  });
+  return top;
+}
+
+function recolorBranches(){
+  for(const k in BRANCHCOLORS) delete BRANCHCOLORS[k];
+  TREE.children.forEach((b,i)=>{
+    if(b._color){ BRANCHCOLORS[b.id]=b._color; }
+    else { const hue=(i*360/TREE.children.length + 6)%360; BRANCHCOLORS[b.id]=hslToHex(hue,60,66); }
+  });
+}
+
+function setLens(mode,opts){
+  opts=opts||{};
+  LENS=mode;
+  if(mode==='full'){ TREE.children = ORIGINAL_CHILDREN.slice(); }
+  else if(mode==='tech'){ TREE.children = buildTechTree(); }
+  else { TREE.children = buildAllianceTree(); }
+  recolorBranches();
+  indexTree();
+  // reset collapse to a tidy state: top-level visible, collapsed
+  collapsed.clear(); TREE.children.forEach(b=>collapsed.add(b.id));
+  VIEW=null; for(const k in _mtCache) delete _mtCache[k];
+  if(typeof nodeEls!=='undefined'){ Object.values(nodeEls).forEach(el=>el.remove()); for(const k in nodeEls) delete nodeEls[k]; if(typeof build==='function') build(); }
+  rebuildLegend&&rebuildLegend();
+  try{ localStorage.setItem('tde_lens',mode); }catch(_){}
+  const seg=document.getElementById('lensSeg'); if(seg){ seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.lens===mode)); }
+  if(!opts.noFit && typeof fit==='function') setTimeout(fit,30);
+}
+/* default lens is applied during init (after all dependencies are defined) */
+/* ================= END LENS ENGINE ================= */
 function colorOf(id){ if(id==="root")return ROOTCOLOR; return BRANCHCOLORS[BRANCHOF[id]]||"#8fa"; }
 function depthOf(id){let d=0,cur=id;while(PARENT[cur]!=null){d++;cur=PARENT[cur];}return d;}
 function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
@@ -1330,23 +1597,57 @@ const OPPS = {
  edgewing:"Supply-chain opportunities via Edgewing and the GCAP partners' portals.",
  aukus:"Pillar 2 industry engagement via the AUKUS nations' innovation channels (DIU, ASCA, UKDI)."
 };
+/* national procurement & innovation routes — keyed by nation code (accurate to each country) */
+const NAT_OPPS = {
+  uk:"UK — tenders on Find a Tender (find-tender.service.gov.uk) and Contracts Finder; MOD suppliers via the Defence Sourcing Portal (Jaggaer). Innovation via UKDI/DASA competitions (gov.uk).",
+  us:"US — opportunities on SAM.gov; defence innovation via DIU (diu.mil) and DoD SBIR/STTR (dodsbirsttr.mil); service routes via AFWERX, Army xTech and NavalX.",
+  nato:"NATO — NSPA business opportunities (nspa.nato.int) and NCI Agency e-procurement (ncia.nato.int); innovation via DIANA challenges (diana.nato.int).",
+  eu_inst:"EU — the Funding &amp; Tenders portal (ec.europa.eu) for EDF/EUDIS calls, and TED (ted.europa.eu) for above-threshold contracts.",
+  fr:"France — public tenders on PLACE (marches-publics.gouv.fr); defence industry via the DGA's IXARM portal (ixarm.com); innovation via AID (defense.gouv.fr).",
+  de:"Germany — federal e-procurement via e-Vergabe / DTVP; BAAINBw is the buying authority (baainbw.de); start-up routes via the Cyber Innovation Hub (cyberinnovationhub.de).",
+  it:"Italy — Segredifesa procurement (difesa.it) and the Consip/MEPA platform (acquistinretepa.it); above-threshold notices on TED (ted.europa.eu).",
+  nl:"Netherlands — national tenders on TenderNed (tenderned.nl); defence buys via the DMO (defensie.nl).",
+  se:"Sweden — FMV procurement (fmv.se); notices via the national e-procurement systems (e.g. TendSign/Mercell) and TED (ted.europa.eu).",
+  no:"Norway — public tenders on Doffin (doffin.no); defence materiel via the NDMA (forsvarsmateriell.no).",
+  fi:"Finland — public tenders on Hilma (hankintailmoitukset.fi); defence materiel via the Logistics Command (puolustusvoimat.fi).",
+  dk:"Denmark — public tenders on udbud.dk; defence acquisition via DALO (fmi.dk).",
+  ee:"Estonia — the national public procurement register (riigihanked.riik.ee); defence buys via the Estonian Centre for Defence Investment (kaitseinvesteeringud.ee).",
+  lv:"Latvia — the national procurement portal (eis.gov.lv); defence via the Ministry of Defence (mod.gov.lv).",
+  lt:"Lithuania — the Central Public Procurement portal (cvpp.eviesiejipirkimai.lt); defence materiel via the Defence Materiel Agency (kam.lt).",
+  pl:"Poland — e-Zamowienia (ezamowienia.gov.pl); defence buys via the Armament Agency (wojsko-polskie.pl).",
+  cz:"Czechia — the national e-procurement portal; defence via the Defence Armament &amp; Acquisition Agency (army.cz).",
+  es:"Spain — the Plataforma de Contratación del Sector Público (contrataciondelestado.es); defence via DGAM (defensa.gob.es).",
+  pt:"Portugal — public tenders via the national portal (base.gov.pt); defence industry engagement via idD Portugal Defence (iddportugal.pt) and DGRDN.",
+  ro:"Romania — the electronic public procurement system (e-licitatie.ro); defence programmes via the Ministry of National Defence (mapn.ro).",
+  be:"Belgium — federal procurement on e-Procurement (publicprocurement.be); defence buys via DG MR (mil.be).",
+  tr:"Türkiye — defence programmes run through the Presidency of Defence Industries / SSB (ssb.gov.tr); industry engagement via the primes and TEKNOFEST/SAHA events.",
+  gr:"Greece — the national procurement system (promitheus.gov.gr); defence via GDAEED (mod.mil.gr).",
+  ua:"Ukraine — public tenders via Prozorro (prozorro.gov.ua); defence innovation and testing via Brave1 (brave1.gov.ua).",
+  ca:"Canada — federal tenders via CanadaBuys (canadabuys.canada.ca); defence innovation via Defence IDEaS and BOREALIS (canada.ca).",
+  au:"Australia — tenders via AusTender (tenders.gov.au); defence innovation via ASCA (asca.gov.au).",
+  nz:"New Zealand — government tenders via GETS (gets.govt.nz); capability via the Ministry of Defence (defence.govt.nz).",
+  multi:"Multinational programme — opportunities flow via the partner nations' portals and the programme office (e.g. OCCAR, occar.int).",
+  kr:"South Korea — defence programmes via DAPA (dapa.go.kr) and the D2B defence e-procurement system; R&D via ADD.",
+  jp:"Japan — defence procurement and R&D via ATLA (mod.go.jp/atla); engagement through the prime contractors.",
+  il:"Israel — programmes via the Israeli MoD and DDR&D/MAFAT (mod.gov.il); industry engagement via the primes (Rafael, IAI, Elbit)."
+};
+function nationCodeFor(id){
+  if(ORG_NATION[id]) return ORG_NATION[id];
+  const m=id.match(/^([a-z]{2})_/); const P={fr:'fr',de:'de',it:'it',nl:'nl',be:'be',se:'se',no:'no',fi:'fi',dk:'dk',ee:'ee',lv:'lv',lt:'lt',pl:'pl',cz:'cz',es:'es',pt:'pt',gr:'gr',ro:'ro',tr:'tr',ua:'ua',ca:'ca',au:'au',nz:'nz',kr:'kr',jp:'jp',il:'il'};
+  if(m&&P[m[1]]) return P[m[1]];
+  if(id==='eda'||id==='defis'||id==='edf'||id==='eudis'||id==='edip'||id==='asap_eu'||id==='occar'||id==='pesco'||id==='satcen'||id==='asd') return 'eu_inst';
+  const t=tagsFor(id);
+  if(t){ if(t.g==='us')return 'us'; if(t.g==='nato')return 'nato'; if(t.g==='ca')return 'ca'; if(t.g==='au')return 'au'; if(t.g==='nz')return 'nz'; if(t.g==='eu')return 'eu_inst'; if(t.g==='uk')return 'uk'; }
+  return 'uk';
+}
 function oppsFor(id){
   if(OPPS[id]) return OPPS[id];
-  const br=BRANCHOF[id]||id;
-  if(id.startsWith('ca_')) return "Canada — federal tenders via CanadaBuys (canadabuys.canada.ca); defence innovation calls via Defence IDEaS (canada.ca).";
-  if(id.startsWith('au_')) return "Australia — tenders via AusTender (tenders.gov.au); innovation calls via ASCA (asca.gov.au).";
-  if(id.startsWith('nz_')) return "New Zealand — government tenders via GETS (gets.govt.nz).";
-  if(/^(fr|de|it|nl|se|no|es|pl)_/.test(id)) return "National and EU calls via the EU Funding & Tenders portal (ec.europa.eu) and TED (ted.europa.eu).";
-  switch(br){
-    case 'b_nato': return "NATO calls to industry — NSPA business opportunities (nspa.nato.int) and NCIA e-procurement (ncia.nato.int).";
-    case 'b_eu': return "EU calls — EU Funding & Tenders portal (ec.europa.eu) and TED (ted.europa.eu).";
-    case 'b_us': return "US opportunities — SAM.gov and DoD SBIR/STTR (dodsbirsttr.mil).";
-    case 'b_5eyes': return "Allied tenders via the relevant national portal — CanadaBuys, AusTender or GETS.";
-    case 'b_multi': return "Programme calls via the partner nations' portals and the programme office.";
-    case 'b_primes': case 'b_supply': return "Supply-chain and subcontract opportunities via the company's supplier portal; prime requirements flow from DE&S tenders (find-tender.service.gov.uk).";
-    case 'b_tech': return "Engages via UKDI/DASA competitions and direct MOD pilots; UK tenders on Find a Tender (find-tender.service.gov.uk).";
-    default: return "UK tenders and calls — Find a Tender (find-tender.service.gov.uk) and Contracts Finder (contractsfinder.service.gov.uk); MOD suppliers via the Defence Sourcing Portal. Innovation via UKDI/DASA competitions.";
+  const t=tagsFor(id);
+  const nat=NAT_OPPS[nationCodeFor(id)] || NAT_OPPS.uk;
+  if(t && t.a==='prime'){
+    return "Engage as a supplier via the company's own supplier/procurement portal; prime requirements also appear on the national defence tender service. "+nat;
   }
+  return nat;
 }
 
 /* ---------- collapse state ---------- */
@@ -1397,6 +1698,7 @@ function nodeMatchesView(id){
   if(!VIEW) return true;
   const n=NODE[id]; if(!n) return false;
   if(VIEW.type==='branch'){ return computeBranch(id)===VIEW.val; }
+  if(VIEW.type==='nation'){ return computeBranch(id)==='nat_'+VIEW.val; }
   if(VIEW.type==='geo'){ const t=tagsFor(id); return t && t.g===VIEW.val; }
   if(VIEW.type==='dom'){ const t=tagsFor(id); return t && (t.d||[]).includes(VIEW.val); }
   if(VIEW.type==='func'){ const t=tagsFor(id); if(!t) return false;
@@ -1425,6 +1727,10 @@ function viewMatchTree(id){
 }
 function applyView(key,opts){
   opts=opts||{};
+  // 'branch:' views describe the UK-detailed structure; ensure that lens is active
+  if(key && key.indexOf('branch:')===0 && LENS!=='full'){ setLens('full',{noFit:true}); }
+  // 'nation:' views live in the alliance lens
+  if(key && key.indexOf('nation:')===0 && LENS!=='alliance'){ setLens('alliance',{noFit:true}); }
   for(const k in _mtCache) delete _mtCache[k];
   if(!key){ VIEW=null; } else { const [type,val]=key.split(':'); VIEW={type,val}; }
   // expand the tree so matches are revealed, but keep it tidy: open only branches that contain matches
@@ -1566,6 +1872,14 @@ function openPanel(id){
   const se=document.getElementById('s-entry'), sd=document.getElementById('s-does'), sk=document.getElementById('s-kids');
   if(n.entry){se.style.display=''; document.getElementById('pentry').innerHTML=linkifyContact(n.entry);} else se.style.display='none';
   document.getElementById('pdoes').textContent=n.does||"";
+  // coverage indicator for nation branches (alliance lens) — honest signal of how complete a nation is
+  const covEl=document.getElementById('pcoverage');
+  if(covEl){ covEl.style.display='none';
+    if(LENS==='alliance' && /^nat_/.test(id)){
+      const cnt=countLeaves(n); const cov = cnt>=40?['Comprehensive','#58f0c8']: cnt>=15?['Established','#8ad6a8']: cnt>=6?['Developing','#ffd27f']:['Early','#ff9e7f'];
+      covEl.style.display=''; covEl.innerHTML=`<span class="covdot" style="background:${cov[1]}"></span>Coverage: <b style="color:${cov[1]}">${cov[0]}</b> · ${cnt} organisations mapped <span class="covnote">— allied nations are still being built out to UK-level depth</span>`;
+    }
+  }
   const sfit=document.getElementById('s-fit');
   if(isDoorNode(n)){
     const t=tagsFor(id); sfit.style.display='';
@@ -1613,12 +1927,16 @@ q.addEventListener('input',()=>{
 
 /* legend */
 const lg=document.getElementById('lg');
-TREE.children.forEach(b=>{
-  const row=document.createElement('div'); row.className='lg';
-  row.innerHTML=`<span class="dot" style="background:${BRANCHCOLORS[b.id]}"></span><span class="nm">${b.l}</span><span class="ct">${countLeaves(b)}</span>`;
-  row.onclick=()=>{ clearViewSel(); collapsed.delete(b.id); refresh(); select(b.id); centerOn(b.id); };
-  lg.appendChild(row);
-});
+function rebuildLegend(){
+  lg.innerHTML='';
+  TREE.children.forEach(b=>{
+    const row=document.createElement('div'); row.className='lg';
+    row.innerHTML=`<span class="dot" style="background:${BRANCHCOLORS[b.id]}"></span><span class="nm">${b.l}</span><span class="ct">${countLeaves(b)}</span>`;
+    row.onclick=()=>{ clearViewSel(); collapsed.delete(b.id); refresh(); select(b.id); centerOn(b.id); };
+    lg.appendChild(row);
+  });
+}
+rebuildLegend();
 
 /* expand / collapse all */
 document.getElementById('expand').onclick=()=>{ clearViewSel(); collapsed.clear(); refresh(); fit(); };
@@ -1869,7 +2187,67 @@ const TAGS={
  nz_dta:{w:['academic','sme'],o:['research'],t:[1,5],d:['xcut'],a:'open',g:'nz'},
  diana:{w:['startup','sme'],o:['grant','test','advice'],t:[2,8],d:['xcut'],a:'open',g:'nato'},
  nspa:{w:['prime','sme'],o:['procurement'],t:[6,9],d:['xcut'],a:'portal',g:'nato'},
- ncia:{w:['prime','sme'],o:['procurement','contract'],t:[5,9],d:['cyber','c4isr'],a:'portal',g:'nato'}
+ ncia:{w:['prime','sme'],o:['procurement','contract'],t:[5,9],d:['cyber','c4isr'],a:'portal',g:'nato'},
+ tr_ssb:{w:['prime','sme'],o:['procurement','contract'],t:[5,9],d:['xcut'],a:'portal',g:'eu'},
+ tr_baykar:{w:['prime'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'eu'},
+ tr_tusas:{w:['prime'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'eu'},
+ tr_aselsan:{w:['prime'],o:['contract'],t:[6,9],d:['c4isr'],a:'prime',g:'eu'},
+ tr_roketsan:{w:['prime'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
+ tr_havelsan:{w:['prime','sme'],o:['contract'],t:[5,9],d:['c4isr'],a:'prime',g:'eu'},
+ tr_stm:{w:['prime','sme','investor'],o:['contract','investment'],t:[5,9],d:['maritime','cyber'],a:'prime',g:'eu'},
+ tr_tubitak:{w:['academic'],o:['research'],t:[1,6],d:['xcut'],a:'open',g:'eu'},
+ tr_teknofest:{w:['startup','academic'],o:['advice'],t:[1,6],d:['xcut'],a:'open',g:'eu'},
+ pt_idd:{w:['sme','prime'],o:['advice','contract'],t:[3,9],d:['xcut'],a:'open',g:'eu'},
+ pt_dgrdn:{w:['prime','sme'],o:['procurement'],t:[5,9],d:['xcut'],a:'portal',g:'eu'},
+ ro_mapn:{w:['prime','sme'],o:['procurement'],t:[5,9],d:['xcut'],a:'portal',g:'eu'},
+ ro_romarm:{w:['prime'],o:['contract'],t:[6,9],d:['land','weapons'],a:'prime',g:'eu'},
+ be_dgmr:{w:['prime','sme'],o:['procurement'],t:[5,9],d:['xcut'],a:'portal',g:'eu'},
+ mitre:{w:['academic','prime'],o:['research','advice'],t:[3,8],d:['c4isr','cyber'],a:'open',g:'us'},
+ lincoln:{w:['academic'],o:['research'],t:[2,7],d:['c4isr','space'],a:'open',g:'us'},
+ jhuapl:{w:['academic'],o:['research'],t:[2,7],d:['space','maritime'],a:'open',g:'us'},
+ aerospace:{w:['academic'],o:['research'],t:[3,8],d:['space'],a:'open',g:'us'},
+ rand_us:{w:['academic'],o:['research','advice'],t:[1,5],d:['xcut'],a:'open',g:'us'},
+ ida:{w:['academic'],o:['research','advice'],t:[1,5],d:['xcut'],a:'open',g:'us'},
+ sandia:{w:['academic'],o:['research'],t:[2,7],d:['nuclear'],a:'open',g:'us'},
+ shieldai:{w:['prime','startup'],o:['contract'],t:[6,9],d:['ai','air'],a:'open',g:'us'},
+ saronic:{w:['startup','prime'],o:['contract'],t:[6,9],d:['maritime'],a:'open',g:'us'},
+ skydio:{w:['prime','startup'],o:['contract'],t:[7,9],d:['air'],a:'open',g:'us'},
+ epirus:{w:['startup','prime'],o:['contract'],t:[6,9],d:['directed'],a:'open',g:'us'},
+ scaleai:{w:['prime','startup'],o:['contract'],t:[6,9],d:['ai'],a:'open',g:'us'},
+ appliedintuition:{w:['prime','startup'],o:['contract'],t:[6,9],d:['ai'],a:'open',g:'us'},
+ vannevar:{w:['startup','sme'],o:['contract'],t:[6,9],d:['ai','c4isr'],a:'open',g:'us'},
+ hermeus:{w:['startup'],o:['contract'],t:[4,8],d:['hypersonic'],a:'open',g:'us'},
+ castelion:{w:['startup'],o:['contract'],t:[5,9],d:['hypersonic','weapons'],a:'open',g:'us'},
+ govini:{w:['startup','sme'],o:['contract'],t:[7,9],d:['ai'],a:'open',g:'us'},
+ fr_cnes:{w:['academic'],o:['research'],t:[3,8],d:['space'],a:'open',g:'eu'},
+ fr_dassault:{w:['prime'],o:['contract'],t:[7,9],d:['air'],a:'prime',g:'eu'},
+ fr_naval:{w:['prime'],o:['contract'],t:[7,9],d:['maritime'],a:'prime',g:'eu'},
+ fr_safran:{w:['prime'],o:['contract'],t:[6,9],d:['air','c4isr'],a:'prime',g:'eu'},
+ fr_mbda:{w:['prime'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
+ fr_exail:{w:['prime','sme'],o:['contract'],t:[6,9],d:['maritime'],a:'prime',g:'eu'},
+ fr_arquus:{w:['prime'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'eu'},
+ de_dlr:{w:['academic'],o:['research'],t:[2,7],d:['space','air'],a:'open',g:'eu'},
+ de_fraunhofer:{w:['academic'],o:['research'],t:[2,7],d:['xcut'],a:'open',g:'eu'},
+ de_hensoldt:{w:['prime'],o:['contract'],t:[6,9],d:['c4isr'],a:'prime',g:'eu'},
+ de_diehl:{w:['prime'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
+ de_tkms:{w:['prime'],o:['contract'],t:[7,9],d:['maritime'],a:'prime',g:'eu'},
+ de_renk:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'eu'},
+ de_arx:{w:['startup','sme'],o:['contract'],t:[5,9],d:['land'],a:'open',g:'eu'},
+ pl_pgz:{w:['prime'],o:['contract'],t:[6,9],d:['land','weapons'],a:'prime',g:'eu'},
+ pl_wbgroup:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','c4isr'],a:'prime',g:'eu'},
+ kr_dapa:{w:['prime','sme'],o:['procurement'],t:[5,9],d:['xcut'],a:'portal',g:'kr'},
+ kr_add:{w:['academic'],o:['research'],t:[2,7],d:['xcut'],a:'open',g:'kr'},
+ kr_hanwha:{w:['prime'],o:['contract'],t:[7,9],d:['land','space'],a:'prime',g:'kr'},
+ kr_kai:{w:['prime'],o:['contract'],t:[7,9],d:['air'],a:'prime',g:'kr'},
+ kr_lignex1:{w:['prime'],o:['contract'],t:[7,9],d:['weapons','c4isr'],a:'prime',g:'kr'},
+ jp_atla:{w:['prime','sme'],o:['procurement','research'],t:[4,9],d:['xcut'],a:'portal',g:'jp'},
+ jp_mhi:{w:['prime'],o:['contract'],t:[7,9],d:['air','maritime'],a:'prime',g:'jp'},
+ jp_kawasaki:{w:['prime'],o:['contract'],t:[7,9],d:['air','maritime'],a:'prime',g:'jp'},
+ jp_melco:{w:['prime'],o:['contract'],t:[6,9],d:['c4isr','space'],a:'prime',g:'jp'},
+ il_mafat:{w:['prime','sme','academic'],o:['research','contract'],t:[3,9],d:['xcut'],a:'portal',g:'il'},
+ il_rafael:{w:['prime'],o:['contract'],t:[7,9],d:['weapons'],a:'prime',g:'il'},
+ il_iai:{w:['prime'],o:['contract'],t:[7,9],d:['air','space'],a:'prime',g:'il'},
+ il_elbit:{w:['prime'],o:['contract'],t:[7,9],d:['land','c4isr'],a:'prime',g:'il'}
 };
 function tagsFor(id){
   if(TAGS[id]) return TAGS[id];
@@ -2025,24 +2403,40 @@ document.getElementById('wFind').onclick=()=>{ closeWelcome(); document.getEleme
 document.getElementById('wExplore').onclick=()=>{ closeWelcome(); };
 document.getElementById('wSearch').onclick=()=>{ closeWelcome(); document.getElementById('q').focus(); };
 /* ---- home nation (first-run default view) ---- */
-function setHome(key,opts){
+function homeToView(code){ return code? ('nation:'+code) : ''; }
+function setHome(code,opts){
   opts=opts||{};
-  try{ localStorage.setItem('tde_home',key); localStorage.setItem('tde_home_set','1'); }catch(_){}
-  // reflect selection in the welcome picker
-  document.querySelectorAll('#whomeRow .whomeb').forEach(b=>b.classList.toggle('on', b.dataset.v===key));
+  try{ localStorage.setItem('tde_home',code); localStorage.setItem('tde_home_set','1'); }catch(_){}
+  const wsel=document.getElementById('whomeSel'); if(wsel) wsel.value=code;
   updateHomeOption();
-  if(!opts.noApply) applyView(key,{noFit:opts.noFit});
+  if(!opts.noApply) applyView(homeToView(code),{noFit:opts.noFit});
 }
 function homeKey(){ try{ return localStorage.getItem('tde_home')||''; }catch(_){ return ''; } }
-function homeLabel(){ const k=homeKey(); const map={'geo:uk':'UK','geo:us':'USA','geo:eu':'Europe','geo:ca':'Canada','geo:au':'Australia','geo:nz':'NZ','geo:nato':'NATO','':'All'}; return map[k]!==undefined?map[k]:'All'; }
+function homeLabel(){ const k=homeKey(); if(!k) return 'All nations'; const m=NATION_META[k]; return m? m.l.replace(/^[^A-Za-z]+/,'').trim() : k.toUpperCase(); }
 function updateHomeOption(){ const sel=document.getElementById('viewSel'); if(!sel)return;
   let opt=sel.querySelector('option[data-home]');
   if(!opt){ opt=document.createElement('option'); opt.setAttribute('data-home','1'); sel.insertBefore(opt, sel.firstChild.nextSibling); }
-  opt.value=homeKey(); opt.textContent='⌂ Home: '+homeLabel();
+  opt.value=homeToView(homeKey()); opt.textContent='⌂ Home: '+homeLabel();
 }
-document.querySelectorAll('#whomeRow .whomeb').forEach(b=>{
-  b.onclick=()=>{ setHome(b.dataset.v,{noFit:true}); closeWelcome(); setTimeout(fit,80); };
-});
+/* populate the welcome home dropdown from the full nation list */
+function populateHomeSelect(){
+  const wsel=document.getElementById('whomeSel'); if(!wsel)return;
+  // keep the first "Everything" option, then add grouped nations
+  const groups=[
+    ['Alliances', ['nato','eu_inst','multi']],
+    ['NATO members & Europe', ['uk','us','fr','de','it','nl','be','se','no','fi','dk','ee','lv','lt','pl','cz','es','pt','gr','ro','tr']],
+    ['Ukraine', ['ua']],
+    ['Five Eyes partners', ['ca','au','nz']],
+    ['Indo-Pacific & other allies', ['kr','jp','il']]
+  ];
+  groups.forEach(([label,codes])=>{
+    const og=document.createElement('optgroup'); og.label=label;
+    codes.forEach(c=>{ const m=NATION_META[c]; if(!m)return; const o=document.createElement('option'); o.value=c; o.textContent=m.l; og.appendChild(o); });
+    wsel.appendChild(og);
+  });
+}
+populateHomeSelect();
+document.getElementById('whomeSel').addEventListener('change',e=>{ setHome(e.target.value,{noFit:true}); closeWelcome(); setTimeout(fit,80); });
 document.getElementById('wAboutLink').onclick=openAbout;
 document.getElementById('aboutBtn').onclick=openAbout;
 document.getElementById('aClose').onclick=closeAbout;
@@ -2300,7 +2694,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (allied · multinational)';
+let DATA_AS_OF='August 2026 (31 nations · home picker)';
 const SOURCES={
  dasa:'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
  des:'https://des.mod.uk', dstl:'https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory',
@@ -2489,15 +2883,18 @@ updateCompareBadge();
 try{ const st=localStorage.getItem('tde_theme'); if(st){ themeIdx=Math.max(0,THEMES.indexOf(st)); } }catch(_){}
 applyTheme();
 renderSaved();
+document.querySelectorAll('#lensSeg button').forEach(b=>{ b.onclick=()=>{ clearViewSel&&clearViewSel(); setLens(b.dataset.lens); showToast('Organised by '+(b.dataset.lens==='alliance'?'alliance & country':b.dataset.lens==='tech'?'technology':'UK detailed structure')); }; });
 try{
+  extractOrgs();
+  const savedLens=localStorage.getItem('tde_lens')||'alliance';
+  setLens(savedLens,{noFit:true});
   updateHomeOption();
   const hset=localStorage.getItem('tde_home_set');
   const sv=localStorage.getItem('tde_view');
-  if(sv!==null && sv!==undefined){ applyView(sv,{noFit:true}); }
-  else if(hset){ applyView(homeKey(),{noFit:true}); }
-  // reflect current home in welcome picker
-  document.querySelectorAll('#whomeRow .whomeb').forEach(b=>b.classList.toggle('on', b.dataset.v===homeKey()));
-}catch(_){}
+  if(sv){ applyView(sv,{noFit:true}); }
+  else if(hset){ applyView(homeToView(homeKey()),{noFit:true}); }
+  const wsel=document.getElementById('whomeSel'); if(wsel) wsel.value=homeKey();
+}catch(e){ /* fallback: original tree */ TREE.children=ORIGINAL_CHILDREN.slice(); recolorBranches&&recolorBranches(); indexTree(); }
 setTimeout(()=>{ fit(); applyHash(); tryExternalData(); },70);
 window.addEventListener('hashchange',applyHash);
 </script>
