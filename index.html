@@ -192,6 +192,8 @@
   #finderResults{margin-top:16px}
   #finderResults .rcount{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
   .rcard{background:linear-gradient(180deg,#111C31,#0C1524);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;cursor:pointer;transition:.14s}
+  .rcard-gate{border-color:color-mix(in srgb,var(--phos) 60%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--phos) 18%,transparent)}
+  .rgate{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--phos);margin-bottom:7px;font-weight:500}
   .rcard:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent);box-shadow:0 6px 20px rgba(0,0,0,.4);transform:translateY(-1px)}
   .rcard .rhead{display:flex;align-items:center;gap:8px;margin-bottom:7px}
   .rcard .rdot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
@@ -206,10 +208,11 @@
   @media(max-width:820px){#finder{width:100%}}
   /* ---- product layer: welcome, about, share, export ---- */
   #welcome{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
     background:radial-gradient(120% 100% at 50% 28%,rgba(12,26,46,.86),rgba(6,10,18,.95));backdrop-filter:blur(9px);transition:opacity .35s}
   #welcome.hide{opacity:0;pointer-events:none}
   #welcome .wcard{max-width:660px;width:100%;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);
-    border-radius:20px;padding:32px 32px 26px;box-shadow:0 40px 110px rgba(0,0,0,.65)}
+    border-radius:20px;padding:32px 32px 26px;box-shadow:0 40px 110px rgba(0,0,0,.65);margin:auto}
   #welcome .wk{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--phos)}
   #welcome h1{font-family:"Space Grotesk",sans-serif;font-size:32px;margin:9px 0 7px;letter-spacing:.2px}
   #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
@@ -255,7 +258,15 @@
   #panel .plink{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(12,20,36,.8);border:1px solid var(--line);
     color:var(--mut);border-radius:8px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:.13s}
   #panel .plink:hover{border-color:var(--phos);color:#fff}
-  @media(max-width:640px){#welcome .wgrid{grid-template-columns:1fr}#welcome .wcard{padding:24px}}
+  @media(max-width:640px){#welcome .wgrid{grid-template-columns:1fr}#welcome .wcard{padding:24px}
+    #welcome{align-items:flex-start;padding:14px 12px}
+    #welcome .wcard{padding:20px 18px;border-radius:16px}
+    #welcome h1{font-size:25px}
+    #welcome .wdrow{flex-direction:row}
+    #welcome .wdopt{padding:11px 8px}
+    #welcome .wcard{margin:0 auto}}
+  html[data-device="phone"] #welcome{align-items:flex-start}
+  html[data-device="phone"] #welcome .wcard{margin:0 auto}
   /* ---- pathway / valley of death ---- */
   #pathway{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,10,18,.84);backdrop-filter:blur(7px)}
   #pathway.open{display:flex}
@@ -1327,30 +1338,40 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("cz_aobp","Czechia — AOBP","aobp.cz","Defence & Security Industry Association of the Czech Republic — the national industry body."),
      L("gr_sekpy","Greece — SEKPY","sekpy.gr","Hellenic Manufacturers of Defence Material Association — Greece's industry gateway."),
      L("pt_danotec","Portugal — AED Cluster / DANOTEC","aedcluster.com","Portugal's aeronautics, space and defence cluster and industry associations."),
-     L("sk_mosr","Slovakia — Ministry of Defence (MO SR)","mosr.sk","Slovakia's defence procurement and acquisition authority."),
-     L("sk_konstrukta","Slovakia — Konštrukta-Defence","kotadef.sk","State artillery designer — the Zuzana 2 and EVA self-propelled howitzers (DMD Group)."),
+     L("sk_mosr","Slovakia — Ministry of Defence (MO SR)","mosr.sk","Slovakia's defence procurement and acquisition authority; the sector contributed ~€2bn to GDP in 2025 and is expanding fast."),
+     L("sk_konstrukta","Slovakia — Konštrukta-Defence","kotadef.sk","State artillery designer — the Zuzana 2 155mm self-propelled howitzer (in service with Slovakia, Cyprus and Ukraine); part of DMD Group."),
+     L("sk_msm","Slovakia — MSM Group (CSG)","msm.sk","Ammunition, land systems and MRO — part of Czech CSG; runs MSM Land Systems and co-controls ZVS Holding; central to Slovakia's munitions expansion."),
      L("sk_zts","Slovakia — ZTS-Špeciál / DMD Group","dmdgroup.sk","State defence-industrial holding — vehicles, weapons and the SAM-120 self-propelled mortar."),
      L("sk_zvs","Slovakia — ZVS Holding","zvsholding.sk","Ammunition and munitions; central to Slovakia's large-calibre expansion."),
      L("hu_hm","Hungary — Ministry of Defence / Defence Procurement","kormany.hu","Hungary's defence procurement, modernising under the Zrínyi programme."),
      L("hu_n7","Hungary — N7 Defence (4iG)","n7holding.com","Hungary's first mixed public-private defence holding — small arms, munitions and MRO."),
      L("hu_rheinmetall","Hungary — Rheinmetall Hungary","rheinmetall.com","Lynx IFV production (Zalaegerszeg) and munitions plants (Várpalota, Szeged)."),
      L("bg_mod","Bulgaria — Ministry of Defence","mod.bg","Bulgaria's defence procurement authority."),
-     L("bg_vmz","Bulgaria — VMZ Sopot","vmz.bg","Bulgaria's largest state armaments factory — ammunition, rockets and munitions."),
+     L("bg_vmz","Bulgaria — VMZ Sopot","vmz.bg","Bulgaria's largest state armaments factory (est. 1936) — ammunition, rockets and munitions; a 155mm gunpowder & shell joint venture with Rheinmetall was agreed in 2025 (SAFE-funded, targeted ~2027), though its structure was under review in early 2026."),
      L("bg_arsenal","Bulgaria — Arsenal","arsenal-bg.com","Small arms and ammunition — one of the Balkans' largest producers."),
      L("bg_kintex","Bulgaria — Kintex","kintex.bg","State defence trading and export company."),
      L("hr_morh","Croatia — Ministry of Defence (MORH)","morh.hr","Croatia's defence procurement authority."),
-     L("hr_dok","Croatia — DOK-ING","dok-ing.hr","Demining, robotics and unmanned ground vehicles."),
-     L("hr_hs","Croatia — HS Produkt","hs-produkt.hr","Firearms manufacturer (the basis of the Springfield XD/HS9 pistols)."),
-     L("hr_djd","Croatia — Đuro Đaković","duro-dakovic.com","Armoured-vehicle assembly and defence engineering (Patria, Bradley work)."),
+     L("hr_dok","Croatia — DOK-ING","dok-ing.hr","Unmanned ground vehicles and demining robots (~80% of the world's robotic mine-clearing machines); now in a Rheinmetall unmanned-vehicles joint venture."),
+     L("hr_hs","Croatia — HS Produkt","hs-produkt.hr","Firearms manufacturer — the VHS bullpup rifle and the basis of the Springfield XD/HS9 pistols; a major exporter."),
+     L("hr_djd","Croatia — Đuro Đaković","duro-dakovic.com","Armoured-vehicle assembly and modernisation (Bradley, Patria AMV, M-84/Degman); cooperating with KNDS."),
+     L("hr_koncar","Croatia — Končar (SKYctrl)","koncar.hr","Counter-UAS systems (SKYctrl), radar, sensors and jamming — a growing Croatian C-UAS integrator."),
+     L("hr_orqa","Croatia — Orqa","orqafpv.com","FPV drones, controllers and goggles — dual-use systems relevant to the drone fight in Ukraine."),
+     L("hr_sestan","Croatia — Šestan-Busch","sestan-busch.com","Ballistic protection — combat helmets, body armour and vests, exported widely."),
      L("si_mors","Slovenia — Ministry of Defence (MORS)","gov.si","Slovenia's defence procurement authority; an ESSI/air-defence participant."),
      L("si_industry","Slovenia — defence industry (GIZ-DVI)","giz-dvi.si","Slovenia's defence-industry cluster — vehicles, optronics and components."),
+     L("si_valhalla","Slovenia — Valhalla Turrets","valhallaturrets.com","Remote weapon stations and turrets (the Mangart family), including counter-UAS air-defence variants."),
      L("al_mod","Albania — Ministry of Defence","mod.gov.al","Albania's defence procurement authority; NATO member since 2009."),
-     L("al_kado","Albania — KADO / MEICO","meico.gov.al","State defence trading and the domestic small-arms/repair base."),
-     L("mk_mod","North Macedonia — Ministry of Defence","mod.gov.mk","North Macedonia's defence procurement authority; NATO member since 2020."),
-     L("me_mod","Montenegro — Ministry of Defence","gov.me","Montenegro's defence procurement authority; NATO member since 2017."),
-     L("lu_def","Luxembourg — Directorate of Defence","defense.gouvernement.lu","Luxembourg's defence directorate — a major funder of multinational capability (NSPA-hosted)."),
-     L("lu_govsat","Luxembourg — GovSat / SES","govsat.lu","Government-owned satellite communications for defence and security (SES joint venture)."),
-     L("is_lcg","Iceland — Coast Guard & Defence","government.is","Iceland has no standing army; the Coast Guard and Ministry for Foreign Affairs run defence, host-nation support and NATO facilities (Keflavík)."),
+     L("al_kado","Albania — KAYO / MEICO","kayo.al","KAYO (est. 2024) is the state defence company reviving the Gramsh, Poliçan and Mjekës plants for ammunition and vehicles; MEICO handles defence export/import."),
+     L("al_akcesk","Albania — AKCESK / AKSHI (cyber)","cesk.gov.al","National cybersecurity authority (AKCESK) and information-society agency (AKSHI) — Albania's cyber-defence hubs, EU-supported."),
+     L("mk_mod","North Macedonia — Ministry of Defence","mod.gov.mk","North Macedonia's defence procurement authority; NATO member since 2020, ~2% GDP defence spend."),
+     L("mk_eurokompozit","North Macedonia — Eurokompozit","eurokompozit.com.mk","Ballistic protection and composite armour — the country's principal defence manufacturer (Prilep)."),
+     L("me_mod","Montenegro — Ministry of Defence","vojska.me","Montenegro's defence procurement authority; NATO member since 2017, integrated into NATO air policing (Italian/Greek)."),
+     L("lu_def","Luxembourg — Directorate of Defence","defense.gouvernement.lu","Luxembourg's defence directorate — a major per-capita funder of multinational capability; runs a Defence Space Strategy and hosts NSPA in Capellen."),
+     L("lu_govsat","Luxembourg — GovSat / LuxGovSat","govsat.lu","Secure military satellite communications (GovSat-1, GovSat-2 from 2025) — a 50/50 government–SES joint venture serving Luxembourg, NATO, EU and US forces."),
+     L("lu_lsa","Luxembourg — Space Agency (LSA)","space-agency.public.lu","National space agency backing dual-use space capabilities and the defence-relevant space sector."),
+     L("is_lcg","Iceland — Coast Guard (defence operations)","government.is","Iceland has no standing army; the Coast Guard runs operational defence — the NATO Iceland Air Defence System, radar sites, Keflavík base and host-nation support."),
+     L("is_dir","Iceland — Directorate for Defence (MFA)","government.is","The defence authority within the Ministry for Foreign Affairs; a 2025 interagency coordination structure oversees policy, procurement and subsea-cable protection (incl. an unmanned surveillance submarine and counter-drone equipment)."),
+     L("is_cert","Iceland — CERT-IS","cert.is","National computer emergency response team — cyber defence and critical-infrastructure protection."),
      L("gr_gdaeed","Greece — GDAEED / GDDIA","mod.mil.gr","Greek General Directorate for Defence Investments & Armaments — procurement and armaments."),
      L("gr_eab","Greece — Hellenic Aerospace Industry (EAB/HAI)","haicorp.com","Greece's aerospace prime — MRO, aerostructures and systems for Boeing, Airbus, Lockheed and others."),
      L("gr_eas","Greece — Hellenic Defence Systems (EAS)","eas.gr","State-owned munitions, small arms and artillery manufacturer."),
@@ -1885,10 +1906,10 @@ function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.c
 const OPPS = {
  ukdi:"UKDI competitions — including the multi-cycle ‘Innovation Support to Operations’ themed competition (fast, TRL 6+, months not years) plus wider themed and loan routes. Live cycles and the five innovation themes appear on gov.uk and the UKDI submission service.",
  dasa:"DASA finds and funds exploitable innovation through themed and open competitions; now part of UKDI and running its cycles. Current competitions are listed on gov.uk (search ‘DASA’ or ‘UKDI competitions’). Contact accelerator@dstl.gov.uk.",
- dstl:"Research opportunities via the Serapis framework and R-Cloud; tenders on Contracts Finder (contractsfinder.service.gov.uk).",
- des:"Tenders via the Defence Sourcing Portal (Jaggaer) and Find a Tender (find-tender.service.gov.uk).",
- commercial:"MOD requirements advertised on the Defence Sourcing Portal and Find a Tender (find-tender.service.gov.uk).",
- fcg:"Robotics and autonomy calls routed via UKDI/DASA competitions and DE&S tenders (find-tender.service.gov.uk).",
+ dstl:"Research opportunities via the Serapis framework and R-Cloud; tenders on Contracts Finder (www.contractsfinder.service.gov.uk).",
+ des:"Tenders via the Defence Sourcing Portal (Jaggaer) and Find a Tender (www.find-tender.service.gov.uk).",
+ commercial:"MOD requirements advertised on the Defence Sourcing Portal and Find a Tender (www.find-tender.service.gov.uk).",
+ fcg:"Robotics and autonomy calls routed via UKDI/DASA competitions and DE&S tenders (www.find-tender.service.gov.uk).",
  daic:"AI challenges and pilots via UKDI/DASA and Defence Digital — see gov.uk.",
  battlelab:"Hosts collaboration challenges and DIANA test activity — see the Defence BattleLab and diana.nato.int.",
  jhub:"Problem-led calls run through CSOC; routed via UKDI/DASA competitions.",
@@ -1898,7 +1919,7 @@ const OPPS = {
  ncsc:"NCSC For Startups and challenge calls at ncsc.gov.uk.",
  innovateuk:"Innovate UK funding competitions at iuk.ukri.org (Innovation Funding Service).",
  nssif:"Pitch for investment via accredited NSSIF fund managers (british-business-bank.co.uk).",
- ofsbg:"SME calls and pathways via the Defence Office for Small Business Growth — see gov.uk and Find a Tender (find-tender.service.gov.uk).",
+ ofsbg:"SME calls and pathways via the Defence Office for Small Business Growth — see gov.uk and Find a Tender (www.find-tender.service.gov.uk).",
  dtep:"Defence Technology Exploitation Programme grant calls via ADS (adsgroup.org.uk).",
  makeuk:"SME supply-chain opportunities and events via Make UK Defence (makeukdefence.org).",
  ads:"Supply-chain opportunities, DTEP grants and events via ADS (adsgroup.org.uk).",
@@ -1941,7 +1962,7 @@ const OPPS = {
 };
 /* national procurement & innovation routes — keyed by nation code (accurate to each country) */
 const NAT_OPPS = {
-  uk:"UK — tenders on Find a Tender (find-tender.service.gov.uk) and Contracts Finder; MOD suppliers via the Defence Sourcing Portal (Jaggaer). Innovation via UKDI/DASA competitions (gov.uk).",
+  uk:"UK — tenders on Find a Tender (www.find-tender.service.gov.uk) and Contracts Finder; MOD suppliers via the Defence Sourcing Portal (Jaggaer). Innovation via UKDI/DASA competitions (gov.uk).",
   us:"US — opportunities on SAM.gov; defence innovation via DIU (diu.mil) and DoD SBIR/STTR (dodsbirsttr.mil); service routes via AFWERX, Army xTech and NavalX.",
   nato:"NATO — NSPA business opportunities (nspa.nato.int) and NCI Agency e-procurement (ncia.nato.int); innovation via DIANA challenges (diana.nato.int).",
   eu_inst:"EU — the Funding &amp; Tenders portal (ec.europa.eu) for EDF/EUDIS calls, and TED (ted.europa.eu) for above-threshold contracts.",
@@ -2189,7 +2210,7 @@ const panel=document.getElementById('panel');
 /* ---- verified-domains allowlist: only links we're confident resolve are clickable; everything else is plain text ---- */
 const VERIFIED_DOMAINS = new Set([
   // UK government / bodies
-  'gov.uk','mod.uk','des.mod.uk','dstl.gov.uk','find-tender.service.gov.uk','contractsfinder.service.gov.uk',
+  'gov.uk','mod.uk','des.mod.uk','dstl.gov.uk','www.find-tender.service.gov.uk','find-tender.service.gov.uk','www.contractsfinder.service.gov.uk','contractsfinder.service.gov.uk',
   // US
   'darpa.mil','diu.mil','afwerx.com','dodsbirsttr.mil','sam.gov','navy.mil','af.mil','army.mil','defense.gov','arl.devcom.army.mil','onr.navy.mil','afrl.af.mil','cto.mil',
   'mitre.org','ll.mit.edu','jhuapl.edu','aerospace.org','rand.org','ida.org','energy.gov',
@@ -2248,17 +2269,17 @@ const VERIFIED_DOMAINS = new Set([
   'farnboroughinternational.co.uk','dsei.co.uk','rina.org.uk','imeche.org','theiet.org','aerosociety.com'
 ].forEach(d=>VERIFIED_DOMAINS.add(d));
 /* national contracting / tender portals — verified official procurement systems (the highest-value links in the tool) */
-[ 'find-tender.service.gov.uk','contractsfinder.service.gov.uk','sam.gov','ted.europa.eu','ec.europa.eu',
+[ 'www.find-tender.service.gov.uk','www.contractsfinder.service.gov.uk','sam.gov','ted.europa.eu','ec.europa.eu',
   'acquistinretepa.it','puolustusvoimat.fi','logistiikkalaitos.fi','udbud.dk','riigihanked.riik.ee','eis.gov.lv',
   'cvpp.eviesiejipirkimai.lt','base.gov.pt','e-licitatie.ro','publicprocurement.be','promitheus.gov.gr',
   'riigihanked.ee','hankintailmoitukset.fi','doffin.no','tenderned.nl','ezamowienia.gov.pl','contrataciondelestado.es',
   'marches-publics.gouv.fr','ixarm.com','canadabuys.canada.ca','tenders.gov.au','gets.govt.nz','prozorro.gov.ua',
   'acquistinretepa.it','e-licitatie.ro','grants.gov','dsca.mil','dla.mil','challenge.gov',
-  'mosr.sk','kotadef.sk','dmdgroup.sk','zvsholding.sk','uvo.gov.sk',
+  'mosr.sk','kotadef.sk','dmdgroup.sk','zvsholding.sk','uvo.gov.sk','msm.sk',
   'kormany.hu','n7holding.com','ekr.gov.hu','mod.bg','vmz.bg','arsenal-bg.com','kintex.bg','app.eop.bg',
-  'morh.hr','dok-ing.hr','hs-produkt.hr','duro-dakovic.com','eojn.hr',
-  'giz-dvi.si','ejn.gov.si','mod.gov.al','app.gov.al','meico.gov.al','mod.gov.mk','e-nabavki.gov.mk',
-  'cejn.gov.me','defense.gouvernement.lu','pmp.b2g.etat.lu','govsat.lu','government.is','utbodsvefur.is','gov.si','gov.me',
+  'morh.hr','dok-ing.hr','hs-produkt.hr','duro-dakovic.com','eojn.hr','koncar.hr','orqafpv.com','sestan-busch.com',
+  'giz-dvi.si','ejn.gov.si','valhallaturrets.com','mod.gov.al','app.gov.al','meico.gov.al','kayo.al','cesk.gov.al','mod.gov.mk','eurokompozit.com.mk','e-nabavki.gov.mk',
+  'cejn.gov.me','vojska.me','defense.gouvernement.lu','space-agency.public.lu','pmp.b2g.etat.lu','govsat.lu','government.is','cert.is','utbodsvefur.is','gov.si','gov.me',
   'dsei.co.uk','eurosatory.com','farnboroughinternational.co.uk','siae.fr','targikielce.pl','idexuae.ae','worlddefenseshow.com','idef.com.tr','defea.gr','cansec.ca','ausa.org','seaairspace.org','iitsec.org','indopacificexpo.com.au','dsaexhibition.com','milipol.com','hellios.com',
   'gicat.com','gifas.fr','gican.asso.fr','bdsv.eu','bdli.de','aiad.it','tedae.org','nidv.eu','soff.se','fsi.no','afda.fi','fad.di.dk','agoria.be','przemysl-obronny.pl','aobp.cz','sekpy.gr','aedcluster.com'
 ].forEach(d=>VERIFIED_DOMAINS.add(d));
@@ -2464,11 +2485,9 @@ const TAGS={
  ode:{w:['prime','sme'],o:['export','advice'],t:[7,9],d:['xcut'],a:'open',g:'uk'},
  jhub:{w:['sme','startup'],o:['advice','contract'],t:[5,8],d:['xcut'],a:'open',g:'uk'},
  dcto:{w:['sme','startup'],o:['test','contract'],t:[4,8],d:['maritime','ai'],a:'open',g:'uk'},
- armyx:{w:['sme','prime'],o:['test','contract'],t:[4,8],d:['land'],a:'open',g:'uk'},
  rafrco:{w:['prime','sme'],o:['contract'],t:[5,9],d:['air','space'],a:'invite',g:'uk'},
  digicat:{w:['sme','startup','academic'],o:['research','test','advice'],t:[3,7],d:['ai','cyber','c4isr'],a:'open',g:'uk'},
  satcat:{w:['sme','startup','academic'],o:['research','test','advice'],t:[3,7],d:['space'],a:'open',g:'uk'},
- hvmc:{w:['sme','prime','academic'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
  mtc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
  ncc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
  amrc:{w:['sme','prime'],o:['research','test'],t:[3,8],d:['materials'],a:'open',g:'uk'},
@@ -2486,7 +2505,6 @@ const TAGS={
  cranfield:{w:['academic','govmil'],o:['research','advice'],t:[1,5],d:['xcut'],a:'open',g:'uk'},
  kcl:{w:['academic','govmil'],o:['research','advice'],t:[1,4],d:['xcut'],a:'open',g:'uk'},
  udrc:{w:['academic'],o:['research'],t:[1,4],d:['c4isr','ai'],a:'open',g:'uk'},
- unis:{w:['academic','sme'],o:['research'],t:[1,4],d:['xcut'],a:'open',g:'uk'},
  turing:{w:['academic','sme'],o:['research'],t:[1,5],d:['ai'],a:'open',g:'uk'},
  npl:{w:['academic','prime'],o:['research','test'],t:[2,7],d:['materials','quantum'],a:'open',g:'uk'},
  ads:{w:['sme','prime'],o:['advice','grant'],t:[1,9],d:['xcut'],a:'open',g:'uk'},
@@ -2742,7 +2760,6 @@ const TAGS={
  gr_intracom:{w:['prime','sme'],o:['contract'],t:[6,9],d:['c4isr','weapons'],a:'prime',g:'eu'},
  lv_origin:{w:['startup','sme'],o:['contract'],t:[5,9],d:['air','weapons'],a:'open',g:'eu'},
  lv_defsecintel:{w:['sme','startup'],o:['contract'],t:[5,9],d:['c4isr'],a:'open',g:'eu'},
- lt_ecosystem:{w:['startup','sme'],o:['advice','grant'],t:[2,7],d:['xcut'],a:'open',g:'eu'},
  lt_ndma_ecosystem:{w:['startup','sme'],o:['advice','grant'],t:[2,7],d:['xcut'],a:'open',g:'eu'},
  lv_ascc:{w:['govmil','sme'],o:['test','advice'],t:[6,9],d:['c4isr','air'],a:'open',g:'eu'},
  lv_edge:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air'],a:'open',g:'eu'},
@@ -2762,6 +2779,7 @@ const TAGS={
  ro_electromecanica:{w:['prime','sme'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
  sk_mosr:{w:['prime','sme'],o:['procurement'],t:[4,9],d:['xcut'],a:'portal',g:'eu'},
  sk_konstrukta:{w:['prime'],o:['contract'],t:[7,9],d:['land','weapons'],a:'prime',g:'eu'},
+ sk_msm:{w:['prime'],o:['contract'],t:[6,9],d:['weapons','land','logistics'],a:'prime',g:'eu'},
  sk_zts:{w:['prime'],o:['contract'],t:[6,9],d:['land','weapons'],a:'prime',g:'eu'},
  sk_zvs:{w:['prime'],o:['contract'],t:[6,9],d:['weapons'],a:'prime',g:'eu'},
  hu_hm:{w:['prime','sme'],o:['procurement'],t:[4,9],d:['xcut'],a:'portal',g:'eu'},
@@ -2775,6 +2793,10 @@ const TAGS={
  hr_dok:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land','counteruas'],a:'open',g:'eu'},
  hr_hs:{w:['prime'],o:['contract'],t:[7,9],d:['weapons'],a:'prime',g:'eu'},
  hr_djd:{w:['prime'],o:['contract'],t:[6,9],d:['land'],a:'prime',g:'eu'},
+ hr_koncar:{w:['prime','sme'],o:['contract'],t:[6,9],d:['counteruas','c4isr'],a:'open',g:'eu'},
+ hr_orqa:{w:['sme','startup'],o:['contract'],t:[6,9],d:['air','counteruas'],a:'open',g:'eu'},
+ hr_sestan:{w:['prime','sme'],o:['contract'],t:[7,9],d:['land','materials'],a:'prime',g:'eu'},
+ si_valhalla:{w:['sme','prime'],o:['contract'],t:[6,9],d:['weapons','counteruas'],a:'open',g:'eu'},
  si_mors:{w:['prime','sme'],o:['procurement'],t:[4,9],d:['xcut'],a:'portal',g:'eu'},
  si_industry:{w:['sme','startup'],o:['advice'],t:[3,8],d:['xcut'],a:'open',g:'eu'},
  al_mod:{w:['prime','sme'],o:['procurement'],t:[3,9],d:['xcut'],a:'portal',g:'eu'},
@@ -2784,6 +2806,11 @@ const TAGS={
  lu_def:{w:['prime','sme'],o:['procurement'],t:[4,9],d:['xcut'],a:'portal',g:'eu'},
  lu_govsat:{w:['prime'],o:['contract'],t:[7,9],d:['space','comms'],a:'prime',g:'eu'},
  is_lcg:{w:['govmil'],o:['procurement'],t:[4,9],d:['maritime'],a:'portal',g:'eu'},
+ is_dir:{w:['govmil','sme'],o:['procurement','advice'],t:[3,9],d:['xcut','maritime'],a:'portal',g:'eu'},
+ is_cert:{w:['govmil','sme'],o:['advice'],t:[4,9],d:['cyber'],a:'open',g:'eu'},
+ lu_lsa:{w:['sme','startup','academic'],o:['grant','advice'],t:[2,9],d:['space'],a:'open',g:'eu'},
+ mk_eurokompozit:{w:['prime','sme'],o:['contract'],t:[6,9],d:['land','materials'],a:'prime',g:'eu'},
+ al_akcesk:{w:['govmil','sme'],o:['advice'],t:[4,9],d:['cyber'],a:'open',g:'eu'},
  ev_dsei:{w:['sme','startup','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'uk'},
  ev_eurosatory:{w:['sme','startup','prime'],o:['advice'],t:[1,9],d:['land'],a:'open',g:'eu'},
  ev_farnborough:{w:['sme','startup','prime'],o:['advice'],t:[1,9],d:['air'],a:'open',g:'uk'},
@@ -2937,6 +2964,13 @@ function tagsFor(id){
   }
   return d;
 }
+/* national gateway / "front door" body per nation — surfaced first in Find your door when that nation is the user's home */
+const GATEWAY = {
+  uk:'dosbg', us:'diu', fr:'fr_gicat', de:'de_bdsv', it:'it_aiad', es:'es_tedae', nl:'nl_nidv',
+  se:'se_soff', no:'no_fsi', fi:'fi_afda', dk:'dk_fad', be:'be_bsdi', pl:'pl_piit', cz:'cz_aobp',
+  gr:'gr_sekpy', pt:'pt_danotec', ee:'ee_edia', nz:'nz_industry', ca:'ev_cansec', au:'au_asca'
+};
+function gatewayFor(natCode){ return natCode && GATEWAY[natCode] ? GATEWAY[natCode] : null; }
 function scoreNode(id,sel){
   const t=tagsFor(id); let s=0; const why=[];
   if(sel.role){ if(t.w.includes(sel.role)){s+=3; why.push(WHOLAB[sel.role]);}
@@ -2949,6 +2983,8 @@ function scoreNode(id,sel){
   if((sel.domains||[]).length){ const isX=t.d.includes('xcut'); const hits=sel.domains.filter(x=>t.d.includes(x)); if(hits.length){s+=Math.min(3,hits.length*2); hits.forEach(x=>why.push(DOMLAB[x]));} else if(isX){s+=0.5;} else {s-=1;} }
   if(sel.geo&&sel.geo!=='any'){ if(t.g===sel.geo){s+=2;why.push(GEOLAB[sel.geo]);} else {s-=1.5;} }
   if(sel.role==='sme'||sel.role==='startup'){ if(t.a==='open')s+=1.5; else if(t.a==='prime')s-=1; else if(t.a==='invite')s-=2; }
+  /* national gateway boost: if this is the home nation's front-door body, surface it near the top as the recommended first contact */
+  if(sel.homeGateway && id===sel.homeGateway){ s+=6; why.unshift('★ your national front door'); }
   return {s,why};
 }
 function focusNode(id){ if(VIEW && !viewMatchTree(id)) clearViewSel(); let cur=PARENT[id]; while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];} refresh(); select(id); centerOn(id); }
@@ -2963,6 +2999,8 @@ function readFinder(){
     else if(facet==='domains') sel.domains=on;
     else if(facet==='needs') sel.needs=on;
   });
+  /* recommend the user's national front-door body, based on their chosen home nation */
+  try{ sel.homeGateway = gatewayFor(homeKey()); }catch(_){ sel.homeGateway=null; }
   return sel;
 }
 let lastScored=[],lastSel=null;
@@ -2976,7 +3014,9 @@ function renderFinderResults(sel){
   scored.forEach(r=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
     const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
     const ac=ACCESSCOL[t.a], al=ACCESSLAB[t.a];
-    html+=`<div class="rcard" data-id="${r.id}">
+    const isGate = sel.homeGateway && r.id===sel.homeGateway;
+    html+=`<div class="rcard${isGate?' rcard-gate':''}" data-id="${r.id}">
+      ${isGate?`<div class="rgate">★ Recommended first contact — your national gateway</div>`:''}
       <div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${n.l}</span>
         <span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div>
       <div class="rwhy">${why}</div>
@@ -3401,7 +3441,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (national gateways · fairs · 32 NATO · 756 orgs)';
+let DATA_AS_OF='August 2026 (UK tender links fixed · www prefix · 769 orgs)';
 const SOURCES={
  dasa:'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
  des:'https://des.mod.uk', dstl:'https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory',
