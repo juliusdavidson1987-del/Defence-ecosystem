@@ -1,0 +1,80 @@
+The Defence Ecosystem
+Copyright (c) 2026 Julius Davidson
+
+This project is dual-licensed. Two different licences apply to two different
+parts of it. Please read both.
+
+================================================================================
+1. SOFTWARE / CODE  —  MIT License
+================================================================================
+
+Applies to: all source code in this repository (the HTML, CSS, and JavaScript
+that make up the tool, and the maintenance scripts such as validate.mjs and
+check-links.mjs).
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+2. DATA / CONTENT  —  Creative Commons Attribution 4.0 International (CC BY 4.0)
+================================================================================
+
+Applies to: the organisation data, descriptions, categorisations, and all other
+written and structured reference content in this project.
+
+This content is licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0). You are free to:
+
+  - Share  — copy and redistribute the material in any medium or format
+  - Adapt  — remix, transform, and build upon the material
+            for any purpose, even commercially.
+
+Under the following term:
+
+  - Attribution — You must give appropriate credit to "The Defence Ecosystem
+    (Julius Davidson)", provide a link to the licence, and indicate if changes
+    were made. You may do so in any reasonable manner, but not in any way that
+    suggests the licensor endorses you or your use.
+
+The full licence text is at: https://creativecommons.org/licenses/by/4.0/
+
+================================================================================
+3. THIRD-PARTY / PUBLIC SECTOR INFORMATION
+================================================================================
+
+Some entries are informed by public sector information published by UK
+government bodies. Where this is the case:
+
+  "Contains public sector information licensed under the Open Government
+   Licence v3.0." — https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+Organisation names, trade marks, and logos referred to in the data remain the
+property of their respective owners. Their inclusion is for identification and
+navigation only and does not imply any affiliation with or endorsement by them.
+
+================================================================================
+4. DISCLAIMER
+================================================================================
+
+The Defence Ecosystem is an unofficial navigational aid. It is not affiliated
+with, endorsed by, or representative of the UK Ministry of Defence, any
+government, or NATO. The data is representative rather than exhaustive and is
+provided without warranty; verify anything important against its original
+source before relying on it.
+
+Contact / licensor: Julius Davidson — juliusdavidson1987@gmail.com
