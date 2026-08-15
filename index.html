@@ -252,6 +252,10 @@
   #about p{font-size:13px;line-height:1.64;color:#D2DCEE;margin:0 0 9px}
   #about a{color:var(--phos)}
   #about .aver{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--faint)}
+  #about .alic{font-size:12px;color:var(--mut);line-height:1.55;margin:4px 0 8px}
+  .corlic{font-size:10.5px;color:var(--faint);line-height:1.5;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line)}
+  #about .alic a{color:var(--phos);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--phos) 40%,transparent)}
+  #about .alic a:hover{border-bottom-color:var(--phos)}
   #about .achangelog{margin:6px 0 4px;padding:0;list-style:none}
   #about .achangelog li{font-size:12px;color:var(--mut);line-height:1.5;padding:7px 0 7px 12px;border-left:2px solid color-mix(in srgb,var(--phos) 40%,transparent);margin-bottom:6px}
   #about .achangelog li b{color:var(--phos);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.5px}
@@ -731,7 +735,7 @@
       <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search &amp; contacts</div><div class="wd">Jump to any organisation for its links, emails and live calls.</div></div>
     </div>
     <div class="wbtns"><button class="wenter" id="wEnter">Enter →</button><button class="wabout" id="wAboutLink">About &amp; disclaimer</button></div>
-    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. It began as a UK map and is being extended to give every allied nation the same depth — coverage varies by nation today. Organisation details, contacts and fit ratings are best-effort and may change — always verify on the organisation's own site.</div>
+    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. It began as a UK map and is being extended to give every allied nation the same depth — coverage varies by nation today. Organisation details, contacts and fit ratings are best-effort and may change — always verify on the organisation's own site.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
   </div>
 </div>
 
@@ -757,14 +761,19 @@
     <p>This is a single self-contained file. Share it by sending the file, or host it free on any static host (GitHub Pages, Netlify, Cloudflare Pages, or an internal SharePoint) to give people a link. The <b>Share</b> buttons build deep links that reopen a specific search or organisation. If a <b>defence-ecosystem-data.json</b> file is placed alongside a hosted copy, the map refreshes from it automatically — so the data can be updated without rebuilding the app.</p>
     <h4>Accessibility &amp; views</h4>
     <p>Use the <b>◐ Theme</b> button to switch between dark, light and high-contrast. <b>☰ Explore</b> opens a keyboard-navigable, filterable table of every organisation as an alternative to the visual map. Contacts, opportunities and organisation facts carry a currency stamp, and you can mark any entry verified, suggest a correction, favourite it, or pin it to <b>⇄ Compare</b>.</p>
+    <h4>Licence &amp; reuse</h4>
+    <p class="alic">This is an open reference — you're welcome to build on it. The <b>code</b> is licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT Licence</a>; the <b>organisation data and descriptions</b> under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0 (CC BY 4.0)</a> — reuse freely, including commercially, with credit to "The Defence Ecosystem (Julius Davidson)". Corrections and additions are accepted under the same licences.</p>
+    <p class="alic">Some entries are informed by UK public sector information: <i>Contains public sector information licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noopener">Open Government Licence v3.0</a>.</i> Organisation names and logos remain the property of their owners; their inclusion is for identification only and implies no affiliation or endorsement.</p>
+    <p class="alic">Maintained by <b>Julius Davidson</b> · <a href="mailto:juliusdavidson1987@gmail.com">juliusdavidson1987@gmail.com</a></p>
     <h4>What's changed</h4>
     <ul class="achangelog">
+      <li><b>Aug 2026</b> — Added an open licence (MIT + CC BY 4.0), contribution terms, and a named maintainer.</li>
       <li><b>Aug 2026</b> — Fixed the UK Find a Tender / Contracts Finder links (now use the correct <code>www.</code> address). Added per-entry "last reviewed" dates.</li>
       <li><b>Aug 2026</b> — Deep accuracy pass on all 32 NATO members; added national industry-association gateways and 16 international defence fairs. Reached 766 organisations.</li>
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v2.0 · updated August 2026 · unofficial</div>
+    <div class="aver">The Defence Ecosystem · v2.0 · updated August 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -881,6 +890,7 @@
   <textarea class="finput" id="cor_text" rows="3" placeholder="What's wrong, and what it should say…"></textarea>
   <label class="anlab">Your name (optional)</label><input class="finput" id="cor_name" placeholder="So the maintainer can follow up">
   <div class="frow"><button class="fgo" id="cor_send">✎ Send via form</button><button class="freset" id="cor_save">Download copy</button><button class="freset" id="cor_cancel">Cancel</button></div>
+  <p class="corlic">Corrections are accepted under the project licence (data CC BY 4.0 · code MIT). Please submit only your own words, not text copied from a website.</p>
 </div></div>
 
 <script>
@@ -3731,7 +3741,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (collapsible phone filters · 765 orgs)';
+let DATA_AS_OF='August 2026 (open licence · MIT + CC BY 4.0 · 765 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
