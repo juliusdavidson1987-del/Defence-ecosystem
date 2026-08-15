@@ -802,9 +802,10 @@
   <div id="crmBody"></div>
   <div class="crmactions">
     <button class="rbtn" id="crmAdd">＋ Add organisation</button>
+    <button class="rbtn" id="crmShare">⤴ Share my CRM</button>
     <button class="rbtn" id="crmCsv">⤓ Contacts CSV</button>
     <button class="rbtn" id="crmExport">⤓ Backup (JSON)</button>
-    <button class="rbtn" id="crmImport">⤒ Restore</button>
+    <button class="rbtn" id="crmImport">⤒ Import / Restore</button>
     <input type="file" id="crmFile" accept="application/json" style="display:none">
   </div>
   <div class="crmnote">Your contacts and additions are saved in this browser and are included when you <b>Export</b> them as a JSON file. Import that file on another machine — or share it with a colleague — to move your CRM with you.</div>
@@ -864,13 +865,13 @@
   <button class="aclose" id="corClose" aria-label="Close">×</button>
   <div class="ak">✎ Suggest a correction</div>
   <h2 id="corTitle">Suggest a correction</h2>
-  <p class="pintro">Spotted something out of date or wrong? Note it here and download the correction — email it to whoever maintains this map. Nothing is sent automatically.</p>
+  <p class="pintro">Spotted something out of date or wrong? Send it straight to the maintainer via the suggestions form — it opens pre-filled with this organisation and your note. (You can also download a local copy.)</p>
   <label class="anlab">What needs fixing</label>
-  <select class="finput" id="cor_field"><option value="Contact / email">Contact / email</option><option value="Website">Website</option><option value="What they do">What they do</option><option value="Live opportunity">Live opportunity</option><option value="Routing / tags">Routing / tags</option><option value="Other">Other</option></select>
+  <select class="finput" id="cor_field"><option value="Contact / email">Contact / email</option><option value="Website">Website</option><option value="What they do">What they do</option><option value="Live opportunity">Live opportunity</option><option value="Routing / tags">Routing / tags</option><option value="Entity type (gov/research/industry…)">Entity type (gov/research/industry…)</option><option value="Other">Other</option></select>
   <label class="anlab">The correction</label>
   <textarea class="finput" id="cor_text" rows="3" placeholder="What's wrong, and what it should say…"></textarea>
   <label class="anlab">Your name (optional)</label><input class="finput" id="cor_name" placeholder="So the maintainer can follow up">
-  <div class="frow"><button class="fgo" id="cor_save">Download note</button><button class="freset" id="cor_cancel">Cancel</button></div>
+  <div class="frow"><button class="fgo" id="cor_send">✎ Send via form</button><button class="freset" id="cor_save">Download copy</button><button class="freset" id="cor_cancel">Cancel</button></div>
 </div></div>
 
 <script>
@@ -3546,6 +3547,34 @@ function removeCustom(cid){
   rebuildAll(); updateCrmBadge();
 }
 function exportCRM(){ try{ const blob=new Blob([JSON.stringify(CRM,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='defence-ecosystem-crm.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); showToast('CRM exported'); }catch(_){ showToast('Export blocked here — open the file in a browser'); } }
+/* ---- shareable CRM (Option 1) + per-entry share (Option 2) ----
+   Both produce the same {contacts, custom} shape the importer already understands,
+   so a shared file flows straight through the merge/reconcile system. Sharing is a
+   deliberate export — nothing is broadcast — and the UI reminds the user that a file
+   may contain other people's contact details before they send it on. */
+function shareableCRM(){
+  // a portable subset: saved contacts + any organisations the user added themselves
+  return { kind:'tde-crm-share', exported:new Date().toISOString().slice(0,10),
+           contacts:CRM.contacts||{}, custom:CRM.custom||[] };
+}
+function shareCRM(){
+  const d=shareableCRM();
+  const contactCount=Object.values(d.contacts).reduce((n,a)=>n+(a?a.length:0),0);
+  if(contactCount===0 && (d.custom||[]).length===0){ showToast('Nothing to share yet — add a contact or organisation first'); return; }
+  if(contactCount>0 && !confirm(`This file includes ${contactCount} saved contact${contactCount===1?'':'s'} — real people's details. Only share it with someone who should have them. Continue?`)) return;
+  downloadFile('defence-ecosystem-crm-share.json', JSON.stringify(d,null,2), 'application/json');
+  showToast('CRM file downloaded — send it to whoever you\u2019re sharing with');
+}
+function shareEntry(id){
+  const n=NODE[id]; if(!n){return;}
+  const contacts={}; if((CRM.contacts[id]||[]).length) contacts[id]=CRM.contacts[id];
+  const custom=[]; const c=(CRM.custom||[]).find(x=>x.id===id); if(c) custom.push(c);
+  const contactCount=(contacts[id]||[]).length;
+  const d={ kind:'tde-crm-share', exported:new Date().toISOString().slice(0,10), single:true, org:n.l, contacts, custom };
+  if(contactCount>0 && !confirm(`This shares ${contactCount} contact${contactCount===1?'':'s'} for \u201C${n.l}\u201D — real people's details. Share only with someone who should have them. Continue?`)) return;
+  downloadFile('lead-'+slugify(n.l)+'.json', JSON.stringify(d,null,2), 'application/json');
+  showToast('Lead shared as a file — the recipient imports it via Restore');
+}
 let pendingImport=null;
 function importCRM(file){ const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); pendingImport={contacts:d.contacts||{},custom:d.custom||[]}; closeCRM(); openReconcile(); }catch(_){ showToast('Could not read that file'); } }; r.readAsText(file); }
 
@@ -3583,6 +3612,7 @@ document.getElementById('crmBtn').onclick=openCRM;
 document.getElementById('crmClose').onclick=closeCRM;
 document.getElementById('crm').addEventListener('click',e=>{ if(e.target.id==='crm')closeCRM(); });
 document.getElementById('crmExport').onclick=exportCRM;
+document.getElementById('crmShare').onclick=shareCRM;
 document.getElementById('crmImport').onclick=()=>document.getElementById('crmFile').click();
 document.getElementById('crmFile').onchange=e=>{ if(e.target.files[0])importCRM(e.target.files[0]); e.target.value=''; };
 document.getElementById('crmAdd').onclick=()=>{ closeCRM(); openAddNode(null); };
@@ -3692,7 +3722,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (entity types: gov · research · industry · investor · gateway · event)';
+let DATA_AS_OF='August 2026 (shareable CRM + per-lead sharing · 765 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -3799,13 +3829,27 @@ function renderPanelExtras(id){
     `<button class="pabtn ${isFav(id)?'on':''}" id="pa_fav">${isFav(id)?'★ Favourited':'☆ Favourite'}</button>`+
     `<button class="pabtn ${compareList.includes(id)?'on':''}" id="pa_pin">${compareList.includes(id)?'⇄ In compare':'⇄ Compare'}</button>`+
     `<button class="pabtn" id="pa_ver">✓ Mark verified</button>`+
+    `<button class="pabtn" id="pa_share">⤴ Share this</button>`+
     `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`;
   document.getElementById('pa_fav').onclick=()=>{ toggleFav(id); renderPanelExtras(id); showToast(isFav(id)?'Added to favourites':'Removed from favourites'); };
   document.getElementById('pa_pin').onclick=()=>{ togglePin(id); renderPanelExtras(id); };
   document.getElementById('pa_ver').onclick=()=>{ (CRM.verified=CRM.verified||{})[id]=new Date().toISOString().slice(0,10); saveCRM(); renderPanelExtras(id); showToast('Marked verified today'); };
+  document.getElementById('pa_share').onclick=()=>shareEntry(id);
   document.getElementById('pa_cor').onclick=()=>openCorrect(id);
 }
 
+/* ---- suggestions / corrections form (Google Form the maintainer owns) ----
+   To change the form, update these: the base viewform URL and the three entry.* field ids
+   from the form's "Get pre-filled link". org -> Organisation, field -> what's wrong, details -> the note. */
+const SUGGEST_FORM={
+  url:'https://docs.google.com/forms/d/e/1FAIpQLSfHpqajf49uSDReCKah1yjpmyYaUIA1C6yFVc997nMLGLW9ng/viewform',
+  org:'entry.84360262', field:'entry.1675098639', details:'entry.631886959'
+};
+function openSuggestForm(org, field, details){
+  const p=new URLSearchParams({usp:'pp_url'});
+  p.set(SUGGEST_FORM.org, org||''); p.set(SUGGEST_FORM.field, field||''); p.set(SUGGEST_FORM.details, details||'');
+  window.open(SUGGEST_FORM.url+'?'+p.toString(), '_blank', 'noopener');
+}
 /* ---- suggest a correction ---- */
 let correctId=null;
 function openCorrect(id){ correctId=id; document.getElementById('corTitle').textContent='Correction — '+(NODE[id]?NODE[id].l:id);
@@ -3821,6 +3865,16 @@ document.getElementById('cor_save').onclick=()=>{
   (CRM.corrections=CRM.corrections||[]).push(note); saveCRM();
   downloadFile('correction-'+correctId+'.json', JSON.stringify(note,null,2), 'application/json');
   closeCorrect(); showToast('Correction downloaded — email it to the maintainer');
+};
+document.getElementById('cor_send').onclick=()=>{
+  const text=v('cor_text'); if(!text){showToast('Add the correction first');return;}
+  const org=NODE[correctId]?NODE[correctId].l:correctId;
+  const field=document.getElementById('cor_field').value;
+  const from=v('cor_name');
+  const details=text + (from?('\n\n— '+from):'') + '\n\n[entry id: '+correctId+']';
+  (CRM.corrections=CRM.corrections||[]).push({organisation:org,id:correctId,field,correction:text,from,date:new Date().toISOString().slice(0,10),sent:true}); saveCRM();
+  openSuggestForm(org, field, details);
+  closeCorrect(); showToast('Opening the suggestions form — please press Submit there to send');
 };
 
 /* ---- explore / list view with facet filters ---- */
