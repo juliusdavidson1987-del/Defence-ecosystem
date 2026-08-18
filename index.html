@@ -31,7 +31,11 @@
   .search input:focus{border-color:var(--phos);box-shadow:0 0 0 3px color-mix(in srgb,var(--phos) 18%,transparent)}
   .search input::placeholder{color:var(--faint)}
   .search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--mut);fill:none}
-  .ctrls{display:flex;gap:6px}
+  .ctrls{display:flex;gap:6px;align-items:center}
+  /* grouped dropdown menus in the header */
+  .hmenu{position:relative}
+  .hmenu>.btn{gap:5px}
+  .hmenu>.btn .chev{font-size:9px;opacity:.7}
   .btn{background:rgba(12,20,36,.9);border:1px solid var(--line);color:var(--txt);border-radius:9px;height:34px;min-width:34px;
     padding:0 11px;display:grid;place-items:center;cursor:pointer;font-size:12px;transition:.15s;
     font-family:"IBM Plex Mono",monospace;letter-spacing:.5px}
@@ -145,6 +149,8 @@
   #panel .cchip.cplain:hover{background:rgba(140,150,170,.05);border-color:var(--line);box-shadow:none}
   #panel .iplain{color:var(--mut);border-bottom:1px dotted color-mix(in srgb,var(--mut) 40%,transparent)}
   #panel #popps{font-size:12.5px;line-height:1.62;color:#D2DCEE}
+  .gwsuggest{display:inline-block;margin-top:8px;background:color-mix(in srgb,var(--phos) 16%,transparent);color:var(--phos);border:1px solid color-mix(in srgb,var(--phos) 50%,transparent);border-radius:8px;padding:6px 12px;font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+  .gwsuggest:hover{background:color-mix(in srgb,var(--phos) 26%,transparent)}
   .pcoverage{margin-top:10px;padding:8px 10px;background:rgba(12,20,36,.6);border:1px solid var(--line);border-radius:8px;font-size:11.5px;color:var(--mut)}
   .pcoverage .covdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
   .pcoverage .covnote{color:var(--faint);font-size:10.5px}
@@ -218,6 +224,8 @@
   #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
   #welcome .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:24px}
   #welcome .wtile{background:rgba(12,20,36,.7);border:1px solid var(--line);border-radius:13px;padding:15px 15px 16px;cursor:pointer;transition:.14s}
+  #welcome .wpick{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--phos);margin:4px 0 9px}
+  #welcome .wtile:hover .wt{color:var(--phos)}
   #welcome .wtile:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent);transform:translateY(-2px)}
   #welcome .wtile .wi{font-size:17px;margin-bottom:7px}
   #welcome .wtile .wt{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:13.5px;margin-bottom:4px}
@@ -243,6 +251,19 @@
   #welcome .wabout{background:none;border:none;color:var(--mut);cursor:pointer;font-size:12px;text-decoration:underline}
   #welcome .wdis{font-size:10.5px;color:var(--faint);margin-top:18px;line-height:1.55;border-top:1px solid var(--line);padding-top:13px}
   #about{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #menuSheet{position:fixed;inset:0;z-index:88;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #menuSheet.open{display:flex}
+  #menuSheet .msheet{position:relative;width:100%;max-width:560px;max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,#101d33,#0b1424);border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  #menuSheet .msheetClose{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--mut);font-size:24px;line-height:1;cursor:pointer}
+  #menuSheet .msheetClose:hover{color:var(--txt)}
+  #menuSheet .msheetK{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--phos);margin-bottom:14px}
+  #menuSheet .msgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px}
+  #menuSheet .msh{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin:0 0 7px}
+  #menuSheet .msitem{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:rgba(12,20,36,.6);border:1px solid var(--line);color:var(--txt);padding:10px 12px;border-radius:9px;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.3px;margin-bottom:6px;transition:.12s}
+  #menuSheet .msitem:hover{background:color-mix(in srgb,var(--phos) 15%,transparent);border-color:color-mix(in srgb,var(--phos) 45%,transparent);color:#fff}
+  #menuSheet .msitem[disabled]{opacity:.4;cursor:default}
+  #menuSheet .msitem:focus-visible{outline:2.5px solid var(--phos);outline-offset:2px}
+  @media(max-width:560px){#menuSheet .msgrid{grid-template-columns:1fr}}
   #about.open{display:flex}
   #about .acard{max-width:640px;width:100%;max-height:86vh;overflow:auto;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:18px;padding:26px 28px 26px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative}
   #about .aclose{position:absolute;top:15px;right:15px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(12,20,36,.9);color:var(--txt);cursor:pointer;font-size:16px}
@@ -367,7 +388,7 @@
   html[data-theme="hc"] header,html[data-theme="hc"] .legend,html[data-theme="hc"] #panel,html[data-theme="hc"] #finder,html[data-theme="hc"] .acard,html[data-theme="hc"] .pcard,html[data-theme="hc"] .btn,html[data-theme="hc"] #listview .lvcard{background:#000}
   html[data-theme="hc"] #edges .crisp path{opacity:.95}
   html[data-theme="hc"] .node:focus,html[data-theme="hc"] .btn:focus,html[data-theme="hc"] a:focus{outline:3px solid #3CE7FF!important;outline-offset:2px}
-  header{flex-wrap:nowrap;overflow-x:auto}
+  header{flex-wrap:nowrap;overflow-x:auto;overflow-y:visible}
   header::-webkit-scrollbar{height:0}
   /* ================= v2: list / explore view ================= */
   #listview,#compare,#correct{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
@@ -427,6 +448,14 @@
     padding:10px 16px;border-radius:9px;font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;
     text-decoration:none;transition:top .16s}
   .skip-link:focus{top:12px;outline:3px solid #fff;outline-offset:2px}
+  /* first-run orientation hint (shown once) */
+  #firstHint{position:fixed;bottom:20px;left:20px;z-index:70;max-width:340px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.3s}
+  #firstHint.show{opacity:1;transform:none;pointer-events:auto}
+  #firstHint .fhinner{background:linear-gradient(180deg,#12203a,#0c1526);border:1px solid color-mix(in srgb,var(--phos) 45%,transparent);border-radius:14px;padding:15px 16px 14px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  #firstHint .fht{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;margin-bottom:8px;color:var(--phos)}
+  #firstHint .fhlist{margin:0 0 12px;padding-left:16px;font-size:12.5px;color:var(--txt);line-height:1.65}
+  #firstHint .fhlist b{color:var(--phos)}
+  #firstHint .fhbtn{background:var(--phos);color:#06121a;border:none;border-radius:8px;padding:7px 16px;font-weight:600;font-size:13px;cursor:pointer;font-family:"Space Grotesk",sans-serif}
   :focus-visible{outline:2.5px solid var(--phos);outline-offset:2px;border-radius:4px}
   html[data-theme="hc"] :focus-visible{outline:3px solid #3CE7FF;outline-offset:2px}
   .btn:focus-visible,.fchip:focus-visible,#listBtn:focus-visible{outline:2.5px solid var(--phos);outline-offset:2px}
@@ -537,6 +566,16 @@
 </head>
 <body>
 <a href="#listBtn" class="skip-link">Skip to the searchable organisation list</a>
+<div id="firstHint"><div class="fhinner">
+  <div class="fht">A few ways to get around</div>
+  <ul class="fhlist">
+    <li><b>Search</b> (top) — jump to any organisation by name.</li>
+    <li><b>◎ Find your door</b> — describe what you need, get a ranked shortlist.</li>
+    <li><b>☰ Explore</b> — browse and filter every organisation as a list.</li>
+    <li><b>Click a branch</b> on the map to open it; <b>⌂ Reset</b> returns you here anytime.</li>
+  </ul>
+  <button class="fhbtn" id="fhClose">Got it</button>
+</div></div>
 <header>
   <div class="brand"><div class="t">The Defence Ecosystem</div></div>
   <div class="spacer"></div>
@@ -544,11 +583,6 @@
   <div class="search"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input id="q" placeholder="Search nodes…" autocomplete="off" aria-label="Search organisations and bodies"></div>
   <div class="ctrls">
-    <button class="btn" id="expand">EXPAND ALL</button>
-    <button class="btn" id="collapse">COLLAPSE</button>
-    <button class="btn" id="zin">+</button>
-    <button class="btn" id="zout">–</button>
-    <button class="btn" id="fit" aria-label="Fit map to screen">FIT</button>
     <div class="lensseg" id="lensSeg" role="group" aria-label="Choose how the map is organised" title="Organise the whole map by nation, or by technology">
       <button data-lens="alliance" class="on">✹ Alliance &amp; country</button>
       <button data-lens="tech">◈ Technology</button>
@@ -606,16 +640,48 @@
         <option value="dom:human">Human performance &amp; medical</option>
       </optgroup>
     </select>
+    <button class="btn" id="backBtnTop" aria-label="Go back" title="Back" disabled>←</button>
     <button class="btn" id="listBtn" aria-label="Open list and filter view">☰ Explore</button>
-    <button class="btn" id="compareBtn" aria-label="Open comparison">⇄ Compare <span class="crmbadge" id="compareBadge"></span></button>
-    <button class="btn" id="themeBtn" aria-label="Switch colour theme">◐ Theme</button>
-    <button class="btn" id="pathwayBtn" aria-label="Open innovation pathway">⇢ Pathway</button>
-    <button class="btn" id="crmBtn" aria-label="Open my CRM">◱ My CRM <span class="crmbadge" id="crmBadge"></span></button>
-    <button class="btn" id="briefBtn" aria-label="Generate a printable one-page brief">⎙ Brief</button>
-    <button class="btn" id="aboutBtn" aria-label="About this tool">About</button>
-    <button class="device-switch" id="deviceSwitch" aria-label="Switch between phone and computer layout" title="Switch layout">⇄ <span id="deviceSwitchLabel">Desktop view</span></button>
+
+    <button class="btn" id="menuOpenBtn" aria-label="Open menu">☰ Menu</button>
   </div>
 </header>
+
+<div id="menuSheet">
+  <div class="msheet">
+    <button class="msheetClose" id="menuCloseBtn" aria-label="Close menu">×</button>
+    <div class="msheetK">Menu</div>
+    <div class="msgrid">
+      <div class="msgroup">
+        <div class="msh">Navigate</div>
+        <button class="msitem" id="backBtn" disabled>← Back</button>
+        <button class="msitem" id="startBtn">⌂ Home screen</button>
+        <button class="msitem" id="homeBtn">⟳ Reset view</button>
+      </div>
+      <div class="msgroup">
+        <div class="msh">Map controls</div>
+        <button class="msitem" id="expand">⊕ Expand all</button>
+        <button class="msitem" id="collapse">⊖ Collapse</button>
+        <button class="msitem" id="zin">🔍 Zoom in</button>
+        <button class="msitem" id="zout">🔍 Zoom out</button>
+        <button class="msitem" id="fit">⤢ Fit to screen</button>
+      </div>
+      <div class="msgroup">
+        <div class="msh">Tools</div>
+        <button class="msitem" id="compareBtn">⇄ Compare <span class="crmbadge" id="compareBadge"></span></button>
+        <button class="msitem" id="crmBtn">◱ My CRM <span class="crmbadge" id="crmBadge"></span></button>
+        <button class="msitem" id="briefBtn">⎙ One-page brief</button>
+        <button class="msitem" id="pathwayBtn">⇢ Innovation pathway</button>
+      </div>
+      <div class="msgroup">
+        <div class="msh">Settings</div>
+        <button class="msitem" id="themeBtn">◐ Switch theme</button>
+        <button class="msitem" id="deviceSwitch">⇄ <span id="deviceSwitchLabel">Desktop view</span></button>
+        <button class="msitem" id="aboutBtn">ⓘ About &amp; licence</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <aside class="legend"><h4>Branches — click to open</h4><div id="lg"></div>
   <div class="hint">Click a branch to expand it · click a node to see detail &amp; trace its links · drag to pan · scroll to zoom.</div>
@@ -729,10 +795,11 @@
         <button class="wdopt" id="wdPc" data-device="pc"><div class="wdi">▭</div><div class="wdt">Computer</div><div class="wdd">The full interactive radial map</div></button>
       </div>
     </div>
+    <div class="wpick">Pick how you'd like to start:</div>
     <div class="wgrid">
-      <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door</div><div class="wd">Describe your thing and get a ranked shortlist of who to approach — in any allied nation.</div></div>
-      <div class="wtile" id="wExplore"><div class="wi">◍</div><div class="wt">Explore the map</div><div class="wd">Open the tiers and trace how bodies connect and hand off.</div></div>
-      <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search &amp; contacts</div><div class="wd">Jump to any organisation for its links, emails and live calls.</div></div>
+      <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door →</div><div class="wd">Describe your thing and get a ranked shortlist of who to approach — in any allied nation.</div></div>
+      <div class="wtile" id="wExplore"><div class="wi">◍</div><div class="wt">Explore everything →</div><div class="wd">Browse and filter every organisation, or trace how bodies connect on the map.</div></div>
+      <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search by name →</div><div class="wd">Already know who you're after? Jump straight to any organisation.</div></div>
     </div>
     <div class="wbtns"><button class="wenter" id="wEnter">Enter →</button><button class="wabout" id="wAboutLink">About &amp; disclaimer</button></div>
     <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. It began as a UK map and is being extended to give every allied nation the same depth — coverage varies by nation today. Organisation details, contacts and fit ratings are best-effort and may change — always verify on the organisation's own site.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
@@ -1815,6 +1882,7 @@ indexTree();
 /* Snapshot the original UK-structured tree so it remains available as a lens and as the content source. */
 const ORIGINAL_CHILDREN = TREE.children.slice();
 let LENS = 'alliance'; // 'alliance' | 'tech' | 'full'
+let curPanelId = null;
 
 /* nation model */
 const NATION_ORDER = ['nato','eu_inst','uk','us','fr','de','it','nl','be','se','no','fi','dk','ee','lv','lt','pl','cz','sk','hu','es','pt','gr','ro','bg','hr','si','al','mk','me','lu','is','tr','ua','ca','au','nz','kr','jp','il','multi'];
@@ -1847,8 +1915,12 @@ function nationForOrg(id, ctxBranch, ctxNation){
   if(ctxBranch==='b_nato') return 'nato';
   if(ctxBranch==='b_multi') return 'multi';
   const t=tagsFor(id);
-  if(t){ if(t.g==='us')return 'us'; if(t.g==='nato')return 'nato'; if(t.g==='ca')return 'ca'; if(t.g==='au')return 'au'; if(t.g==='nz')return 'nz'; }
-  return 'uk';
+  if(t){ if(t.g==='us')return 'us'; if(t.g==='nato')return 'nato'; if(t.g==='ca')return 'ca'; if(t.g==='au')return 'au'; if(t.g==='nz')return 'nz'; if(t.g==='eu')return 'eu_inst'; if(t.g==='uk')return 'uk'; }
+  // UK-context branches legitimately default to UK; anything else with no signal is genuinely unknown
+  const UK_BRANCHES=['b_strat','b_acq','b_sti','b_flc','b_ics','b_nuke','b_acad','b_cat','b_te','b_primes','b_supply','b_tech','b_fund','b_gov','b_trade'];
+  const br = ctxBranch || BRANCHOF[id];
+  if(UK_BRANCHES.includes(br)) return 'uk';
+  return 'unknown';
 }
 
 /* function buckets within a nation (lens A) and cross-cutting groups (lens B) */
@@ -2126,12 +2198,23 @@ function nationCodeFor(id){
   if(id==='eda'||id==='defis'||id==='edf'||id==='eudis'||id==='edip'||id==='asap_eu'||id==='occar'||id==='pesco'||id==='satcen'||id==='asd') return 'eu_inst';
   const t=tagsFor(id);
   if(t){ if(t.g==='us')return 'us'; if(t.g==='nato')return 'nato'; if(t.g==='ca')return 'ca'; if(t.g==='au')return 'au'; if(t.g==='nz')return 'nz'; if(t.g==='eu')return 'eu_inst'; if(t.g==='uk')return 'uk'; }
-  return 'uk';
+  return 'unknown';   // genuinely undetermined — do NOT silently show UK opportunities
 }
 function oppsFor(id){
   if(OPPS[id]) return OPPS[id];
   const t=tagsFor(id);
-  const nat=NAT_OPPS[nationCodeFor(id)] || NAT_OPPS.uk;
+  // events don't have a procurement gateway — they surface next-occurrence info instead
+  if((BRANCHOF[id]==='b_events') || (typeof EVENT_NEXT!=='undefined' && EVENT_NEXT[id])){
+    return "This is a trade event, not a procurement route — see the next-edition details above and register via the organiser's site.";
+  }
+  const code=nationCodeFor(id);
+  if(code==='unknown' || !NAT_OPPS[code]){
+    // we don't know the right national gateway for this org — ask, don't mislead
+    return "The right national procurement gateway for this organisation isn't mapped yet. "+
+      "@@SUGGEST_GATEWAY@@"+
+      " Meanwhile, check the organisation's own site and its national ministry of defence for tender guidance.";
+  }
+  const nat=NAT_OPPS[code];
   if(t && t.a==='prime'){
     return "Engage as a supplier via the company's own supplier/procurement portal; prime requirements also appear on the national defence tender service. "+nat;
   }
@@ -2239,6 +2322,7 @@ function applyView(key,opts){
   refresh();
   if(!opts.noFit) fit();
   if(key){ const label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:''; showToast('View: '+label.replace(/^[^A-Za-z0-9]+/,'')); }
+  if(typeof pushNav==='function') pushNav();
 }
 
 function build(){
@@ -2442,6 +2526,7 @@ function linkifyProse(t){
   return t;
 }
 function openPanel(id){
+  curPanelId=id;
   const n=NODE[id]; const br=BRANCHOF[id]||id; const brName = NODE[br]?NODE[br].l:"";
   document.getElementById('peye').textContent = id==="root"?"Ecosystem root": (BRANCHCOLORS[id]?"Branch":(brName));
   document.getElementById('pname').textContent=n.l;
@@ -2474,7 +2559,18 @@ function openPanel(id){
       `For ${t.w.map(x=>WHOLAB[x]).join(', ')} · TRL ${t.t[0]}–${t.t[1]} · ${t.d.map(x=>DOMLAB[x]).join(', ')} · `+
       `<span style="color:${ACCESSCOL[t.a]}">${ACCESSLAB[t.a]}</span>`;
   } else sfit.style.display='none';
-  document.getElementById('popps').innerHTML = linkifyProse(oppsFor(id)) + '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>';
+  { const oppsRaw = oppsFor(id);
+    if(oppsRaw.indexOf('@@SUGGEST_GATEWAY@@')>=0){
+      const html = linkifyProse(oppsRaw.replace('@@SUGGEST_GATEWAY@@','')) +
+        `<button class="gwsuggest" id="gwSuggestBtn">✎ Tell us the right gateway</button>`;
+      document.getElementById('popps').innerHTML = html;
+      const gb=document.getElementById('gwSuggestBtn');
+      if(gb) gb.onclick=()=>{ const nm=NODE[id]?NODE[id].l:id;
+        openSuggestForm(nm, 'National procurement gateway', 'The correct national procurement gateway / tender portal for '+nm+' should be: \n\n(please add the body name and link)\n\n[entry id: '+id+']'); };
+    } else {
+      document.getElementById('popps').innerHTML = linkifyProse(oppsRaw) + '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>';
+    }
+  }
   const kids=document.getElementById('pkids'); kids.innerHTML='';
   const list=[];
   if(n.children)n.children.forEach(c=>list.push(c.id));
@@ -2491,8 +2587,9 @@ function openPanel(id){
   renderPanelExtras(id);
   const ps=document.getElementById('paddsub'); if(ps) ps.style.display='';
   panel.classList.add('open');
+  if(typeof pushNav==='function') pushNav();
 }
-function closePanel(){panel.classList.remove('open');}
+function closePanel(){panel.classList.remove('open'); curPanelId=null; if(typeof pushNav==='function') pushNav();}
 document.getElementById('pclose').onclick=()=>{selected=null;Object.values(nodeEls).forEach(el=>el.classList.remove('sel','dim'));closePanel();};
 
 /* search */
@@ -2554,6 +2651,98 @@ stage.addEventListener('wheel',e=>{e.preventDefault();const rect=stage.getBoundi
 document.getElementById('zin').onclick=()=>zoomBtn(1.18);
 document.getElementById('zout').onclick=()=>zoomBtn(.85);
 document.getElementById('fit').onclick=()=>{q.value='';q.dispatchEvent(new Event('input'));fit();};
+function resetToStart(){
+  // clear search, any list/map filter, reset lens+view to the user's home (or All), collapse, fit
+  const q=document.getElementById('q'); if(q){ q.value=''; q.dispatchEvent(new Event('input')); }
+  try{ if(typeof LVF!=='undefined'){ LVF.dom&&LVF.dom.clear(); LVF.access&&LVF.access.clear(); LVF.etype&&LVF.etype.clear(); LVF.trl=null; LVF.geo=null; LVF.favs=false; LVF.q=''; } }catch(_){}
+  if(typeof clearMapFilter==='function') clearMapFilter();
+  if(typeof setLens==='function') setLens('alliance');
+  const vs=document.getElementById('viewSel'); const home=(typeof homeKey==='function')?homeKey():'';
+  if(typeof applyView==='function') applyView(home?homeToView(home):'', {});
+  if(vs) vs.value = home?homeToView(home):'';
+  if(typeof fit==='function') setTimeout(fit,60);
+  showToast('Reset to your starting view');
+}
+document.getElementById('homeBtn').onclick=resetToStart;
+/* ---- lightweight navigation history (Back) + return-to-welcome (Home) ---- */
+let navHistory=[]; let navSuppressed=false;
+function currentNavState(){
+  const vs=document.getElementById('viewSel');
+  return { view: vs?vs.value:'', lens: (typeof LENS!=='undefined'?LENS:'alliance'), panel: (typeof curPanelId!=='undefined'?curPanelId:null) };
+}
+function pushNav(){
+  if(navSuppressed) return;
+  const s=currentNavState();
+  const last=navHistory[navHistory.length-1];
+  if(last && last.view===s.view && last.lens===s.lens && last.panel===s.panel) return; // no real change
+  navHistory.push(s); if(navHistory.length>50) navHistory.shift();
+  updateBackBtn();
+}
+const NAV_OVERLAYS=['listview','compare','finder','about','pathway','crm','briefModal','addnode','reconcile','correct'];
+function topOpenOverlay(){
+  // return the id of the currently-open overlay, if any (these stack above the map)
+  for(const mid of NAV_OVERLAYS){ const m=document.getElementById(mid); if(m && m.classList.contains('open')) return mid; }
+  return null;
+}
+function anyOverlayOpen(){ return !!topOpenOverlay(); }
+function updateBackBtn(){ const dis=(navHistory.length<2 && !anyOverlayOpen());
+  ['backBtn','backBtnTop'].forEach(bid=>{ const b=document.getElementById(bid); if(b) b.disabled=dis; }); }
+function goBack(){
+  // 1) if an overlay (Explore, Finder, Compare, CRM, Brief…) is open, Back closes it first
+  const ov=topOpenOverlay();
+  if(ov){ const m=document.getElementById(ov); if(m) m.classList.remove('open'); updateBackBtn(); return; }
+  // 2) otherwise step back through map view/panel history
+  if(navHistory.length<2){ return; }
+  navHistory.pop();                       // drop current
+  const prev=navHistory[navHistory.length-1];
+  navSuppressed=true;                     // don't re-record while we replay
+  try{
+    if(prev.panel && typeof openPanel==='function'){ openPanel(prev.panel); }
+    else {
+      if(typeof closePanel==='function') closePanel();
+      if(typeof setLens==='function' && prev.lens) setLens(prev.lens);
+      const vs=document.getElementById('viewSel'); if(vs){ vs.value=prev.view||''; }
+      if(typeof applyView==='function') applyView(prev.view||'', {});
+      if(typeof fit==='function') setTimeout(fit,60);
+    }
+  } finally { setTimeout(()=>{navSuppressed=false;},80); }
+  updateBackBtn();
+}
+function goHome(){
+  // return to the welcome/front screen and start navigation fresh
+  const w=document.getElementById('welcome'); if(!w) return;
+  if(typeof closePanel==='function') closePanel();
+  NAV_OVERLAYS.forEach(mid=>{ const m=document.getElementById(mid); if(m) m.classList.remove('open'); });
+  navHistory=[]; updateBackBtn();
+  w.classList.remove('hide');
+  try{ w.scrollTop=0; }catch(_){}
+}
+document.getElementById('backBtn').onclick=goBack;
+(function(){ const t=document.getElementById('backBtnTop'); if(t) t.onclick=goBack; })();
+document.getElementById('startBtn').onclick=goHome;
+/* keep the Back button's enabled state in sync whenever any overlay opens or closes */
+(function watchOverlaysForBack(){
+  const obs=new MutationObserver(()=>{ if(typeof updateBackBtn==='function') updateBackBtn(); });
+  NAV_OVERLAYS.forEach(mid=>{ const m=document.getElementById(mid); if(m) obs.observe(m,{attributes:true,attributeFilter:['class']}); });
+})();
+/* ---- header menu overlay (replaces the old dropdowns — same reliable pattern as About/CRM) ---- */
+(function wireMenuSheet(){
+  const sheet=document.getElementById('menuSheet');
+  const openBtn=document.getElementById('menuOpenBtn');
+  const closeBtn=document.getElementById('menuCloseBtn');
+  if(!sheet||!openBtn) return;
+  function open(){ sheet.classList.add('open'); }
+  function close(){ sheet.classList.remove('open'); }
+  openBtn.addEventListener('click',e=>{ e.stopPropagation(); open(); });
+  if(closeBtn) closeBtn.addEventListener('click',close);
+  // click on the dim background (not the card) closes
+  sheet.addEventListener('click',e=>{ if(e.target===sheet) close(); });
+  // any action item closes the menu after its own handler runs
+  sheet.querySelectorAll('.msitem').forEach(it=>it.addEventListener('click',()=>{ setTimeout(close,0); }));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && sheet.classList.contains('open')) close(); });
+  window._closeMenuSheet=close;
+})();
+(function(){ const b=document.getElementById('fhClose'); if(b) b.onclick=dismissFirstHint; })();
 function zoomBtn(f){const vw=stage.clientWidth/2,vh=stage.clientHeight/2;const ns=Math.max(.06,Math.min(2.4,scale*f));const wx=(vw-px)/scale,wy=(vh-py)/scale;px=vw-wx*ns;py=vh-wy*ns;scale=ns;apply();}
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){
   const w=document.getElementById('welcome'), ab=document.getElementById('about'), fd=document.getElementById('finder'), pw=document.getElementById('pathway');
@@ -3216,7 +3405,7 @@ function renderFinderResults(sel){
       <div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${n.l}</span>
         <span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div>
       <div class="rwhy">${why}</div>
-      <div class="ract">First step: ${linkifyProse(n.entry||oppsFor(r.id))}</div>
+      <div class="ract">First step: ${linkifyProse((n.entry||oppsFor(r.id)).replace('@@SUGGEST_GATEWAY@@',''))}</div>
     </div>`;
   });
   const exclude=new Set(scored.map(x=>x.id));
@@ -3328,7 +3517,14 @@ function markRecommended(){
 function closeWelcome(){ const w=document.getElementById('welcome'); if(w&&!w.classList.contains('hide')){ w.classList.add('hide'); try{sessionStorage.setItem('tde_seen','1');}catch(_){}}
   // on phone, the scrollable Explore list is the front door — not the pinch-zoom map
   if(document.documentElement.getAttribute('data-device')==='phone'){ try{ if(typeof openList==='function') openList(); }catch(_){} }
+  else { maybeShowFirstHint(); }
 }
+function maybeShowFirstHint(){
+  try{ if(localStorage.getItem('tde_hint_seen')) return; }catch(_){}
+  const h=document.getElementById('firstHint'); if(!h) return;
+  setTimeout(()=>{ h.classList.add('show'); }, 550);
+}
+function dismissFirstHint(){ const h=document.getElementById('firstHint'); if(h) h.classList.remove('show'); try{localStorage.setItem('tde_hint_seen','1');}catch(_){} }
 function openAbout(){ document.getElementById('about').classList.add('open'); }
 function closeAbout(){ document.getElementById('about').classList.remove('open'); }
 /* ---- one-page brief generator ---- */
@@ -3407,6 +3603,7 @@ function linkifyProseText(t){ // plain-text version for print (strip to readable
   const pr=document.getElementById('briefPrint'); if(pr) pr.onclick=()=>window.print();
 })();
 try{ if(sessionStorage.getItem('tde_seen')) document.getElementById('welcome').classList.add('hide'); }catch(_){}
+try{ pushNav(); updateBackBtn(); }catch(_){}
 document.getElementById('wEnter').onclick=closeWelcome;
 /* device picker wiring */
 (function wireDevicePicker(){
@@ -3418,7 +3615,7 @@ document.getElementById('wEnter').onclick=closeWelcome;
 })();
 document.getElementById('welcome').addEventListener('click',e=>{ if(e.target.id==='welcome')closeWelcome(); });
 document.getElementById('wFind').onclick=()=>{ closeWelcome(); document.getElementById('finder').classList.add('open'); };
-document.getElementById('wExplore').onclick=()=>{ closeWelcome(); };
+document.getElementById('wExplore').onclick=()=>{ closeWelcome(); const isPhone=document.documentElement.getAttribute('data-device')==='phone'; if(isPhone){ if(typeof openList==='function') openList(); } };
 document.getElementById('wSearch').onclick=()=>{ closeWelcome(); document.getElementById('q').focus(); };
 /* ---- home nation (first-run default view) ---- */
 function homeToView(code){ return code? ('nation:'+code) : ''; }
@@ -3741,7 +3938,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (open licence · MIT + CC BY 4.0 · 765 orgs)';
+let DATA_AS_OF='August 2026 (menu overlay replaces dropdowns · 765 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
