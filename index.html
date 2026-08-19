@@ -186,6 +186,7 @@
   .fgroup{margin-bottom:14px}
   .fgroup .flab{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--phos);opacity:.85;margin-bottom:7px}
   .fchips{display:flex;flex-wrap:wrap;gap:6px}
+  .fhint{font-size:10px;color:var(--faint);font-weight:400;letter-spacing:.2px}
   .fchip{background:rgba(12,20,36,.7);border:1px solid var(--line);color:#CBD7EC;border-radius:8px;padding:6px 11px;font-size:11.5px;cursor:pointer;transition:.13s;font-family:Inter,sans-serif}
   .fchip:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent)}
   .fchip.on{background:color-mix(in srgb,var(--phos) 18%,#0C1424);border-color:var(--phos);color:#fff;box-shadow:0 0 12px color-mix(in srgb,var(--phos) 22%,transparent)}
@@ -694,7 +695,7 @@
   <h3>Find your door</h3>
   <div class="fintro">Tell me about your thing and I'll rank the organisations most likely to be the right way in. Skip anything that doesn't apply.</div>
 
-  <div class="fgroup" data-facet="role" data-mode="single"><div class="flab">I am a…</div><div class="fchips">
+  <div class="fgroup" data-facet="role" data-mode="multi"><div class="flab">I am a… <span class="fhint">(pick any that apply)</span></div><div class="fchips">
     <button class="fchip" data-v="sme">SME</button>
     <button class="fchip" data-v="startup">Start-up</button>
     <button class="fchip" data-v="academic">Academic / researcher</button>
@@ -1844,6 +1845,122 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("ev_dsa","DSA (Kuala Lumpur)","dsaexhibition.com","Defence Services Asia — the gateway to the South-East Asian defence market; biennial."),
    L("ev_milipol","Milipol Paris","milipol.com","Leading homeland-security exhibition for law enforcement and internal security; biennial."),
  ]),
+ B("b_media","Defence Media, Journals & Intelligence","The trade press, journals and open-source intelligence outlets that track programmes, contracts and capability — how the sector reads itself.",[
+   L("md_janes","Janes","janes.com","The definitive open-source defence intelligence provider — equipment, orders of battle, markets and threat data; UK-headquartered."),
+   L("md_defnews","Defense News","defensenews.com","Leading US defence trade publication (Sightline Media) — procurement, budgets and industry news."),
+   L("md_breaking","Breaking Defense","breakingdefense.com","Fast-moving US digital outlet on defence acquisition, budgets and emerging capability."),
+   L("md_defenseone","Defense One","defenseone.com","US analysis on the future of defence, technology and national security (Atlantic Media/GovExec)."),
+   L("md_shephard","Shephard Media","shephardmedia.com","UK-based defence publisher — land, air, naval, uncrewed and defence-insight titles and data."),
+   L("md_twz","The War Zone (TWZ)","twz.com","US outlet known for fast, detailed open-source analysis of military hardware and events."),
+   L("md_navalnews","Naval News","navalnews.com","Specialist naval and maritime-defence news and analysis."),
+   L("md_aviationweek","Aviation Week Network","aviationweek.com","Long-standing aerospace & defence intelligence, data and events (Defense & Space)."),
+   L("md_flightglobal","FlightGlobal","flightglobal.com","Aerospace industry news and analysis, including military aviation."),
+   L("md_ukdj","UK Defence Journal","ukdefencejournal.org.uk","Independent UK defence news and commentary with a strong general readership."),
+   L("md_forces","Forces News (BFBS)","forces.net","Armed-forces news service for the UK military community, run by BFBS."),
+   L("md_esut","ESUT — Europäische Sicherheit & Technik","esut.de","Leading German defence & security technology journal."),
+   L("md_monch","Mönch / MILTECH","monch.com","European defence publisher (Military Technology and related titles)."),
+   L("md_edr","European Defence Review (EDR)","edrmagazine.eu","Independent European defence magazine and online analysis."),
+   L("md_armada","Armada International","armadainternational.com","International defence technology magazine with a global readership."),
+   L("md_defence24","Defence24 (Poland)","defence24.com","The largest Central-European defence portal — Polish and English; industry, armed forces and geopolitics."),
+   L("md_defexpress","Defense Express (Ukraine)","defence-ua.com","Ukraine's leading defence-industry and technology portal; closely followed for battlefield and industrial insight."),
+   L("md_rid","RID — Rivista Italiana Difesa","rid.it","Italy's long-standing monthly defence magazine — analysis of programmes, platforms and strategy."),
+   L("md_analisidifesa","Analisi Difesa (Italy)","analisidifesa.it","Independent Italian defence, industry and military-affairs magazine."),
+   L("md_opex360","Opex360 / Zone Militaire (France)","opex360.com","One of France's most-read independent defence news sites; forces, programmes and geopolitics."),
+   L("md_infodefensa","Infodefensa (Spain)","infodefensa.com","Leading Spanish-language defence news portal covering Spain and Latin America."),
+   L("md_defenceturkey","Defence Turkey","defenceturkey.com","Türkiye's premier defence & aerospace publication — industry coverage and interviews since 2001."),
+   L("md_hartpunkt","hartpunkt (Germany)","hartpunkt.de","German-language defence news and analysis site focused on the Bundeswehr and European security."),
+ ]),
+ B("b_policy","Policy & Strategy","The think tanks, policy institutes and national strategy instruments that shape defence direction — distinct from academic research and from delivery bodies.",[
+   L("pol_rusi","RUSI","rusi.org","The Royal United Services Institute — the UK's leading defence and security think tank; independent analysis and convening."),
+   L("pol_iiss","IISS","iiss.org","International Institute for Strategic Studies — global authority on military balance and strategic affairs (publisher of The Military Balance)."),
+   L("pol_chatham","Chatham House","chathamhouse.org","The Royal Institute of International Affairs — foreign-policy and security research and convening."),
+   L("pol_csis","CSIS","csis.org","Center for Strategic & International Studies — major US bipartisan security and defence think tank."),
+   L("pol_cnas","CNAS","cnas.org","Center for a New American Security — US defence-policy think tank focused on practical strategy."),
+   L("pol_atlantic","Atlantic Council","atlanticcouncil.org","Transatlantic think tank shaping security, defence and alliance policy."),
+   L("pol_rand","RAND Corporation","rand.org","US non-profit research organisation; long-standing defence analysis and wargaming for government."),
+   L("pol_cepa","CEPA","cepa.org","Center for European Policy Analysis — transatlantic security policy, focused on Europe's frontier."),
+   L("pol_geostrategy","Council on Geostrategy","geostrategy.org.uk","UK think tank on strategic competition, industrial and maritime power."),
+   L("pol_policyexchange","Policy Exchange (Britain in the World)","policyexchange.org.uk","UK think tank whose security programme informs defence and foreign policy."),
+   L("pol_egmont","Egmont Institute","egmontinstitute.be","Belgian royal institute for international relations — EU/NATO security policy."),
+   L("pol_sipri","SIPRI","sipri.org","Stockholm International Peace Research Institute — authoritative data on arms, military spending and transfers."),
+   L("pol_ifri","IFRI","ifri.org","Institut français des relations internationales — France's leading international-affairs institute."),
+   L("pol_dgap","DGAP","dgap.org","German Council on Foreign Relations — security and defence policy analysis."),
+   L("pol_natodefencecollege","NATO Defense College","ndc.nato.it","NATO's strategic-level education and research institution, Rome."),
+   L("pol_ukstrategy","UK Strategic Defence Review & NSS","gov.uk/government/publications","The UK's periodic Strategic Defence Review and National Security Strategy — the documents that set direction and priorities."),
+   L("ee_icds","ICDS (Estonia)","icds.ee","International Centre for Defence and Security — Estonia's leading defence, security and foreign-policy think tank; hosts the Lennart Meri Conference and Annual Baltic Conference on Defence, Tallinn."),
+   L("lv_liia","LIIA (Latvia)","liia.lv","Latvian Institute of International Affairs — Riga-based foreign and security policy institute; runs the Rīga Conference community."),
+   L("lt_tspmi","VU TSPMI (Lithuania)","tspmi.vu.lt","Vilnius University's Institute of International Relations & Political Science — Lithuania's principal security-studies hub."),
+   L("fi_fiia","FIIA (Finland)","fiia.fi","Finnish Institute of International Affairs — Helsinki-based research on security, the EU and the northern neighbourhood."),
+   L("se_ui","UI (Sweden)","ui.se","Swedish Institute of International Affairs — Stockholm; independent research and analysis on foreign and security policy."),
+   L("dk_thinkeuropa","Think Tank EUROPA (Denmark)","thinkeuropa.dk","Danish think tank on EU and European security policy."),
+   L("pl_pism","PISM (Poland)","pism.pl","Polish Institute of International Affairs — Warsaw; a leading state-linked foreign and security policy institute."),
+   L("pl_pulaski","Casimir Pulaski Foundation (Poland)","pulaski.pl","Independent Warsaw think tank focused on defence, security and transatlantic relations; runs Defence24-adjacent expert networks."),
+   L("sk_globsec","GLOBSEC (Slovakia)","globsec.org","Bratislava-headquartered global think tank; its European Defence Initiative and Eastern-flank readiness reports are widely cited."),
+   L("sk_sfpa","SFPA (Slovakia)","sfpa.sk","Slovak Foreign Policy Association — foreign and security policy research and debate."),
+   L("cz_iir","IIR Prague (Czechia)","iir.cz","Institute of International Relations Prague — the Czech Republic's principal foreign-policy research institute."),
+   L("cz_amo","AMO (Czechia)","amo.cz","Association for International Affairs — independent Prague think tank on foreign and security policy."),
+   L("cz_pssi","PSSI (Czechia)","pssi.cz","Prague Security Studies Institute — security policy, economic security and space-security programmes."),
+   L("ro_newstrategy","New Strategy Center (Romania)","newstrategycenter.ro","Romanian think tank on Black Sea security, defence and energy."),
+   L("bg_sofiaforum","Sofia Security Forum (Bulgaria)","sofiaforum.bg","Bulgarian platform convening South-East European security and defence debate."),
+   L("rs_bcsp","BCSP (Serbia)","bezbednost.org","Belgrade Centre for Security Policy — security-sector research in the Western Balkans."),
+   L("ch_dcaf","DCAF (Geneva)","dcaf.ch","Geneva Centre for Security Sector Governance — a global reference on democratic governance of armed and security forces."),
+   L("fr_iris","IRIS (France)","iris-france.org","Institut de relations internationales et stratégiques — French institute with a strong defence-economics and strategy focus."),
+   L("de_swp","SWP (Germany)","swp-berlin.org","Stiftung Wissenschaft und Politik — the German government's principal foreign & security policy advisory institute, Berlin."),
+   L("it_iai","IAI (Italy)","iai.it","Istituto Affari Internazionali — Italy's leading defence and international-affairs institute, Rome."),
+   L("it_ispi","ISPI (Italy)","ispionline.it","Institute for International Political Studies — Milan-based foreign-policy and security think tank."),
+   L("es_elcano","Elcano Royal Institute (Spain)","realinstitutoelcano.org","Spain's leading international and strategic studies institute, Madrid."),
+   L("es_cidob","CIDOB (Spain)","cidob.org","Barcelona Centre for International Affairs — foreign and security policy research."),
+   L("nl_clingendael","Clingendael (Netherlands)","clingendael.org","The Netherlands Institute of International Relations — leading think tank and diplomatic academy, part-funded by the Dutch MoD."),
+   L("nl_hcss","HCSS (Netherlands)","hcss.nl","The Hague Centre for Strategic Studies — data-driven security, defence-industrial and strategic analysis."),
+   L("no_nupi","NUPI (Norway)","nupi.no","Norwegian Institute of International Affairs — Oslo; security, defence and Arctic research."),
+   L("no_prio","PRIO (Norway)","prio.org","Peace Research Institute Oslo — long-standing conflict and security research institute."),
+   L("dk_diis","DIIS (Denmark)","diis.dk","Danish Institute for International Studies — foreign, defence and security policy research, Copenhagen."),
+   L("gr_eliamep","ELIAMEP (Greece)","eliamep.gr","Hellenic Foundation for European & Foreign Policy — Greece's principal international-affairs think tank."),
+   L("pt_ipri","IPRI-NOVA (Portugal)","ipri.pt","Portuguese Institute of International Relations — NOVA University Lisbon; foreign and security policy."),
+   L("hu_kki","KKI / IFAT (Hungary)","kki.hu","Institute for Foreign Affairs and Trade — Hungary's government-linked international-affairs institute."),
+   L("ca_cgai","CGAI (Canada)","cgai.ca","Canadian Global Affairs Institute — Canada's leading independent defence, security and foreign-policy institute (Calgary/Ottawa)."),
+   L("au_aspi","ASPI (Australia)","aspi.org.au","Australian Strategic Policy Institute — Canberra; defence and strategic policy, widely cited across the Indo-Pacific."),
+   L("jp_jiia","JIIA (Japan)","jiia.or.jp","Japan Institute of International Affairs — Japan's leading foreign-policy and security think tank, Tokyo."),
+   L("kr_kida","KIDA (South Korea)","kida.re.kr","Korea Institute for Defense Analyses — the ROK's principal government defence-analysis institute."),
+   L("il_inss","INSS (Israel)","inss.org.il","Institute for National Security Studies — Israel's leading security think tank, Tel Aviv University."),
+   L("il_jiss","JISS (Israel)","jiss.org.il","Jerusalem Institute for Strategy and Security — national-security research and strategy."),
+ ]),
+ B("b_finance","Defence Banking & Finance","Debt, lending and public financial institutions willing to serve defence — distinct from equity investors. A fast-moving layer as Europe and NATO rebuild defence-positive finance.",[
+   L("fin_dsrb","Defence, Security & Resilience Bank (DSRB)","dsrbank.com","Proposed nation-owned multilateral bank to harness capital markets for allied defence, readiness and supply-chain finance; in development, backed by major banks and 30+ nations."),
+   L("fin_eib","European Investment Bank — Security & Defence","eib.org","The EU's bank; has expanded defence eligibility and intermediated lending to reach defence-supply-chain SMEs across the Union."),
+   L("fin_kfw","KfW (Germany)","kfw.de","Germany's national promotional bank; part of the EIB-coordinated pan-European defence-finance push."),
+   L("fin_bpifrance","Bpifrance","bpifrance.fr","France's public investment bank — dedicated defence support, loans and equity for defence SMEs."),
+   L("fin_cdp","Cassa Depositi e Prestiti (Italy)","cdp.it","Italy's national promotional institution participating in the pan-European defence-finance framework."),
+   L("fin_bgk","Bank Gospodarstwa Krajowego (Poland)","bgk.pl","Poland's state development bank, financing the Eastern flank's rapid rearmament."),
+   L("fin_ico","ICO (Spain)","ico.es","Instituto de Crédito Oficial — Spain's national promotional bank in the EIB defence-finance group."),
+   L("fin_cdc","Caisse des Dépôts (France)","caissedesdepots.fr","France's long-term public investor, part of the five-nation promotional-bank defence agreement."),
+ ]),
+ B("b_incubators","Dual-Use Incubators & Accelerators","Programmes that take dual-use and defence-tech founders from idea to first contract — hands-on cohorts, mentoring and access, distinct from pure investors.",[
+   L("inc_starburst","Starburst Aerospace","starburst.aero","Global aerospace & defence accelerator connecting start-ups with primes, investors and governments."),
+   L("inc_nsin","NSIN (US)","nsin.mil","National Security Innovation Network — US DoD programme building defence-tech talent and ventures via university and start-up communities."),
+   L("inc_techstars","Techstars (Defense/Space)","techstars.com","Global accelerator running defence- and space-focused programmes with government and prime partners."),
+   L("inc_plexal","Plexal","plexal.com","UK innovation company delivering defence and cyber accelerators (e.g. for DASA and NCSC), based at Here East."),
+   L("inc_conductive","D3 / Dual-use VC","d3vc.com","Dual-use venture investor backing defence and deep-tech founders; runs accelerator-style community programmes."),
+   L("inc_h4d","Hacking for Defense (BMNT)","bmnt.com","Problem-curation and H4D methodology connecting mission problems to start-up solutions; US-origin, now allied."),
+   L("inc_civ_uk","LORCA / Cyber Runway alumni","plexal.com","UK cyber and dual-use scale-up programmes feeding the defence supply chain."),
+   L("inc_startupbootcamp","Startupbootcamp (Def/Sec)","startupbootcamp.org","Global accelerator network running defence- and security-relevant cohorts in Europe."),
+   L("inc_tehnopol","Tehnopol (Estonia)","tehnopol.ee","The Baltics' largest science & business park, Tallinn; runs Estonia's NATO DIANA accelerator and cyber/dual-use programmes."),
+   L("inc_palladion","Palladion Defence Accelerator (Germany)","unibw.de","Germany's DIANA defence accelerator, based at the University of the Bundeswehr Munich — deep-tech and dual-use maturation with Bundeswehr links."),
+   L("inc_eurodefense","European Defense Tech Hackathon (Eurodefense.tech)","eurodefense.tech","Community running Europe's largest defence-tech hackathons (Munich, Tallinn and beyond) — the recurring collaborative events connecting builders to the sector."),
+ ]),
+ B("b_comms","Defence Communications & Engagement","Specialist agencies that help defence and security organisations communicate, engage stakeholders and navigate the sector — a practical enabler for SMEs and primes alike.",[
+   L("com_canny","Canny Comms","canny-comms.co.uk","Defence & security communications and marketing consultancy (Porton Down Science Park); runs the CIPR-accredited Reputation Masterclass and training for the sector."),
+   L("com_blackjelly","Black Jellyfish","blackjellyfish.co.uk","Technology consultancy partnering on defence communications and complex-technology engagement."),
+ ]),
+ B("b_frameworks","Procurement Frameworks & Vehicles","The framework agreements and buying vehicles suppliers actually contract through — the plumbing beneath the tender portals.",[
+   L("fw_ccs","Crown Commercial Service","crowncommercial.gov.uk","The UK government's central buying function; hosts framework agreements many defence and public-sector requirements run through."),
+   L("fw_jrco","DE&S Commercial frameworks","gov.uk/government/organisations/defence-equipment-and-support","Defence Equipment & Support lets and manages the major MOD framework agreements and enabling contracts."),
+   L("fw_dspcr","DSPCR 2011","gov.uk/guidance/defence-and-security-public-contracts-regulations-2011","The Defence & Security Public Contracts Regulations — the UK legal framework governing how defence procurements are run."),
+   L("fw_dsp","Defence Sourcing Portal","gov.uk/government/organisations/defence-equipment-and-support","The MOD's supplier-facing sourcing and tendering portal for defence opportunities."),
+   L("fw_edip","EDIP (EU)","defence-industry-space.ec.europa.eu","European Defence Industry Programme — the EU's framework for jointly funding and procuring defence capability."),
+   L("fw_edirpa","EDIRPA (EU)","defence-industry-space.ec.europa.eu","EU instrument incentivising common defence procurement among member states."),
+   L("fw_nspa_frame","NSPA framework agreements","nspa.nato.int","NATO Support & Procurement Agency's multinational framework contracts and acquisition support."),
+ ]),
 ]);
 
 /* cross-links (secondary dependencies, shown when a node is selected) */
@@ -2485,7 +2602,17 @@ const VERIFIED_DOMAINS = new Set([
   'giz-dvi.si','ejn.gov.si','valhallaturrets.com','mod.gov.al','app.gov.al','meico.gov.al','kayo.al','cesk.gov.al','mod.gov.mk','eurokompozit.com.mk','e-nabavki.gov.mk',
   'cejn.gov.me','vojska.me','defense.gouvernement.lu','space-agency.public.lu','pmp.b2g.etat.lu','govsat.lu','government.is','cert.is','utbodsvefur.is','gov.si','gov.me',
   'dsei.co.uk','eurosatory.com','farnboroughinternational.co.uk','siae.fr','targikielce.pl','idexuae.ae','worlddefenseshow.com','idef.com.tr','defea.gr','cansec.ca','ausa.org','seaairspace.org','iitsec.org','indopacificexpo.com.au','dsaexhibition.com','milipol.com','hellios.com',
-  'gicat.com','gifas.fr','gican.asso.fr','bdsv.eu','bdli.de','aiad.it','tedae.org','nidv.eu','soff.se','fsi.no','afda.fi','fad.di.dk','agoria.be','przemysl-obronny.pl','aobp.cz','sekpy.gr','aedcluster.com'
+  'gicat.com','gifas.fr','gican.asso.fr','bdsv.eu','bdli.de','aiad.it','tedae.org','nidv.eu','soff.se','fsi.no','afda.fi','fad.di.dk','agoria.be','przemysl-obronny.pl','aobp.cz','sekpy.gr','aedcluster.com',
+  'janes.com','defensenews.com','breakingdefense.com','defenseone.com','shephardmedia.com','twz.com','navalnews.com','aviationweek.com','flightglobal.com','ukdefencejournal.org.uk','forces.net','esut.de','monch.com','edrmagazine.eu','armadainternational.com',
+  'rusi.org','iiss.org','chathamhouse.org','csis.org','cnas.org','atlanticcouncil.org','rand.org','cepa.org','geostrategy.org.uk','policyexchange.org.uk','egmontinstitute.be','sipri.org','ifri.org','dgap.org','ndc.nato.it','gov.uk',
+  'dsrbank.com','eib.org','kfw.de','bpifrance.fr','cdp.it','bgk.pl','ico.es','caissedesdepots.fr',
+  'starburst.aero','nsin.mil','techstars.com','plexal.com','d3vc.com','bmnt.com','startupbootcamp.org',
+  'canny-comms.co.uk','blackjellyfish.co.uk',
+  'crowncommercial.gov.uk','defence-industry-space.ec.europa.eu','nspa.nato.int',
+  'icds.ee','liia.lv','tspmi.vu.lt','fiia.fi','ui.se','thinkeuropa.dk','pism.pl','pulaski.pl','globsec.org','sfpa.sk','iir.cz','amo.cz','pssi.cz','newstrategycenter.ro','sofiaforum.bg','bezbednost.org','dcaf.ch',
+  'iris-france.org','swp-berlin.org','iai.it','ispionline.it','realinstitutoelcano.org','cidob.org','clingendael.org','hcss.nl','nupi.no','prio.org','diis.dk','eliamep.gr','ipri.pt','kki.hu','cgai.ca','aspi.org.au','jiia.or.jp','kida.re.kr','inss.org.il','jiss.org.il',
+  'defence24.com','defence-ua.com','rid.it','analisidifesa.it','opex360.com','infodefensa.com','defenceturkey.com','hartpunkt.de',
+  'tehnopol.ee','unibw.de','eurodefense.tech'
 ].forEach(d=>VERIFIED_DOMAINS.add(d));
 function domainVerified(u){
   let host=u.replace(/^https?:\/\//i,'').replace(/\/.*$/,'').replace(/[.,;·]+$/,'').toLowerCase();
@@ -2786,15 +2913,18 @@ const ETYPES={
   industry: {l:'Industry',              short:'Industry',  c:'#e0a86a', mark:'●'},
   investor: {l:'Investor / Capital',    short:'Investor',  c:'#c9a8ff', mark:'◆'},
   gateway:  {l:'Gateway / Association',  short:'Gateway',   c:'#3FE0D0', mark:'⬡'},
+  policy:   {l:'Policy / Strategy',     short:'Policy',    c:'#f2a0c0', mark:'⬢'},
+  media:    {l:'Media / Intelligence',  short:'Media',     c:'#9fb4d8', mark:'▤'},
   event:    {l:'Event / Fair',          short:'Event',     c:'#ffcf6a', mark:'★'}
 };
-const ETYPE_ORDER=['gov','research','industry','investor','gateway','event'];
+const ETYPE_ORDER=['gov','research','industry','investor','gateway','policy','media','event'];
 // branch → default type (the strongest signal; most nodes resolve here)
 const BRANCH_ETYPE={
   b_strat:'gov', b_acq:'gov', b_flc:'gov', b_ics:'gov', b_te:'gov', b_gov:'gov',
   b_acad:'research', b_cat:'research', b_sti:'gov',
   b_primes:'industry', b_supply:'industry', b_tech:'industry',
-  b_fund:'investor', b_trade:'gateway', b_events:'event', b_nuke:'gov'
+  b_fund:'investor', b_trade:'gateway', b_events:'event', b_nuke:'gov',
+  b_media:'media', b_policy:'policy', b_frameworks:'gov', b_finance:'investor', b_incubators:'gateway', b_comms:'industry'
 };
 // explicit overrides where branch/inference gets it wrong
 const ETYPE_OVERRIDES={
@@ -2828,7 +2958,11 @@ function entityType(id){
   if(o.includes('procurement')) return 'gov';
   // strong keyword signals first (work even for untagged legacy nodes)
   if(br==='b_events'||/\bfair\b|expo|airshow|exhibition|symposium|\bshow\b/.test(lab)) return 'event';
-  if(o.includes('investment')||w.includes('investor')||/ventures?\b|\bvc\b|\bcapital\b|equity/.test(lab)) return 'investor';
+  // media / journals / trade press
+  if(br==='b_media'||/\bnews\b|journal|magazine|gazette|media|\bpress\b|monitor|intelligence (group|unit|weekly)|publishing|broadcast/.test(lab)) return 'media';
+  // policy / strategy institutes & documents (distinct from academic research labs)
+  if(br==='b_policy'||/policy|strateg|geostrateg|foreign affairs|international affairs|\bcouncil\b|\bforum\b|chatham|atlantic council|think.?tank/.test(lab)) return 'policy';
+  if(o.includes('investment')||w.includes('investor')||/ventures?\b|\bvc\b|\bcapital\b|equity|\bbank\b|financ|lending|promotional institution/.test(lab)) return 'investor';
   if(/\bassociation|federation|\bchamber|cluster\b|trade body|\bguild\b|industries? (association|group)/.test(lab)) return 'gateway';
   if(/university|institute of|\blaborator|\bacademy\b|think tank|ffrdc|research (org|centre|center|institute|agency)/.test(lab)) return 'research';
   // government / military — expanded to catch national procurement agencies (DGA, BAAINBw, FMV, DAPA…)
@@ -3358,16 +3492,21 @@ const GATEWAY = {
 function gatewayFor(natCode){ return natCode && GATEWAY[natCode] ? GATEWAY[natCode] : null; }
 function scoreNode(id,sel){
   const t=tagsFor(id); let s=0; const why=[];
-  if(sel.role){ if(t.w.includes(sel.role)){s+=3; why.push(WHOLAB[sel.role]);}
-    else if((sel.role==='sme'&&t.w.includes('startup'))||(sel.role==='startup'&&t.w.includes('sme'))){s+=1;}
-    else {s-=0.5;} }
+  // roles: support multi-select (sel.roles[]) and single (sel.role); match if the body serves ANY chosen role
+  const roles = (sel.roles && sel.roles.length) ? sel.roles : (sel.role ? [sel.role] : []);
+  if(roles.length){
+    const direct = roles.filter(r=>t.w.includes(r));
+    if(direct.length){ s+=3; direct.forEach(r=>why.push(WHOLAB[r])); }
+    else if(roles.some(r=>(r==='sme'&&t.w.includes('startup'))||(r==='startup'&&t.w.includes('sme')))){ s+=1; }
+    else { s-=0.5; }
+  }
   let needHit=false;
   (sel.needs||[]).forEach(nd=>{ const ok=t.o.includes(nd)||(nd==='contract'&&t.o.includes('procurement')); if(ok){s+=3;needHit=true;why.push(NEEDLAB[nd]);} });
   if((sel.needs||[]).length && !needHit) s-=2.5;
   if(sel.trl){ const lo=t.t[0],hi=t.t[1]; if(sel.trl>=lo&&sel.trl<=hi){s+=2;why.push('TRL '+lo+'–'+hi+' fit');} else {const dist=sel.trl<lo?lo-sel.trl:sel.trl-hi; s-= dist>=3?2:1;} }
   if((sel.domains||[]).length){ const isX=t.d.includes('xcut'); const hits=sel.domains.filter(x=>t.d.includes(x)); if(hits.length){s+=Math.min(3,hits.length*2); hits.forEach(x=>why.push(DOMLAB[x]));} else if(isX){s+=0.5;} else {s-=1;} }
   if(sel.geo&&sel.geo!=='any'){ if(t.g===sel.geo){s+=2;why.push(GEOLAB[sel.geo]);} else {s-=1.5;} }
-  if(sel.role==='sme'||sel.role==='startup'){ if(t.a==='open')s+=1.5; else if(t.a==='prime')s-=1; else if(t.a==='invite')s-=2; }
+  if(roles.includes('sme')||roles.includes('startup')){ if(t.a==='open')s+=1.5; else if(t.a==='prime')s-=1; else if(t.a==='invite')s-=2; }
   /* national gateway boost: if this is the home nation's front-door body, surface it near the top as the recommended first contact */
   if(sel.homeGateway && id===sel.homeGateway){ s+=6; why.unshift('★ your national front door'); }
   return {s,why};
@@ -3375,10 +3514,10 @@ function scoreNode(id,sel){
 function focusNode(id){ if(VIEW && !viewMatchTree(id)) clearViewSel(); let cur=PARENT[id]; while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];} refresh(); select(id); centerOn(id); }
 
 function readFinder(){
-  const sel={role:null,trl:null,domains:[],needs:[],geo:'any'};
+  const sel={role:null,roles:[],trl:null,domains:[],needs:[],geo:'any'};
   document.querySelectorAll('#finder .fgroup').forEach(g=>{
     const facet=g.dataset.facet; const on=[...g.querySelectorAll('.fchip.on')].map(c=>c.dataset.v);
-    if(facet==='role') sel.role=on[0]||null;
+    if(facet==='role'){ sel.roles=on; sel.role=on[0]||null; }
     else if(facet==='trl'){ const v=parseInt(on[0]); sel.trl=isNaN(v)?null:v; }
     else if(facet==='geo') sel.geo=on[0]||'any';
     else if(facet==='domains') sel.domains=on;
@@ -3938,7 +4077,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (menu overlay replaces dropdowns · 765 orgs)';
+let DATA_AS_OF='August 2026 (national incubators + full verification · 875 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
