@@ -1,0 +1,46 @@
+name: "🔧 Correction / bad link"
+description: Report an incorrect link, wrong description, or miscategorised organisation.
+title: "[Correction]: "
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep the map accurate. For quick fixes you can also use the
+        **✎ Suggest a correction** button inside the tool, which pre-fills the correction form.
+  - type: input
+    id: organisation
+    attributes:
+      label: Organisation / node
+      description: The name of the organisation or node as it appears in the tool.
+      placeholder: e.g. National Wealth Fund
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's wrong?
+      options:
+        - Link goes to the wrong / unexpected place
+        - Link is dead (404 / no longer resolves)
+        - Description is inaccurate
+        - Wrong category or entity type
+        - Wrong nation / placement
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What did you see, and what should it be instead? Include the correct official link if you know it.
+      placeholder: |
+        The link points to example.com but the official site is example.org.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source (optional)
+      description: A link or reference that supports the correction.
+
