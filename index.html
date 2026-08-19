@@ -253,6 +253,23 @@
   #welcome .wdis{font-size:10.5px;color:var(--faint);margin-top:18px;line-height:1.55;border-top:1px solid var(--line);padding-top:13px}
   #about{position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
   #menuSheet{position:fixed;inset:0;z-index:88;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #glossarySheet{position:fixed;inset:0;z-index:89;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #upcomingSheet{position:fixed;inset:0;z-index:89;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #upcomingSheet.open{display:flex}
+  #upcomingList{max-height:56vh;overflow-y:auto}
+  #upcomingList .urow{display:flex;gap:12px;align-items:baseline;padding:9px 4px;border-bottom:1px solid rgba(120,140,180,.12);cursor:pointer}
+  #upcomingList .urow:hover{background:color-mix(in srgb,var(--phos) 8%,transparent)}
+  #upcomingList .udate{flex:0 0 130px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--phos)}
+  #upcomingList .uname{flex:1;font-size:12.5px;color:var(--txt)}
+  #upcomingList .uwhere{font-size:10.5px;color:var(--faint)}
+  #glossarySheet.open{display:flex}
+  #glossaryQ{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:rgba(8,14,26,.7);color:var(--txt);font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+  #glossaryQ:focus-visible{outline:2.5px solid var(--phos);outline-offset:2px}
+  #glossaryList{max-height:52vh;overflow-y:auto}
+  #glossaryList .grow{display:flex;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(120,140,180,.12)}
+  #glossaryList .gac{flex:0 0 88px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--phos);font-weight:600}
+  #glossaryList .gdef{flex:1;font-size:12.5px;line-height:1.5;color:var(--txt)}
+  .glossaryFoot{margin-top:12px;font-size:10.5px;line-height:1.5;color:var(--faint)}
   #menuSheet.open{display:flex}
   #menuSheet .msheet{position:relative;width:100%;max-width:560px;max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,#101d33,#0b1424);border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
   #menuSheet .msheetClose{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--mut);font-size:24px;line-height:1;cursor:pointer}
@@ -438,6 +455,9 @@
   #panel .pabtn:hover{border-color:var(--phos);color:var(--txt)}
   #panel .pabtn.on{color:#FFD46B;border-color:#FFD46B66}
   #panel .pverify{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);margin-top:9px;line-height:1.5}
+  #panel .pfreshness{margin-top:8px}
+  #panel .pfreshness .stale-warn{display:block;font-size:11px;line-height:1.5;padding:7px 10px;border-radius:8px;background:rgba(255,150,80,.12);border:1px solid rgba(255,150,80,.35);color:#ffb877}
+  #panel .pfreshness .stale-note{display:block;font-size:11px;line-height:1.5;padding:7px 10px;border-radius:8px;background:rgba(120,160,220,.10);border:1px solid rgba(120,160,220,.28);color:#9fc0e8}
   #panel .pverify b{color:var(--phos)}
   #panel .psource{font-size:11.5px;margin-top:6px}
   #compareBadge,.crmbadge{display:none;background:var(--phos);color:#06121a;border-radius:20px;padding:0 6px;font-size:9px;font-weight:700;line-height:15px;min-width:15px;text-align:center}
@@ -678,9 +698,30 @@
         <div class="msh">Settings</div>
         <button class="msitem" id="themeBtn">◐ Switch theme</button>
         <button class="msitem" id="deviceSwitch">⇄ <span id="deviceSwitchLabel">Desktop view</span></button>
+        <button class="msitem" id="upcomingBtn">📅 What's coming up</button>
+        <button class="msitem" id="glossaryBtn">🔤 Acronym glossary</button>
         <button class="msitem" id="aboutBtn">ⓘ About &amp; licence</button>
       </div>
     </div>
+  </div>
+</div>
+
+<div id="glossarySheet">
+  <div class="msheet">
+    <button class="msheetClose" id="glossaryCloseBtn" aria-label="Close glossary">×</button>
+    <div class="msheetK">Acronym glossary</div>
+    <input id="glossaryQ" placeholder="Filter acronyms…" aria-label="Filter glossary" autocomplete="off">
+    <div id="glossaryList"></div>
+    <div class="glossaryFoot">Not exhaustive — the terms you'll meet most across the map. Search itself understands many of these, so typing "counter-drone" also finds "C-UAS".</div>
+  </div>
+</div>
+
+<div id="upcomingSheet">
+  <div class="msheet">
+    <button class="msheetClose" id="upcomingCloseBtn" aria-label="Close">×</button>
+    <div class="msheetK">What's coming up</div>
+    <div id="upcomingList"></div>
+    <div class="glossaryFoot">⏱ The dated content the map can reliably track is <b>exhibitions &amp; fairs</b> — shown here in date order. Funding calls, accelerator cohorts and tender windows open and close constantly and can't be listed live here without going stale; use each body's own site (linked in its panel) for those. Always confirm dates on the official site before booking.</div>
   </div>
 </div>
 
@@ -765,6 +806,7 @@
   <div class="sect" id="s-fit"><div class="lab">Fit</div><p id="pfit"></p></div>
   <div class="psource" id="psource"></div>
   <div class="pverify" id="pverify"></div>
+  <div class="pfreshness" id="pfreshness" style="display:none"></div>
   <div class="pactions" id="pactions"></div>
   <button class="plink" id="plink">⤴ Copy shareable link</button>
   <div class="sect" id="s-entry"><div class="lab">Point of entry / contact</div><p id="pentry"></p></div>
@@ -1246,7 +1288,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    B("f_public","Public & government capital","State-backed funding and export finance.",[
      L("nssif","NSSIF","british-business-bank.co.uk › NSSIF","The government's dual-use corporate venture arm (a Treasury–British Business Bank initiative); invests alongside other investors in national-security technologies."),
      L("bpc","British Patient Capital / British Business Bank","british-business-bank.co.uk","Government-backed patient capital that anchors deep-tech and dual-use funds as a limited partner."),
-     L("nwf","National Wealth Fund","nwf.org.uk","The UK's public investment institution (formerly UK Infrastructure Bank); backs strategic and dual-use industrial capacity."),
+     L("nwf","National Wealth Fund","nationalwealthfund.org.uk","The UK's public investment institution (formerly UK Infrastructure Bank); backs strategic and dual-use industrial capacity."),
      L("ukef","UK Export Finance (UKEF)","gov.uk › UKEF","The UK export credit agency; finances and insures defence and dual-use exports."),
      L("dip","MOD Modernisation Fund / Defence Investment Plan","Internal MOD","The DIP sets the MOD's multi-year investment; includes ring-fenced innovation funding for UKDI and a Modernisation Fund. Plus a commitment to spend more with SMEs."),
      L("growth","Defence Growth Deals","Via MOD & devolved govts","Place-based investment across Plymouth, South Yorkshire, Scotland, Wales and Northern Ireland."),
@@ -1265,7 +1307,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("joincap","Join Capital","join.capital","Pan-European (Berlin/London/Milan) deep-tech and dual-use VC across enterprise, industrial, space and defence."),
      L("primamateria","Prima Materia","","Daniel Ek's European deep-tech investment company; lead backer of Helsing."),
      L("projecta","Project A Ventures","project-a.com","Early-stage B2B VC increasingly investing in dual-use (e.g. Quantum Systems)."),
-     L("sevenpct","7percent Ventures","7pc.co","Early-stage VC in defence, dual-use aerospace and AI ‘moonshots’."),
+     L("sevenpct","7percent Ventures","7pc.vc","Early-stage VC in defence, dual-use aerospace and AI ‘moonshots’."),
      L("lux","Lux Capital","luxcapital.com","US frontier-tech VC backing hard-science and defence technologies."),
      L("alpinespace","Alpine Space Ventures","alpinespace.vc","Space-industrial VC led by senior SpaceX alumni; NIF- and EIF-backed, EDIN and NATO SPACENET member."),
      L("otb","OTB Ventures","otb.vc","Central-European deep-tech VC (~$350m) — spacetech, enterprise AI and cyber; a leading CEE defence/dual-use backer."),
@@ -1309,7 +1351,13 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("nato_hq","NATO Headquarters","nato.int · Brussels","Political and military HQ of the Alliance; the North Atlantic Council sets strategy and coordinates collective defence."),
    L("natoact","Allied Command Transformation (ACT / SACT)","act.nato.int · Norfolk, Virginia","NATO's warfare development command — concepts, interoperability, experimentation and its Innovation Continuum (SHINE, Beacon)."),
    L("aco","Allied Command Operations (SHAPE)","shape.nato.int · Mons, Belgium","NATO's operational command; defines operational requirements. MARCOM and the Standing Naval Groups sit under it."),
-   L("diana","NATO DIANA","diana.nato.int · London HQ","Alliance deep-tech accelerator — 23 accelerator sites and 180+ test centres across 28 allies; non-dilutive grants and pathways to market."),
+   B("diana","NATO DIANA","Alliance deep-tech accelerator — three offices, a network of accelerator sites and 180+ affiliated test centres across the allies; non-dilutive grants, mentoring and pathways to market. Launched at the 2022 Madrid Summit.",[
+     L("diana_hq","DIANA Headquarters (London)","diana.nato.int · Imperial White City, London","The programme's HQ, in the heart of the UK deep-tech ecosystem; runs challenge programmes, commercial guidance and defence-user engagement."),
+     L("diana_tallinn","DIANA Regional Hub (Tallinn)","diana.nato.int · Tallinn, Estonia","DIANA's European regional hub, opened 2024 — connects the programme to the Baltic and Nordic deep-tech ecosystems."),
+     L("diana_halifax","DIANA North American Office (Halifax)","diana.nato.int · Halifax, Canada","DIANA's North American office, linking the programme to Canadian and US innovation ecosystems."),
+     L("diana_accel_net","DIANA Accelerator Network","diana.nato.int","The ~16 accelerator sites that deliver DIANA's cohort programming — typically existing national accelerators, science parks and university hubs designated as DIANA sites (e.g. Tehnopol in Estonia, VTT in Finland, Palladion at UniBw Munich). Selected companies are placed at a site for their programme."),
+     L("diana_testcentres","DIANA Test Centre Network","diana.nato.int/test-centres.html","180+ affiliated test centres across the allies where innovators de-risk, demonstrate and validate dual-use technology. The official site publishes the full country-by-country list; many centres (e.g. VTT, Fraunhofer, DLR, TÜBİTAK, INTA, CMRE) also appear elsewhere in this map as research bodies in their own right."),
+   ]),
    L("ncia","NATO Communications & Information Agency (NCI Agency)","ncia.nato.int · Brussels","NATO's C4ISR, cyber and IT acquisition and delivery agency; a major procurement channel via its NITEC industry engagement."),
    L("nspa","NATO Support & Procurement Agency (NSPA)","nspa.nato.int · Capellen, Luxembourg","NATO's shared acquisition, logistics and life-cycle management agency; runs multinational support programmes."),
    L("nato_sto","NATO Science & Technology Organization (STO)","sto.nato.int · Brussels","The Alliance's collaborative defence science network; the largest of its kind, spanning seven technical panels."),
@@ -1886,7 +1934,6 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("pol_ifri","IFRI","ifri.org","Institut français des relations internationales — France's leading international-affairs institute."),
    L("pol_dgap","DGAP","dgap.org","German Council on Foreign Relations — security and defence policy analysis."),
    L("pol_natodefencecollege","NATO Defense College","ndc.nato.it","NATO's strategic-level education and research institution, Rome."),
-   L("pol_ukstrategy","UK Strategic Defence Review & NSS","gov.uk/government/publications","The UK's periodic Strategic Defence Review and National Security Strategy — the documents that set direction and priorities."),
    L("ee_icds","ICDS (Estonia)","icds.ee","International Centre for Defence and Security — Estonia's leading defence, security and foreign-policy think tank; hosts the Lennart Meri Conference and Annual Baltic Conference on Defence, Tallinn."),
    L("lv_liia","LIIA (Latvia)","liia.lv","Latvian Institute of International Affairs — Riga-based foreign and security policy institute; runs the Rīga Conference community."),
    L("lt_tspmi","VU TSPMI (Lithuania)","tspmi.vu.lt","Vilnius University's Institute of International Relations & Political Science — Lithuania's principal security-studies hub."),
@@ -1925,6 +1972,17 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("il_inss","INSS (Israel)","inss.org.il","Institute for National Security Studies — Israel's leading security think tank, Tel Aviv University."),
    L("il_jiss","JISS (Israel)","jiss.org.il","Jerusalem Institute for Strategy and Security — national-security research and strategy."),
  ]),
+ B("b_strategy","National Strategies & Policy Documents","The published strategies and reviews that set defence direction — the actual instruments, each linked to the official source that carries it. Documents are periodically replaced, so confirm you're reading the current edition.",[
+   L("uk_str_sdr","UK Strategic Defence Review 2025","gov.uk/government/publications/strategic-defence-review-2025-making-britain-safer-secure-at-home-strong-abroad","'Making Britain Safer: secure at home, strong abroad' — the externally-led SDR published 2 June 2025; 62 recommendations, NATO-first, a shift to war-fighting readiness, autonomy and AI."),
+   L("uk_str_nss","UK National Security Strategy 2025","gov.uk/government/publications","The cross-government National Security Strategy published June 2025 ahead of the NATO Hague Summit; sets the UK's threat assessment and security priorities above the defence-specific SDR."),
+   L("str_nato_sc","NATO Strategic Concept 2022","nato.int/strategic-concept","The Alliance's guiding document, approved at the Madrid Summit on 29 June 2022 — three core tasks (deterrence & defence; crisis prevention & management; cooperative security); names Russia the most significant and direct threat."),
+   L("str_eu_compass","EU Strategic Compass 2022","eeas.europa.eu/eeas/strategic-compass-security-and-defence-1_en","The EU's security & defence action plan to 2030, adopted March 2022 — a shared threat analysis and concrete goals including the EU Rapid Deployment Capacity."),
+   L("us_str_nds","US National Defense Strategy","defense.gov/National-Defense-Strategy","The Department of Defense's capstone strategy directing force posture, priorities and the pacing challenge; issued by the Secretary of Defense and published via defense.gov."),
+   L("us_str_nss","US National Security Strategy","whitehouse.gov","The White House's overarching statement of national-security priorities, from which the National Defense Strategy flows."),
+   L("fr_str_rns","France — Revue Nationale Stratégique","sgdsn.gouv.fr","France's National Strategic Review (first issued 2022, Toulon) — sets ten strategic objectives; maintained by the SGDSN under the Prime Minister."),
+   L("de_str_nss","Germany — National Security Strategy","nationalesicherheitsstrategie.de","Germany's first integrated National Security Strategy (2023), the 'Zeitenwende' turning point — an 'integrated security' approach across defence, resilience and values."),
+   L("str_eu_capdev","EU Capability Development Priorities","eda.europa.eu","The European Defence Agency's agreed capability priorities that steer collaborative EU development — the practical companion to the Strategic Compass."),
+ ]),
  B("b_finance","Defence Banking & Finance","Debt, lending and public financial institutions willing to serve defence — distinct from equity investors. A fast-moving layer as Europe and NATO rebuild defence-positive finance.",[
    L("fin_dsrb","Defence, Security & Resilience Bank (DSRB)","dsrbank.com","Proposed nation-owned multilateral bank to harness capital markets for allied defence, readiness and supply-chain finance; in development, backed by major banks and 30+ nations."),
    L("fin_eib","European Investment Bank — Security & Defence","eib.org","The EU's bank; has expanded defence eligibility and intermediated lending to reach defence-supply-chain SMEs across the Union."),
@@ -1947,6 +2005,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("inc_tehnopol","Tehnopol (Estonia)","tehnopol.ee","The Baltics' largest science & business park, Tallinn; runs Estonia's NATO DIANA accelerator and cyber/dual-use programmes."),
    L("inc_palladion","Palladion Defence Accelerator (Germany)","unibw.de","Germany's DIANA defence accelerator, based at the University of the Bundeswehr Munich — deep-tech and dual-use maturation with Bundeswehr links."),
    L("inc_eurodefense","European Defense Tech Hackathon (Eurodefense.tech)","eurodefense.tech","Community running Europe's largest defence-tech hackathons (Munich, Tallinn and beyond) — the recurring collaborative events connecting builders to the sector."),
+   L("inc_define_fi","DEFINE — Defence Innovation Network Finland","vtt.fi","Finland's defence-innovation network; co-delivers the Finnish NATO DIANA accelerator with VTT, Aalto University and the University of Helsinki."),
  ]),
  B("b_comms","Defence Communications & Engagement","Specialist agencies that help defence and security organisations communicate, engage stakeholders and navigate the sector — a practical enabler for SMEs and primes alike.",[
    L("com_canny","Canny Comms","canny-comms.co.uk","Defence & security communications and marketing consultancy (Porton Down Science Park); runs the CIPR-accredited Reputation Masterclass and training for the sector."),
@@ -2578,8 +2637,8 @@ const VERIFIED_DOMAINS = new Set([
   'oxford.space','inspacemissions.com','satellitevu.com','riverlane.com','arqit.uk','aquarktechnologies.com','darktrace.com',
   'nuquantum.com','qub.ac.uk','physicsx.ai','magdrive.space','evolito.com','rovco.com','makeukdefence.org','teamdefence.info',
   'gknaerospace.com','martin-baker.com','meggitt.com','chemring.com','atkinsrealis.com','cambridgeconsultants.com',
-  'british-business-bank.co.uk','nwf.org.uk','iuk.ukri.org','ukri.org','eif.org','md-one.com','marqueventures.com',
-  'airstreet.com','expeditions.fund','join.capital','project-a.com','7pc.co','luxcapital.com','airbusventures.vc',
+  'british-business-bank.co.uk','nationalwealthfund.org.uk','iuk.ukri.org','ukri.org','eif.org','md-one.com','marqueventures.com',
+  'airstreet.com','expeditions.fund','join.capital','project-a.com','7pc.vc','luxcapital.com','airbusventures.vc',
   'alpinespace.vc','otb.vc','vsquared.vc','keenventurepartners.com','decisivepoint.com','europeandefense.org','machindustries.com','saildrone.com',
   'plexal.com','cylonlab.com','starburst.aero','atadastral.co.uk','asd-europe.org','dtecbw.de','fraunhofer.de','vvs.fraunhofer.de',
   'orizzontesn.it','bumar.gliwice.pl','czechoslovakgroup.cz','escribano.aero','edisoft.pt','mod.gov.ua',
@@ -2612,7 +2671,8 @@ const VERIFIED_DOMAINS = new Set([
   'icds.ee','liia.lv','tspmi.vu.lt','fiia.fi','ui.se','thinkeuropa.dk','pism.pl','pulaski.pl','globsec.org','sfpa.sk','iir.cz','amo.cz','pssi.cz','newstrategycenter.ro','sofiaforum.bg','bezbednost.org','dcaf.ch',
   'iris-france.org','swp-berlin.org','iai.it','ispionline.it','realinstitutoelcano.org','cidob.org','clingendael.org','hcss.nl','nupi.no','prio.org','diis.dk','eliamep.gr','ipri.pt','kki.hu','cgai.ca','aspi.org.au','jiia.or.jp','kida.re.kr','inss.org.il','jiss.org.il',
   'defence24.com','defence-ua.com','rid.it','analisidifesa.it','opex360.com','infodefensa.com','defenceturkey.com','hartpunkt.de',
-  'tehnopol.ee','unibw.de','eurodefense.tech'
+  'tehnopol.ee','unibw.de','eurodefense.tech','vtt.fi',
+  'eeas.europa.eu','defense.gov','whitehouse.gov','sgdsn.gouv.fr','nationalesicherheitsstrategie.de','eda.europa.eu'
 ].forEach(d=>VERIFIED_DOMAINS.add(d));
 function domainVerified(u){
   let host=u.replace(/^https?:\/\//i,'').replace(/\/.*$/,'').replace(/[.,;·]+$/,'').toLowerCase();
@@ -2721,13 +2781,160 @@ document.getElementById('pclose').onclick=()=>{selected=null;Object.values(nodeE
 
 /* search */
 const q=document.getElementById('q');
+/* ---- acronym glossary overlay ---- */
+const GLOSSARY=[
+  ['ACT','Allied Command Transformation — NATO\'s warfare development command.'],
+  ['ADD','Agency for Defense Development — South Korea\'s state defence R&D body.'],
+  ['ATLA','Acquisition, Technology & Logistics Agency — Japan\'s defence procurement/R&D agency.'],
+  ['BAAINBw','Germany\'s federal office for defence equipment, IT and in-service support.'],
+  ['C-UAS','Counter-Uncrewed Aerial Systems — countering hostile drones.'],
+  ['C4ISR','Command, Control, Communications, Computers, Intelligence, Surveillance & Reconnaissance.'],
+  ['CBRN','Chemical, Biological, Radiological & Nuclear.'],
+  ['CCS','Crown Commercial Service — the UK\'s central government buying function.'],
+  ['CNAD','Conference of National Armaments Directors — NATO armaments coordination.'],
+  ['DASA','Defence & Security Accelerator — UK innovation front door (grants/competitions).'],
+  ['DE&S','Defence Equipment & Support — the UK MOD\'s procurement and support arm.'],
+  ['DEW','Directed-Energy Weapon (e.g. high-energy laser).'],
+  ['DGA','Direction générale de l\'armement — France\'s defence procurement agency.'],
+  ['DIANA','Defence Innovation Accelerator for the North Atlantic — NATO\'s dual-use accelerator.'],
+  ['DIU','Defense Innovation Unit — the US DoD\'s commercial-tech bridge.'],
+  ['DSEI','Defence & Security Equipment International — major London defence exhibition.'],
+  ['DSPCR','Defence & Security Public Contracts Regulations 2011 — UK defence procurement law.'],
+  ['EDA','European Defence Agency.'],
+  ['EDF','European Defence Fund — EU collaborative defence R&D funding.'],
+  ['EDIP','European Defence Industry Programme.'],
+  ['EW','Electronic Warfare.'],
+  ['FMV','Försvarets materielverk — Sweden\'s defence materiel administration.'],
+  ['ISR','Intelligence, Surveillance & Reconnaissance.'],
+  ['ITAR','International Traffic in Arms Regulations — US export-control regime.'],
+  ['JOSCAR','Joint Supply Chain Accreditation Register — UK defence supplier register.'],
+  ['MOD / MoD','Ministry of Defence.'],
+  ['NATO','North Atlantic Treaty Organization.'],
+  ['NCIA','NATO Communications & Information Agency.'],
+  ['NIF','NATO Innovation Fund — the Alliance\'s multi-sovereign venture fund.'],
+  ['NSPA','NATO Support & Procurement Agency.'],
+  ['OCCAR','Organisation for Joint Armament Cooperation — European programme management.'],
+  ['PESCO','Permanent Structured Cooperation — EU defence integration framework.'],
+  ['RDEL / CDEL','Resource / Capital Departmental Expenditure Limit — UK budget categories.'],
+  ['SDR','Strategic Defence Review — UK\'s periodic defence policy review.'],
+  ['SME','Small & Medium-sized Enterprise.'],
+  ['STO','NATO Science & Technology Organization.'],
+  ['TRL','Technology Readiness Level (1 = idea, 9 = proven in service).'],
+  ['UAS / UAV','Uncrewed Aerial System / Vehicle — a drone.'],
+  ['VC','Venture Capital.']
+];
+(function wireGlossary(){
+  const sheet=document.getElementById('glossarySheet');
+  const openBtn=document.getElementById('glossaryBtn');
+  const closeBtn=document.getElementById('glossaryCloseBtn');
+  const list=document.getElementById('glossaryList');
+  const qf=document.getElementById('glossaryQ');
+  if(!sheet||!list) return;
+  function render(filter){
+    const f=(filter||'').trim().toLowerCase();
+    list.innerHTML=GLOSSARY.filter(([a,d])=>!f||a.toLowerCase().includes(f)||d.toLowerCase().includes(f))
+      .map(([a,d])=>`<div class="grow"><div class="gac">${a}</div><div class="gdef">${d}</div></div>`).join('')
+      || `<div class="grow"><div class="gdef" style="color:var(--faint)">No match.</div></div>`;
+  }
+  function open(){ if(window._closeMenuSheet)window._closeMenuSheet(); render(''); if(qf)qf.value=''; sheet.classList.add('open'); }
+  function close(){ sheet.classList.remove('open'); }
+  if(openBtn) openBtn.addEventListener('click',open);
+  if(closeBtn) closeBtn.addEventListener('click',close);
+  sheet.addEventListener('click',e=>{ if(e.target===sheet) close(); });
+  if(qf) qf.addEventListener('input',()=>render(qf.value));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sheet.classList.contains('open')) close(); });
+})();
+
+/* ---- "what's coming up" overlay — surfaces the dated fair/exhibition content
+   in chronological order. Reads EVENT_NEXT at click time (defined later). ---- */
+(function wireUpcoming(){
+  const sheet=document.getElementById('upcomingSheet');
+  const openBtn=document.getElementById('upcomingBtn');
+  const closeBtn=document.getElementById('upcomingCloseBtn');
+  const list=document.getElementById('upcomingList');
+  if(!sheet||!list) return;
+  // parse a rough sort key from a human date string like "15–19 June 2026" or "June 2027 (odd years)"
+  const MONTHS={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+  function sortKey(s){
+    s=String(s||'');
+    const ym=s.match(/([A-Za-z]+)\s+(\d{4})/); // "June 2026"
+    const yOnly=s.match(/(\d{4})/);
+    let year=ym?parseInt(ym[2]):(yOnly?parseInt(yOnly[1]):9999);
+    let month=ym&&MONTHS[ym[1].toLowerCase()]!=null?MONTHS[ym[1].toLowerCase()]:11;
+    const dayM=s.match(/^(\d{1,2})/); const day=dayM?parseInt(dayM[1]):15;
+    return year*10000+month*100+day;
+  }
+  function render(){
+    if(typeof EVENT_NEXT==='undefined'){ list.innerHTML='<div class="urow"><div class="uname">No dated content available.</div></div>'; return; }
+    const rows=Object.keys(EVENT_NEXT).map(id=>({id,...EVENT_NEXT[id],k:sortKey(EVENT_NEXT[id].next),name:(NODE[id]||{}).l||id}))
+      .sort((a,b)=>a.k-b.k);
+    list.innerHTML=rows.map(r=>`<div class="urow" data-id="${r.id}"><div class="udate">${r.next}</div><div class="uname">${r.name}<div class="uwhere">${r.where||''}</div></div></div>`).join('');
+    list.querySelectorAll('.urow').forEach(el=>el.addEventListener('click',()=>{ const id=el.dataset.id; close(); if(id&&NODE[id]){ if(window._closeMenuSheet)window._closeMenuSheet(); focusNode(id); } }));
+  }
+  function open(){ if(window._closeMenuSheet)window._closeMenuSheet(); render(); sheet.classList.add('open'); }
+  function close(){ sheet.classList.remove('open'); }
+  if(openBtn) openBtn.addEventListener('click',open);
+  if(closeBtn) closeBtn.addEventListener('click',close);
+  sheet.addEventListener('click',e=>{ if(e.target===sheet) close(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sheet.classList.contains('open')) close(); });
+})();
+
+/* ---- acronym / synonym layer: defence is acronym-dense, so a search for one
+   term should find its common equivalents. Each key maps to extra terms that,
+   if the query matches the key, are also searched. Bidirectional via expandQuery. ---- */
+const SEARCH_SYNONYMS={
+  'c-uas':['counter-drone','counter uas','counter-uav','anti-drone','drone defence'],
+  'counter-drone':['c-uas','counter-uav','anti-drone'],
+  'uas':['drone','uav','unmanned','rpas'],
+  'drone':['uas','uav','unmanned','rpas'],
+  'uav':['drone','uas','unmanned'],
+  'r&d':['research','development','science'],
+  'research':['r&d','science','laboratory'],
+  'ai':['artificial intelligence','machine learning','autonomy'],
+  'artificial intelligence':['ai','machine learning'],
+  'ew':['electronic warfare','electromagnetic'],
+  'electronic warfare':['ew'],
+  'isr':['intelligence surveillance reconnaissance','surveillance','reconnaissance'],
+  'c4isr':['command control','isr','communications'],
+  'sme':['small business','startup','small and medium'],
+  'startup':['sme','scale-up','start-up'],
+  'vc':['venture','investor','capital','fund'],
+  'venture':['vc','investor','capital'],
+  'procurement':['acquisition','tender','contract','buying','sourcing'],
+  'acquisition':['procurement','buying'],
+  'accelerator':['incubator','innovation','cohort'],
+  'incubator':['accelerator','innovation'],
+  'quantum':['qkd','quantum computing','quantum sensing'],
+  'space':['satellite','orbital','launch','spacecraft'],
+  'cyber':['cybersecurity','cyber security','information security','infosec'],
+  'cybersecurity':['cyber','infosec'],
+  'maritime':['naval','undersea','sea','submarine'],
+  'naval':['maritime','undersea','sea'],
+  'think tank':['policy','institute','strategy'],
+  'policy':['think tank','strategy','institute'],
+  'hypersonic':['hypersonics','high-speed'],
+  'directed energy':['laser','high-energy','dew'],
+  'munitions':['ammunition','ordnance','artillery'],
+  'ammunition':['munitions','ordnance']
+};
+function expandQuery(v){
+  const terms=new Set([v]);
+  for(const key in SEARCH_SYNONYMS){
+    if(v.includes(key)||key.includes(v)) SEARCH_SYNONYMS[key].forEach(t=>terms.add(t));
+  }
+  return [...terms];
+}
+function nodeMatchesQuery(n,v){
+  const hay=(n.l+' '+(n.does||'')+' '+(n.entry||'')).toLowerCase();
+  return expandQuery(v).some(t=>hay.includes(t));
+}
 q.addEventListener('input',()=>{
   const v=q.value.trim().toLowerCase();
   Object.values(nodeEls).forEach(el=>el.classList.remove('hit','dim'));
   if(!v)return;
   if(VIEW){ clearViewSel(); }
   let hits=[];
-  Object.values(NODE).forEach(n=>{ if((n.l+' '+(n.does||'')).toLowerCase().includes(v))hits.push(n.id); });
+  Object.values(NODE).forEach(n=>{ if(nodeMatchesQuery(n,v))hits.push(n.id); });
   // expand ancestors of hits
   hits.forEach(id=>{let cur=PARENT[id];while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];}});
   refresh();
@@ -2924,10 +3131,12 @@ const BRANCH_ETYPE={
   b_acad:'research', b_cat:'research', b_sti:'gov',
   b_primes:'industry', b_supply:'industry', b_tech:'industry',
   b_fund:'investor', b_trade:'gateway', b_events:'event', b_nuke:'gov',
-  b_media:'media', b_policy:'policy', b_frameworks:'gov', b_finance:'investor', b_incubators:'gateway', b_comms:'industry'
+  b_media:'media', b_policy:'policy', b_strategy:'policy', b_frameworks:'gov', b_finance:'investor', b_incubators:'gateway', b_comms:'industry'
 };
 // explicit overrides where branch/inference gets it wrong
 const ETYPE_OVERRIDES={
+  // NATO DIANA programme structure — offices and networks are gov, not industry
+  diana:'gov', diana_hq:'gov', diana_tallinn:'gov', diana_halifax:'gov', diana_accel_net:'gov', diana_testcentres:'gov',
   // nuclear enterprise: some are industry, not gov
   rrsub:'industry', rr_subsystems:'industry', bab_nuclear:'industry', awe:'gov', barrow:'gov',
   // STI branch holds both gov labs and industry-facing accelerators
@@ -2987,6 +3196,11 @@ const NODOOR=new Set(['sdr','dis','reform','headoffice','ai','uas','deeptech','f
 function isDoorNode(n){ if(!n||NODOOR.has(n.id))return false; const k=n.children&&n.children.length; return !k || !!TAGS[n.id]; }
 
 const TAGS={
+ str_nato_sc:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'nato'},
+ str_eu_compass:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'eu'},
+ str_eu_capdev:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'eu'},
+ us_str_nds:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+ us_str_nss:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
  ukdi:{w:['sme','startup','academic','prime'],o:['grant','contract','advice'],t:[3,8],d:['xcut'],a:'open',g:'uk'},
  dasa:{w:['sme','startup','academic'],o:['grant','advice'],t:[3,7],d:['xcut'],a:'open',g:'uk'},
  dstl:{w:['academic','sme','prime'],o:['research','contract'],t:[1,6],d:['xcut'],a:'open',g:'uk'},
@@ -4077,7 +4291,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (national incubators + full verification · 875 orgs)';
+let DATA_AS_OF='August 2026 (trust + findability + open data + upcoming · 890 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -4159,6 +4373,14 @@ function updateCompareBadge(){ const b=document.getElementById('compareBadge'); 
 function togglePin(id){ if(compareList.includes(id)){compareList=compareList.filter(x=>x!==id);} else { if(compareList.length>=4){showToast('Compare holds four — remove one first');return;} compareList.push(id); } updateCompareBadge(); }
 
 /* ---- panel extras: source, verify, actions ---- */
+// fast-moving content types whose freshness matters most — flag them explicitly
+function freshnessFlag(id){
+  const br=BRANCHOF[id]||'';
+  if(br==='b_events'||String(id).startsWith('ev_')) return {cls:'stale-warn',txt:'⏱ Dates change — confirm on the official site before relying on them.'};
+  if(br==='b_strategy'||String(id).startsWith('str_')||/_str_/.test(String(id))) return {cls:'stale-note',txt:'⏱ Strategy documents are periodically replaced — check you\'re reading the current edition.'};
+  if(br==='b_finance') return {cls:'stale-note',txt:'⏱ Defence-finance is fast-moving — details may have changed.'};
+  return null;
+}
 function verifiedLine(id){ const uv=(CRM.verified||{})[id];
   const vd=verifiedDate(id);
   let s=`Last reviewed <b>${vd}</b> · dataset <b>${DATA_AS_OF}</b>.`;
@@ -4179,16 +4401,21 @@ function renderPanelExtras(id){
   else { const d=deriveSourceFromEntry(id); if(d && domainVerified(d)){ srcHtml=`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Official site</span> ${linkifyProse(d)}`; } }
   document.getElementById('psource').innerHTML = srcHtml;
   document.getElementById('pverify').innerHTML = verifiedLine(id);
+  const ff=freshnessFlag(id);
+  const pflag=document.getElementById('pfreshness');
+  if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }
   const a=document.getElementById('pactions');
   a.innerHTML =
     `<button class="pabtn ${isFav(id)?'on':''}" id="pa_fav">${isFav(id)?'★ Favourited':'☆ Favourite'}</button>`+
     `<button class="pabtn ${compareList.includes(id)?'on':''}" id="pa_pin">${compareList.includes(id)?'⇄ In compare':'⇄ Compare'}</button>`+
     `<button class="pabtn" id="pa_ver">✓ Mark verified</button>`+
+    `<button class="pabtn" id="pa_link">⤶ Copy link</button>`+
     `<button class="pabtn" id="pa_share">⤴ Share this</button>`+
     `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`;
   document.getElementById('pa_fav').onclick=()=>{ toggleFav(id); renderPanelExtras(id); showToast(isFav(id)?'Added to favourites':'Removed from favourites'); };
   document.getElementById('pa_pin').onclick=()=>{ togglePin(id); renderPanelExtras(id); };
   document.getElementById('pa_ver').onclick=()=>{ (CRM.verified=CRM.verified||{})[id]=new Date().toISOString().slice(0,10); saveCRM(); renderPanelExtras(id); showToast('Marked verified today'); };
+  document.getElementById('pa_link').onclick=()=>{ try{ history.replaceState(null,'','#node='+encodeURIComponent(id)); }catch(_){ location.hash='node='+id; } copyText(location.href); showToast('Link to this node copied'); };
   document.getElementById('pa_share').onclick=()=>shareEntry(id);
   document.getElementById('pa_cor').onclick=()=>openCorrect(id);
 }
@@ -4242,7 +4469,7 @@ function lvMatch(id){ const t=tagsFor(id);
   if(LVF.trl){ const [lo,hi]=LVF.trl; if(hi<t.t[0]||lo>t.t[1])return false; }
   if(LVF.access.size && !LVF.access.has(t.a)) return false;
   if(LVF.geo && t.g!==LVF.geo) return false;
-  if(LVF.q){ const n=NODE[id]; if(!((n.l+' '+(n.does||'')).toLowerCase().includes(LVF.q))) return false; }
+  if(LVF.q){ const n=NODE[id]; if(!nodeMatchesQuery(n,LVF.q)) return false; }
   return true;
 }
 function buildLvFilters(){
