@@ -1,0 +1,57 @@
+name: "➕ Suggest an organisation"
+description: Suggest a defence-ecosystem organisation, body, or programme to add to the map.
+title: "[Add]: "
+labels: ["new-organisation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The map is representative, not exhaustive — but genuine gaps are always welcome.
+        Please suggest bodies that are real, verifiable, and relevant to the defence
+        innovation, procurement, policy, or finance ecosystem.
+  - type: input
+    id: name
+    attributes:
+      label: Organisation name
+      placeholder: e.g. Example Defence Innovation Agency
+    validations:
+      required: true
+  - type: input
+    id: website
+    attributes:
+      label: Official website
+      description: The organisation's own official domain (not a directory or news article).
+      placeholder: https://www.example.gov.xx
+    validations:
+      required: true
+  - type: input
+    id: nation
+    attributes:
+      label: Nation / region
+      placeholder: e.g. Norway, NATO, EU
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: What type of body is it?
+      options:
+        - Government / Military
+        - Research / Academic
+        - Industry
+        - Investor / Capital
+        - Gateway / Association
+        - Policy / Strategy
+        - Media / Intelligence
+        - Event / Fair
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What do they do, and why include them?
+      description: A sentence or two on their role in the ecosystem.
+    validations:
+      required: true
+
