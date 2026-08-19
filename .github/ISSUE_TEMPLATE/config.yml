@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ✎ Suggest a correction (in-tool form)
+    url: https://juliusdavidson1987-del.github.io/Defence-ecosystem/
+    about: The fastest way to flag a correction — use the "Suggest a correction" button inside the tool, which pre-fills the form.
+  - name: 🔒 Report a security issue privately
+    url: https://github.com/juliusdavidson1987-del/Defence-ecosystem/security/policy
+    about: Found a link that resolves somewhere malicious or inappropriate? Please report it privately, not as a public issue.
+
