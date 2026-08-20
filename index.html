@@ -553,6 +553,18 @@
   html[data-device="phone"] #stage .hint{display:none}
   /* full-screen panels on phone */
   html[data-device="phone"] #panel{width:100%;max-width:100%;top:0;z-index:90}
+  /* Modals must sit ABOVE the full-screen phone panel (z-index 90), or they open
+     hidden behind the very entry you're acting on. Keep briefModal (95) on top of all. */
+  html[data-device="phone"] #correct,
+  html[data-device="phone"] #addnode,
+  html[data-device="phone"] #reconcile,
+  html[data-device="phone"] #pathway,
+  html[data-device="phone"] #about,
+  html[data-device="phone"] #finder,
+  html[data-device="phone"] #listview,
+  html[data-device="phone"] #compare,
+  html[data-device="phone"] #crm{z-index:96}
+  html[data-device="phone"] #briefModal{z-index:97}
   html[data-device="phone"] #finder{width:100%;max-width:100%}
   html[data-device="phone"] #listview,html[data-device="phone"] #compare,html[data-device="phone"] #correct{padding:0}
   html[data-device="phone"] #listview .lvcard,html[data-device="phone"] #compare .lvcard{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none;padding:14px 12px}
@@ -700,6 +712,7 @@
         <button class="msitem" id="deviceSwitch">⇄ <span id="deviceSwitchLabel">Desktop view</span></button>
         <button class="msitem" id="upcomingBtn">📅 What's coming up</button>
         <button class="msitem" id="glossaryBtn">🔤 Acronym glossary</button>
+        <button class="msitem" id="feedbackBtn">✉ Feedback</button>
         <button class="msitem" id="aboutBtn">ⓘ About &amp; licence</button>
       </div>
     </div>
@@ -811,7 +824,8 @@
   <button class="plink" id="plink">⤴ Copy shareable link</button>
   <div class="sect" id="s-entry"><div class="lab">Point of entry / contact</div><p id="pentry"></p></div>
   <div class="sect" id="s-does"><div class="lab">What they do</div><p id="pdoes"></p><div id="pcoverage" class="pcoverage" style="display:none"></div></div>
-  <div class="sect" id="s-opps"><div class="lab">Open calls &amp; opportunities</div><div id="popps"></div></div>
+  <div class="sect" id="s-opps"><div class="lab" id="poppsLab">Open calls &amp; opportunities</div><div id="popps"></div></div>
+  <div class="sect" id="s-funding"><div class="lab">Potential funding availability</div><div id="pfunding"></div></div>
   <div class="sect" id="s-kids"><div class="lab">Contains / connects to</div><div class="kids" id="pkids"></div></div>
   <div class="sect" id="s-crm"><div id="pcrm"></div></div>
   <button class="plink" id="paddsub">＋ Add a sub-part / department here</button>
@@ -1312,6 +1326,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("sevenpct","7percent Ventures","7pc.vc","Early-stage VC in defence, dual-use aerospace and AI ‘moonshots’."),
      L("lux","Lux Capital","luxcapital.com","US frontier-tech VC backing hard-science and defence technologies."),
      L("alpinespace","Alpine Space Ventures","alpinespace.vc","Space-industrial VC led by senior SpaceX alumni; NIF- and EIF-backed, EDIN and NATO SPACENET member."),
+     L("de_vsquared","Vsquared Ventures","vsquared.vc","Munich-based deep-tech VC — a leading European backer of defence, space, AI and dual-use hardware (Quantum Systems, Isar Aerospace and others)."),
      L("otb","OTB Ventures","otb.vc","Central-European deep-tech VC (~$350m) — spacetech, enterprise AI and cyber; a leading CEE defence/dual-use backer."),
      L("vsquared","Vsquared Ventures","vsquared.vc","Munich deep-tech VC backing defence, space and dual-use (NIF-backed); part of Europe's densest defence-tech hub."),
      L("keen","Keen Venture Partners","keenventurepartners.com","European growth VC focused on defence, security and resilience technology."),
@@ -1363,6 +1378,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("ncia","NATO Communications & Information Agency (NCI Agency)","ncia.nato.int · Brussels","NATO's C4ISR, cyber and IT acquisition and delivery agency; a major procurement channel via its NITEC industry engagement."),
    L("nspa","NATO Support & Procurement Agency (NSPA)","nspa.nato.int · Capellen, Luxembourg","NATO's shared acquisition, logistics and life-cycle management agency; runs multinational support programmes."),
    L("nato_sto","NATO Science & Technology Organization (STO)","sto.nato.int · Brussels","The Alliance's collaborative defence science network; the largest of its kind, spanning seven technical panels."),
+   L("nato_space","NATO Space Centre","ac.nato.int · Ramstein","The Alliance's space coordination hub at Allied Air Command — provides space products and services to NATO operations, following space's 2019 designation as NATO's fifth operational domain; complemented by the NATO Space Centre of Excellence in Toulouse."),
    L("nato_cso","STO Collaboration Support Office (CSO)","sto.nato.int · Paris","Runs STO's collaborative research programme — technical teams, symposia and lecture series across the nations."),
    L("nato_ocs","Office of the Chief Scientist","nato.int · Brussels","Principal S&T adviser to NATO; steers the science and technology strategy."),
    L("cmre","Centre for Maritime Research & Experimentation (CMRE)","cmre.nato.int · La Spezia, Italy","STO's sea-going maritime research centre — autonomy, undersea acoustics, AI and mine countermeasures."),
@@ -1400,6 +1416,9 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    B("eu_fr","France","Procurement, innovation, research and industry.",[
      L("fr_dga","DGA (Direction générale de l'armement)","defense.gouv.fr · Paris","France's powerful defence procurement and technology agency."),
      L("fr_aid","Agence de l'Innovation de Défense (AID)","defense.gouv.fr","France's defence innovation agency — coordinates S&T, runs challenges and rapid innovation."),
+     L("fr_comcyber","France — COMCYBER","defense.gouv.fr/comcyber","The armed forces' joint cyberdefence command (under the Chief of Defence Staff) — defensive, offensive and influence operations in cyberspace; a fast-growing cyber-combatant force."),
+     L("fr_anssi","France — ANSSI","cyber.gouv.fr","The French Cybersecurity Agency (under the SGDSN/Prime Minister) — the national authority for cyber defence, protecting critical infrastructure and coordinating the state's cyber response."),
+     L("fr_cde","France — Commandement de l'Espace (CdE)","defense.gouv.fr/cde","The French military space command (est. 2019, Toulouse, ~500 personnel) — space situational awareness, military space operations and space defence; co-located with the NATO Space Centre of Excellence and CNES."),
      L("fr_definvest","Definvest","bpifrance.fr","Defence-investment fund (with Bpifrance) backing strategic French defence SMEs."),
      L("fr_onera","ONERA","onera.fr","The French aerospace research centre."),
      L("fr_cnes","CNES","cnes.fr","France's space agency; military space in partnership with the CDE (Commandement de l'Espace)."),
@@ -1413,12 +1432,20 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("fr_eurenco","Eurenco","eurenco.com","Powders, explosives and energetic materials for munitions."),
      L("fr_exail","Exail","exail.com","Robotics, autonomy, navigation and drones (formerly ECA/iXblue)."),
      L("fr_arquus","Arquus","arquus-defense.com","Military land vehicles and mobility."),
+     L("fr_unseenlabs","Unseenlabs","unseenlabs.space","Space-based radio-frequency (RF) surveillance — detects and geolocates emitters at sea for maritime domain awareness; a European leader in signals-from-space (raised €85M+ Series C led by the French Defence Innovation Fund)."),
+     L("fr_exotrail","Exotrail","exotrail.com","In-orbit mobility — electric propulsion and the 'spacevan' orbital transfer vehicle; dual-use space-logistics leader backed by the Defence Innovation Fund."),
+     L("fr_latitude","Latitude","latitude.eu","Reims-based micro-launcher developer (Zephyr rocket, 3D-printed Navier engine) — sovereign small-satellite launch, part-funded by the French state."),
+     L("fr_parrot","Parrot","parrot.com","France's leading drone manufacturer (ANAFI/USA) — micro-UAS for defence, security and reconnaissance; a NATO/US-approved small-drone supplier."),
+     L("fr_cerbair","CerbAir","cerbair.com","Counter-UAS detection and neutralisation — RF-based drone detection and jamming for sensitive sites and forces."),
+     L("fr_safranai","Safran.AI (ex-Preligens)","preligens.com","AI for geospatial intelligence and automated satellite-image analysis — acquired by Safran in 2024; a leading European defence-AI capability."),
    ]),
    B("eu_de","Germany","A fast-reforming procurement and innovation system, with a strong industrial base.",[
      L("de_baainbw","BAAINBw","baainbw.de · Koblenz","Federal Office for Bundeswehr Equipment, IT and In-Service Support — German defence procurement, now moving to an agile matrix structure."),
      L("de_cihbw","Cyber Innovation Hub (CIHBw)","cyberinnovationhub.de","The Bundeswehr's innovation ‘do-tank’, bridging start-ups and the German armed forces."),
      L("de_izbw","Innovationszentrum Bundeswehr","bundeswehr.de","New armed-forces innovation centre network (Erding/space, Kiel/naval, Bremen, Dresden/IT) launched 2026."),
      L("de_bwi","BWI","bwi.de","The Bundeswehr's IT systems house delivering digital capability."),
+     L("de_cir","Germany — Cyber & Information Domain Service (CIR)","cir.bundeswehr.de","The Bundeswehr's cyber and information-domain military branch (est. 2017, ~15,600 personnel, HQ Bonn) — now being elevated to a full independent service alongside army, navy and air force."),
+     L("de_wrkdo","Germany — Space Command (WRKdoBw)","bundeswehr.de","The Bundeswehr's space command (Weltraumkommando, Uedem) — space situational awareness, planning of space-defence operations and protection of national space systems."),
      L("de_dtec","dtec.bw / Cyber Cluster","dtecbw.de","Bundeswehr universities' research and transfer centre for dual-use tech."),
      L("de_dlr","DLR","dlr.de","The German aerospace centre — aeronautics, space and security research."),
      L("de_fraunhofer","Fraunhofer VVS (defence institutes)","vvs.fraunhofer.de","Fraunhofer's defence- and security-research institute group."),
@@ -1433,9 +1460,14 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("de_helsing","Helsing","helsing.ai","AI for defence — strike drones, electronic warfare and battlefield software; a leading European defence-tech firm."),
      L("de_quantum","Quantum Systems","quantum-systems.com","Reconnaissance UAS (Vector) used by Ukraine and NATO forces."),
      L("de_arx","ARX Robotics","arxrobotics.com","Uncrewed ground vehicles and autonomy for land forces."),
+     L("de_stark","STARK","stark-defence.com","AI-enabled unmanned strike systems — the OWE-V Virtus loitering munition and Minerva mission-control software; Bundeswehr and NATO customers, battle-tested in Ukraine (Thiel/Sequoia/NATO Innovation Fund-backed, ~€3.5bn valuation)."),
+     L("de_tytan","TYTAN Technologies","tytan-technologies.com","Counter-drone interceptors — the AI-guided METIS drone that hunts other drones at high speed; a slot in the Bundeswehr's counter-UAS programme (NATO Innovation Fund-backed)."),
+     L("de_alpineeagle","Alpine Eagle","alpine-eagle.com","Air-to-air counter-drone — the Sentinel airborne interceptor platform that engages drones from the sky rather than the ground; Bundeswehr launch customer."),
+     L("de_isar","Isar Aerospace","isaraerospace.com","Europe's leading private small-launch company — the Spectrum two-stage rocket for sovereign, responsive access to orbit; dual-use space-launch capability."),
    ]),
    B("eu_it","Italy","Armaments, a Leonardo-centred industrial base, and national research.",[
      L("it_segredifesa","Segredifesa / DNA","difesa.it · Rome","Italy's Secretariat General of Defence and National Armaments Directorate — the procurement authority."),
+     L("it_cor","Italy — Network Operations Command (COR)","difesa.it","The armed forces' joint cyber command (Comando per le Operazioni in Rete, est. 2020, Rome) — defends national defence networks and is Italy's lead actor for NATO cyber-defence standards."),
      L("it_leonardo","Leonardo","leonardo.com","Italy's anchor prime — helicopters (AW family), defence electronics, aircraft, and European lead on GCAP; ~300 SMEs sit around it."),
      L("it_leonardo_labs","Italian defence research (CNR / CINECA links)","difesa.it","National research and HPC partnerships feeding defence S&T."),
      L("it_fincantieri","Fincantieri","fincantieri.com","Europe's largest shipbuilder — frigates (FREMM), submarines (U212) and the underwater technology hub."),
@@ -1451,6 +1483,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("nl_dmo","Defence Materiel Organisation (DMO)","defensie.nl","Dutch defence procurement and materiel organisation, under the Ministry of Defence."),
      L("nl_tno","TNO — Defence, Safety & Security","tno.nl","Independent applied-research organisation with a major defence programme."),
      L("nl_nldatahub","Netherlands Defence Innovation (NLD DIH)","defensie.nl","Dutch defence innovation hub connecting start-ups, knowledge institutes and the armed forces."),
+     L("nl_dcc","Netherlands — Defence Cyber Command (DCC)","defensie.nl","The armed forces' cyber command — defensive and offensive operations in cyberspace (the Dutch military's fifth operational domain), with a growing full-time and reservist cyber workforce."),
      L("nl_damen","Damen Naval","damen.com","Naval shipbuilder — frigates (ASWF), patrol and support vessels (Vlissingen)."),
      L("nl_thalesnl","Thales Nederland","thalesgroup.com","Naval radar (SMART-L MM, APAR), combat systems and sensors (Hengelo)."),
      L("nl_fokker","Fokker (GKN Aerospace)","gknaerospace.com","Aerostructures and F-35 component manufacture; Dutch aerospace heritage."),
@@ -1520,6 +1553,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    ]),
    B("eu_central","Central & Southern Europe","Poland, Czechia, and southern & south-eastern allies.",[
      L("pl_armament","Poland — Armament Agency","wojsko-polskie.pl","Poland's central defence procurement agency (Agencja Uzbrojenia)."),
+     L("pl_dkwoc","Poland — Cyberspace Defence Forces (DKWOC)","wojsko-polskie.pl","Poland's specialised cyberspace military component (est. 2022, under Gen. Karol Molenda) — the military dimension of Polish cyber-security, and a NATO regional cyber command for Central & Eastern Europe."),
      L("pl_wb","Poland — Łukasiewicz / research network","lukasiewicz.gov.pl","Polish research network driving domestic innovation and technology transfer."),
      L("pl_wat","Poland — WAT (Military University of Technology)","wat.edu.pl","Poland's leading military technical university (Warsaw, est. 1951, ~8,000 students) supervised by the Minister of National Defence — the principal provider of scientific and research support to the Polish Armed Forces; strengths in optoelectronics, materials and C4ISR."),
      L("pl_pgz","Poland — PGZ (Polska Grupa Zbrojeniowa)","grupapgz.pl","Poland's state defence-industrial group — 50+ companies across land, air, naval and munitions; centre of Europe's ammunition build-out."),
@@ -1541,6 +1575,8 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("cz_unob","Czechia — University of Defence (Brno)","unob.cz","The Czech Armed Forces' only military higher-education institution (Brno) — the Army's defence and security R&D centre, with faculties in military technology and leadership."),
      L("es_dgam","Spain — DGAM","defensa.gob.es","Directorate-General for Armament and Materiel — Spanish procurement."),
      L("es_inta","Spain — INTA","inta.es","National Institute for Aerospace Technology 'Esteban Terradas' — Spain's public defence research organisation under the Secretariat of State for Defence (est. 1942, ~1,500 staff); dual-use R&D and test/certification across air, space, land and sea."),
+     L("es_mcce","Spain — Joint Cyberspace Command (MCCE)","emad.defensa.gob.es","The armed forces' joint cyberspace command (est. 2020, under the Chief of Defence Staff) — plans, directs and executes military cyberspace operations and contributes to national cyber-security."),
+     L("es_mespa","Spain — Space Command (MESPA)","ejercitodelaire.defensa.gob.es","The Air & Space Force's space command — space situational awareness, protection of national interests in space and operation of military satellites."),
      L("es_navantia","Spain — Navantia","navantia.es","State naval prime — frigates (F-110), submarines (S-80) and the LHD."),
      L("es_indra","Spain — Indra","indracompany.com","Defence electronics, radar, EW and systems; a leading Spanish prime and FCAS pillar lead."),
      L("es_airbusES","Spain — Airbus Defence & Space (Spain)","airbus.com","Military aircraft (A400M, C295, Eurofighter) and space, headquartered partly in Spain."),
@@ -1667,6 +1703,26 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
 
  B("b_us","United States","The US defence department, its innovation units, research labs, procurement and strategic investors.",[
    L("us_dod","US Department of Defense (DoD)","defense.gov · Washington DC","The US defence department (also styled the Department of War); the largest defence customer globally."),
+   B("us_departments","Military Departments & Joint Staff","The three military departments and the Joint Chiefs — the top of the US defence structure.",[
+     L("us_army","Department of the Army","army.mil","The US Army — land warfare; the largest service and a major acquisition authority."),
+     L("us_navy","Department of the Navy","navy.mil","The US Navy and Marine Corps — sea, undersea, amphibious and naval-aviation power."),
+     L("us_af","Department of the Air Force","af.mil","The US Air Force — air, and the parent department of the Space Force."),
+     L("us_spaceforce","US Space Force","spaceforce.mil","The newest service (est. 2019) — space warfighting, launch and on-orbit capability."),
+     L("us_jointstaff","Joint Chiefs of Staff","jcs.mil","The Chairman and Joint Staff — military advice, requirements (JROC) and joint warfighting concepts."),
+     L("us_socom","US Special Operations Command (SOCOM)","socom.mil · Tampa, FL","The unified command for special operations; its own acquisition authority (SOF AT&L) and a fast innovation buyer."),
+   ]),
+   B("us_govagencies","Defense-wide agencies & acquisition authorities","The department-wide agencies that buy, sustain, connect and set acquisition policy.",[
+     L("us_dla","Defense Logistics Agency (DLA)","dla.mil","The DoD's combat-support logistics and supply-chain agency — fuel, spares, subsistence and disposal."),
+     L("us_disa","Defense Information Systems Agency (DISA)","disa.mil","The DoD's IT and communications combat-support agency — networks, cloud and command-and-control."),
+     L("us_dcma","Defense Contract Management Agency (DCMA)","dcma.mil","Administers DoD contracts — quality, delivery and cost oversight across the supplier base."),
+     L("us_darpa_parent","OUSD (R&E)","cto.mil","Under Secretary of Defense for Research & Engineering — the department's CTO; owns S&T strategy and critical-technology areas."),
+     L("us_ousd_as","OUSD (A&S)","acq.osd.mil","Under Secretary of Defense for Acquisition & Sustainment — acquisition policy, the defense industrial base and sustainment."),
+   ]),
+   B("us_cyber","Cyber commands & agencies","The US cyber-defence establishment — the operational commands and the national cyber-defence agency.",[
+     L("us_cybercom","US Cyber Command (USCYBERCOM)","cybercom.mil · Fort Meade, MD","The unified combatant command for cyberspace operations — defends DoD networks, supports combatant commanders and runs the Cyber Mission Force."),
+     L("us_cisa","CISA","cisa.gov · Washington DC","America's Cyber Defense Agency (DHS, ~3,600 staff) — protects federal networks and critical infrastructure; runs the Joint Cyber Defense Collaborative (JCDC) bridging government and industry."),
+     L("us_dc3","DoD Cyber Crime Center (DC3)","dc3.mil · Linthicum, MD","A designated Federal Cyber Center — digital forensics, cyber training and the DoD Vulnerability Disclosure Program (a front door for white-hat researchers)."),
+   ]),
    L("darpa","DARPA","darpa.mil · Arlington, VA","Defense Advanced Research Projects Agency — high-risk, breakthrough defence research and Broad Agency Announcements."),
    B("us_diu_grp","Defense Innovation Unit (DIU) & network","diu.mil · the DoD's commercial-tech front door.",[
      L("us_diu","Defense Innovation Unit (DIU)","diu.mil · info@diu.mil · Silicon Valley, Boston, Austin, Chicago, DC","DoD's commercial-tech ‘open front door’; principal liaison to the innovation base. Runs Commercial Solutions Openings and leads Replicator."),
@@ -1706,6 +1762,10 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("rand_us","RAND / Project AIR FORCE","rand.org","Policy and analysis FFRDCs supporting DoD decision-making."),
      L("ida","Institute for Defense Analyses (IDA)","ida.org","Analytic FFRDC supporting OSD and the Joint Staff."),
      L("sandia","Sandia / Los Alamos / Livermore Labs","energy.gov","DOE national laboratories underpinning the nuclear enterprise and defence science."),
+     L("us_sei","Software Engineering Institute (SEI, CMU)","sei.cmu.edu","DoD-sponsored FFRDC at Carnegie Mellon (OUSD R&E) — software engineering, systems engineering and cybersecurity; home of the CERT Division."),
+     L("us_gtri","Georgia Tech Research Institute (GTRI)","gtri.gatech.edu","A designated University Affiliated Research Center (~3,100 staff) — applied research in EW, sensors, C4ISR, cyber and threat systems for national security."),
+     L("us_draper","Draper Laboratory","draper.com","Not-for-profit R&D lab (Cambridge, MA) — guidance, navigation, control and microsystems, from strategic missiles to autonomous systems."),
+     L("us_cna","CNA","cna.org","Non-profit operating the Center for Naval Analyses FFRDC — operations research and analysis for the Navy, Marine Corps and DoD."),
    ]),
    B("us_dtech","US defence-tech scaleups","Venture-backed firms reshaping US capability.",[
      L("shieldai","Shield AI","shield.ai","Autonomous flight (Hivemind) and the V-BAT uncrewed aircraft."),
@@ -1726,6 +1786,11 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("chaos","Chaos Industries","chaos.us","Advanced sensing and detection systems."),
      L("regent","REGENT","regentcraft.com","Seagliding electric craft for maritime mobility."),
      L("hadrian","Hadrian","hadrian.co","Automated precision manufacturing for aerospace and defence."),
+     L("trueanomaly","True Anomaly","trueanomaly.space","Space-defence company building Jackal autonomous orbital vehicles and Mosaic software for space domain awareness and on-orbit security; US Space Force SDA contracts (founded 2022, Denver)."),
+     L("apexspace","Apex","apexspace.com","Mass-produced, productized satellite bus platforms — off-the-shelf spacecraft to accelerate proliferated constellations for defence and commercial customers."),
+     L("k2space","K2 Space","k2space.com","Builds the largest, highest-power satellite buses of the NewSpace era (20kW+) for LEO/MEO/GEO — targeting resilient defence constellations at lower cost."),
+     L("cesiumastro","CesiumAstro","cesiumastro.com","Active phased-array communications and software-defined payloads for satellites, aircraft and ground — industrialising space and defence comms."),
+     L("divergent","Divergent Technologies","divergent3d.com","Digital manufacturing system (DAPS) 3D-printing complex structures — including cruise-missile airframes at a fraction of traditional cost, reshaping defence production economics."),
    ]),
    B("us_acq","Acquisition, capital & scaling","How US innovation crosses into procurement.",[
      L("cdao","Chief Digital & AI Office (CDAO)","ai.mil","DoD's central authority for data, analytics and AI adoption; runs JADC2 experimentation."),
@@ -1740,6 +1805,18 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("ssc","Space Systems Command","ssc.spaceforce.mil","The Space Force's acquisition command; runs the SSC Front Door for industry."),
      L("mda","Missile Defense Agency (MDA)","mda.mil","Develops US layered missile defence."),
      L("dtra","Defense Threat Reduction Agency (DTRA)","dtra.mil","Counters weapons of mass destruction and emerging threats."),
+   ]),
+   B("us_vc","US defence & dual-use venture capital","The private-capital engine behind the American defence-tech surge — the specialist funds writing the checks.",[
+     L("us_a16z_ad","a16z American Dynamism","a16z.com","Andreessen Horowitz's national-interest practice (led by Katherine Boyle and David Ulevitch) — backs aerospace, defence, manufacturing and dual-use; early in Anduril and many defence-tech names."),
+     L("us_foundersfund","Founders Fund","foundersfund.com","One of the most influential defence-tech investors — early in Palantir, Anduril and SpaceX; co-led Anduril's record rounds."),
+     L("us_8vc","8VC","8vc.com","Joe Lonsdale's fund (Palantir co-founder) — a heavy backer of defence and govtech, including Epirus, Saronic and Anduril."),
+     L("us_generalcatalyst","General Catalyst (Defense & Intelligence)","generalcatalyst.com","Large multistage firm with a growing national-security practice backing dual-use and defence scaleups."),
+     L("us_shieldcap","Shield Capital","shieldcap.com","Early-stage fund (co-founded by former DIU director Michael Brown) focused on dual-use defence, cyber, AI and space."),
+     L("us_razorsedge","Razor's Edge Ventures","razorsedge.vc","Specialist national-security venture firm — early defence-and-intelligence dual-use investing."),
+     L("us_dcvc","DCVC","dcvc.com","Deep-tech venture firm backing national-security-relevant compute, space, autonomy and biosecurity."),
+     L("us_rtxventures","RTX Ventures","rtx.com","The corporate venture arm of RTX (Raytheon) — strategic investment in Ursa Major, Hermeus, EnCharge and other dual-use hardware."),
+     L("us_decisivepoint","Decisive Point","decisivepoint.com","Early-stage venture firm dedicated to national security and the defence-industrial base."),
+     L("us_scout","Scout Ventures","scout.vc","Seed-stage, veteran-led fund investing in dual-use frontier technology out of the national labs and services."),
    ]),
    B("us_primes","US & global primes — divisions","The largest US-headquartered primes, broken down by business segment.",[
      {id:"lmt",l:"Lockheed Martin",entry:"lockheedmartin.com · Bethesda, MD",does:"The world's largest defence contractor; four business segments.",children:[
@@ -1792,6 +1869,27 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("mbda_grp","MBDA","mbda-systems.com","European complex-weapons champion (BAE, Airbus, Leonardo JV)."),
      L("kongsberg","Kongsberg Defence & Aerospace","kongsberg.com · Norway","Missiles (NSM/JSM), remote weapon stations and maritime systems."),
    ]),
+   B("us_midtier","US mid-tier primes & integrators","Major defence contractors and services integrators below the top five — several are top-20 by defence revenue.",[
+     L("us_l3harris","L3Harris Technologies","l3harris.com","Top-tier prime — tactical communications, electronic warfare, space & mission systems, and (via Aerojet Rocketdyne) missile propulsion."),
+     L("us_leidos","Leidos","leidos.com","The largest US defence IT/services integrator (~$17bn revenue) — ABMS, systems integration, autonomy and digital modernisation."),
+     L("us_saic","SAIC","saic.com","Government-services and systems-integration prime — digital engineering, space and enterprise IT for the DoD and intelligence community."),
+     L("us_caci","CACI International","caci.com","Technology and expertise for national security — SIGINT/EW, secure comms, software and intelligence support."),
+     L("us_peraton","Peraton","peraton.com","Mission-focused national-security integrator across space, cyber, intelligence and communications."),
+     L("us_booz","Booz Allen Hamilton","boozallen.com","The largest provider of AI and digital services to the US government; consulting, cyber and mission analytics."),
+     L("us_hii","HII (Huntington Ingalls)","hii.com","America's largest military shipbuilder — the sole builder of US aircraft carriers, a submarine builder, plus unmanned undersea systems and mission technologies."),
+     L("us_snc","Sierra Nevada Corporation (SNC)","sncorp.com","Aircraft modification and integration, ISR and C2 — including the Army's HADES deep-sensing spy-plane programme."),
+     L("us_leonardodrs","Leonardo DRS","leonardodrs.com","US-based Leonardo subsidiary — sensing, electric power & propulsion, network computing and force protection."),
+     L("us_kratos","Kratos Defense","kratosdefense.com","Affordable systems at scale — jet drones (Valkyrie), target drones, hypersonics, space and C5ISR."),
+     L("us_aerovironment","AeroVironment","avinc.com","Small uncrewed aircraft and loitering munitions (Switchblade, Puma) — a leader in tactical UAS."),
+   ]),
+   B("us_associations","Industry associations & professional bodies","The trade and professional associations — the collective industry voice and the government-industry forum.",[
+     L("us_ndia","National Defense Industrial Association (NDIA)","ndia.org","America's leading defence-industry association (est. 1919; ~1,700 corporate and 66,500 individual members) — the main legal/ethical government-industry forum, with subject divisions from munitions to cyber; publishes National Defense magazine and runs SOFIC and other events."),
+     L("us_aia","Aerospace Industries Association (AIA)","aia-aerospace.org","The trade association of the US aerospace and defence manufacturing sector — policy advocacy and standards for the primes and their supply chains."),
+     L("us_ausa","Association of the US Army (AUSA)","ausa.org","The US Army's professional association and industry forum; runs the large AUSA Annual Meeting exposition."),
+     L("us_afa","Air & Space Forces Association (AFA)","afa.org","The professional association for the Air Force and Space Force; advocacy, education and the ASC/AFA conferences."),
+     L("us_navyleague","Navy League of the United States","navyleague.org","The civilian association supporting the sea services; runs the Sea-Air-Space exposition."),
+     L("us_afcea","AFCEA International","afcea.org","The association for defence C4ISR, communications, IT and cyber — a major government-industry bridge for the digital-defence community."),
+   ]),
  ]),
 
  B("b_5eyes","Five Eyes Partners (CA · AU · NZ)","The procurement, science and innovation bodies of Canada, Australia and New Zealand.",[
@@ -1800,6 +1898,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("ca_ideas","Defence IDEaS","canada.ca (Defence IDEaS)","Innovation for Defence Excellence and Security — Canada's flagship programme (Competitive Projects, Sandboxes, Contests, Test Drives); funding now up to CA$6.75M phased."),
      L("ca_borealis","BOREALIS","canada.ca (BOREALIS)","Canada's new defence innovation accelerator — Bureau of Research, Engineering and Advanced Leadership in Innovation and Science; scales innovation under the Defence Industrial Strategy."),
      L("ca_dish","Defence Innovation Secure Hubs (DISH)","canada.ca","Growing network of secure hubs (Maritime, Uncrewed Systems) linking government, industry, academia and operators."),
+     L("ca_cccs","Canada — Canadian Centre for Cyber Security (CCCS)","cyber.gc.ca","Canada's unified national cyber-security authority (part of CSE) — the single point of advice, guidance and incident response for government, critical infrastructure and industry."),
      L("ca_drdc","Defence Research & Development Canada (DRDC)","canada.ca (DRDC)","The national defence science agency and its research centres; leads NORAD-modernisation S&T."),
      L("ca_pspc","Public Services & Procurement Canada (PSPC)","canada.ca/pspc","Federal procurement authority; posts opportunities on CanadaBuys."),
      L("ca_ised","ISED / Industrial & Technological Benefits","ised-isde.canada.ca","Runs the ITB policy that ties major contracts to domestic industrial benefit."),
@@ -1809,10 +1908,18 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("ca_seaspan","Seaspan Shipyards","seaspan.com","Non-combat federal shipbuilding under the National Shipbuilding Strategy."),
      L("ca_cae","CAE Defence & Security","cae.com","Simulation, training and mission systems (global leader)."),
      L("ca_bombardier","Bombardier Defense","bombardier.com","Specialised military and ISR aircraft platforms."),
+     L("ca_mdaspace","MDA Space","mda.space","Canada's flagship space company — satellites, space robotics (Canadarm), radar/geo-intelligence and defence space systems; built Canada's Sapphire military SSA satellite for DND."),
+     L("ca_magellan","Magellan Aerospace","magellan.aero","Aeroengine and aerostructure components, plus rockets and space products for military and space programmes (Mississauga; ~3,700 staff)."),
+     L("ca_calian","Calian Group","calian.com","Technology, cyber, training and health services for defence and government — a diversified Canadian defence-services provider (Ottawa)."),
+     L("ca_kraken","Kraken Robotics","krakenrobotics.com","Subsea sensors, synthetic-aperture sonar and underwater robotics for naval and maritime-security missions."),
+     L("ca_heroux","Héroux-Devtek","herouxdevtek.com","The world's third-largest landing-gear maker — military and commercial aircraft landing systems (Longueuil, Québec)."),
+     L("ca_wescam","L3Harris WESCAM","wescam.com","Canadian maker of gyro-stabilised EO/IR imaging and targeting systems (MX-series) used on aircraft, UAS and vehicles worldwide (Hamilton, Ontario)."),
    ]),
    B("au_grp","Australia","Australia's defence department, accelerator, science and acquisition.",[
      L("au_defence","Department of Defence","defence.gov.au · Canberra","Australia's defence department and the ADF."),
      L("au_asca","Advanced Strategic Capabilities Accelerator (ASCA)","asca.gov.au","Australia's DARPA-modelled defence accelerator; mission-led, need-to-project pipeline with a path to acquisition. Runs the EDT program and AUKUS innovation challenges."),
+     L("au_asd_acsc","Australia — ASD / Australian Cyber Security Centre","cyber.gov.au","The Australian Signals Directorate's ACSC — the government's lead cyber-security agency and technical authority; alerts, guidance and incident response for government, industry and the public."),
+     L("au_spacecmd","Australia — Space Command (SPACECOMD)","defence.gov.au","The ADF's tri-service space command (est. 2022, within Joint Capabilities Group) — strategic space planning and the design, operation and protection of space capabilities."),
      L("au_dstg","Defence Science & Technology Group (DSTG)","dst.defence.gov.au","Australia's national defence science organisation; partners CSIRO and universities."),
      L("au_casg","Capability Acquisition & Sustainment Group (CASG)","defence.gov.au","Australian defence procurement and sustainment. Merging with GWEO and Naval Shipbuilding into the new Defence Delivery Agency (forming from July 2026, led by an Australian National Armaments Director)."),
      L("au_asa","Australian Submarine Agency (ASA)","asa.gov.au","Delivers Australia's AUKUS conventionally-armed, nuclear-powered submarine programme."),
@@ -1826,6 +1933,12 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("au_droneshield","DroneShield","droneshield.com","Counter-UAS detection and defeat systems."),
      L("au_qctrl","Q-CTRL","q-ctrl.com","Quantum control/infrastructure software and field-validated quantum sensing; won DARPA Robust Quantum Sensors (RoQS) contracts for GPS-denied quantum navigation on military platforms (with Lockheed Martin)."),
      L("au_electrooptic","Electro Optic Systems (EOS)","eos-aus.com","Remote weapon systems, directed energy and space sensors."),
+     L("au_advnav","Advanced Navigation","advancednavigation.com","AI-powered positioning, navigation and timing (PNT) and inertial systems for GPS-denied/spoofed environments — used on autonomous vehicles, submarines and defence platforms; an Australian unicorn (100,000+ systems deployed)."),
+     L("au_hypersonix","Hypersonix Launch Systems","hypersonix.com","Reusable hypersonic aircraft with hydrogen-fuelled scramjet (SPARTAN) engines — the DART AE testbed for the US DIU HyCAT programme, plus a UK MoD framework; a sovereign hypersonics leader (Queensland)."),
+     L("au_cea","CEA Technologies","cea.com.au","Australia's radar champion — CEAFAR active phased-array radars for the Navy and Army; a sovereign sensor prime (Canberra)."),
+     L("au_defendtex","DefendTex","defendtex.com","Loitering munitions and small unmanned systems (Drone40) — sovereign Australian effects at scale."),
+     L("au_innovaero","Innovaero","innovaero.com.au","WA-based sovereign designer/manufacturer of uncrewed aircraft and strike-class loitering munitions (OWL, One-Way Loitering systems)."),
+     L("au_skykraft","Skykraft","skykraft.com.au","Small-satellite constellations manufactured in Australia — space-based air-traffic management and defence space services (Canberra)."),
    ]),
    B("nz_grp","New Zealand","A small force modernising fast under the 2025 Defence Capability Plan.",[
      L("nz_nzdf","NZ Defence Force (NZDF)","nzdf.mil.nz","New Zealand's armed forces; defines capability requirements with the Ministry of Defence."),
@@ -1833,6 +1946,10 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("nz_dcp","2025 Defence Capability Plan","defence.govt.nz","NZ$12bn plan (NZ$9bn new) over four years, lifting spending above 2% of GDP, with an updated industry-engagement approach."),
      L("nz_dta","Defence Technology Agency (DTA)","nzdf.mil.nz","NZDF's science and technology organisation — research, analysis and dual-use innovation."),
      L("nz_industry","NZ Defence Industry Association (NZDIA)","nzdia.co.nz","Association of NZ SMEs in ISR, communications, maritime and dual-use technology."),
+     L("nz_syos","SYOS Aerospace","syosaerospace.com","Kiwi-founded maker of multi-domain uncrewed systems (air/land/sea) — holds a 2026 NZDF autonomous-systems agreement and is shortlisted on the UK's Project NYX Apache 'wingman' drone effort."),
+     L("nz_dawn","Dawn Aerospace","dawnaerospace.com","Christchurch/Delft space-transport company — the rapidly reusable Mk-II Aurora spaceplane and non-toxic satellite propulsion systems; dual-use responsive access to space."),
+     L("nz_kea","Kea Aerospace","keaaerospace.com","Christchurch developer of solar-powered stratospheric uncrewed aircraft (Kea Atmos) for persistent high-altitude ISR and monitoring."),
+     L("nz_rocketlab","Rocket Lab (NZ operations)","rocketlabusa.com","NZ-founded launch company operating Launch Complex 1 at Māhia — Electron small-launch and Photon satellites; a sovereign-relevant space-launch capability with deep NZ roots."),
    ]),
  ]),
 
@@ -1853,6 +1970,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    ]),
    B("pt_jp","Japan","Rebuilding a defence-industrial and export posture.",[
      L("jp_atla","ATLA","mod.go.jp/atla","Acquisition, Technology & Logistics Agency — Japan's defence procurement and R&D agency."),
+     L("jp_sog","Japan — Space Operations Group (JASDF)","mod.go.jp","The Air Self-Defense Force's space unit (est. 2020, expanded 2022, Fuchu) — space situational awareness with JAXA and the US Space Force; the JASDF becomes the Air & Space Self-Defense Force in 2027."),
      L("jp_keidanren","Japan — Keidanren Defense Production Committee","keidanren.or.jp","The de facto voice of Japan's defence industry — the Defense Production Committee within the Japan Business Federation (Keidanren); coordinates the major contractors (MHI, KHI, Mitsubishi Electric, IHI) and channels industry views to the Ministry of Defense."),
      L("jp_mhi","Mitsubishi Heavy Industries (MHI)","mhi.com","Japan's largest defence prime — aircraft, naval vessels, missiles and the GCAP combat-air programme."),
      L("jp_kawasaki","Kawasaki Heavy Industries","khi.co.jp","Aircraft (P-1, C-2), submarines and defence systems."),
@@ -1951,6 +2069,15 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("pol_cnas","CNAS","cnas.org","Center for a New American Security — US defence-policy think tank focused on practical strategy."),
    L("pol_atlantic","Atlantic Council","atlanticcouncil.org","Transatlantic think tank shaping security, defence and alliance policy."),
    L("pol_rand","RAND Corporation","rand.org","US non-profit research organisation; long-standing defence analysis and wargaming for government."),
+   L("pol_brookings","Brookings Institution","brookings.edu","Major US public-policy think tank; its Foreign Policy program covers defence strategy, forces and budgets."),
+   L("pol_csba","CSBA","csbaonline.org","Center for Strategic and Budgetary Assessments — defence strategy, budgets, force planning and net assessment."),
+   L("pol_hudson","Hudson Institute","hudson.org","US think tank with a strong defence and technology-competition focus."),
+   L("pol_aei","AEI (Defense)","aei.org","American Enterprise Institute — its defence programme covers strategy, budgets and the industrial base."),
+   L("pol_heritage","Heritage Foundation (Defense)","heritage.org","US think tank; publishes the annual Index of U.S. Military Strength."),
+   L("pol_stimson","Stimson Center","stimson.org","US think tank on international security, arms control and emerging-technology governance."),
+   L("pol_mitchell","Mitchell Institute for Aerospace Studies","mitchellaerospacepower.org","AFA-affiliated institute specialising in air and space power analysis."),
+   L("pol_isw","Institute for the Study of War (ISW)","understandingwar.org","US think tank providing detailed operational conflict analysis and campaign assessments."),
+   L("pol_wotr","War on the Rocks / Texas National Security Review","warontherocks.com","Leading US defence-and-strategy commentary platform and peer-reviewed review — a key part of the policy conversation."),
    L("pol_cepa","CEPA","cepa.org","Center for European Policy Analysis — transatlantic security policy, focused on Europe's frontier."),
    L("pol_geostrategy","Council on Geostrategy","geostrategy.org.uk","UK think tank on strategic competition, industrial and maritime power."),
    L("pol_policyexchange","Policy Exchange (Britain in the World)","policyexchange.org.uk","UK think tank whose security programme informs defence and foreign policy."),
@@ -1977,7 +2104,10 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("rs_bcsp","BCSP (Serbia)","bezbednost.org","Belgrade Centre for Security Policy — security-sector research in the Western Balkans."),
    L("ch_dcaf","DCAF (Geneva)","dcaf.ch","Geneva Centre for Security Sector Governance — a global reference on democratic governance of armed and security forces."),
    L("fr_iris","IRIS (France)","iris-france.org","Institut de relations internationales et stratégiques — French institute with a strong defence-economics and strategy focus."),
+   L("fr_frs","FRS (France)","frstrategie.org","Fondation pour la Recherche Stratégique — the leading independent French think tank working exclusively on defence and international security (deterrence, proliferation, strategy)."),
+   L("fr_irsem","IRSEM (France)","irsem.fr","Institut de Recherche Stratégique de l'École Militaire — the Ministry of the Armed Forces' strategic research institute (attached to DGRIS); studies on defence policy and strategy."),
    L("de_swp","SWP (Germany)","swp-berlin.org","Stiftung Wissenschaft und Politik — the German government's principal foreign & security policy advisory institute, Berlin."),
+   L("de_dgap","DGAP (Germany)","dgap.org","German Council on Foreign Relations — a leading independent think tank on foreign, security and defence policy, Berlin."),
    L("it_iai","IAI (Italy)","iai.it","Istituto Affari Internazionali — Italy's leading defence and international-affairs institute, Rome."),
    L("it_ispi","ISPI (Italy)","ispionline.it","Institute for International Political Studies — Milan-based foreign-policy and security think tank."),
    L("es_elcano","Elcano Royal Institute (Spain)","realinstitutoelcano.org","Spain's leading international and strategic studies institute, Madrid."),
@@ -1991,6 +2121,7 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
    L("pt_ipri","IPRI-NOVA (Portugal)","ipri.pt","Portuguese Institute of International Relations — NOVA University Lisbon; foreign and security policy."),
    L("hu_kki","KKI / IFAT (Hungary)","kki.hu","Institute for Foreign Affairs and Trade — Hungary's government-linked international-affairs institute."),
    L("ca_cgai","CGAI (Canada)","cgai.ca","Canadian Global Affairs Institute — Canada's leading independent defence, security and foreign-policy institute (Calgary/Ottawa)."),
+   L("ca_cdai","CDA Institute (Canada)","cdainstitute.ca","Conference of Defence Associations Institute — a long-standing non-partisan think tank on Canadian defence and security policy (Ottawa)."),
    L("au_aspi","ASPI (Australia)","aspi.org.au","Australian Strategic Policy Institute — Canberra; defence and strategic policy, widely cited across the Indo-Pacific."),
    L("jp_jiia","JIIA (Japan)","jiia.or.jp","Japan Institute of International Affairs — Japan's leading foreign-policy and security think tank, Tokyo."),
    L("kr_kida","KIDA (South Korea)","kida.re.kr","Korea Institute for Defense Analyses — the ROK's principal government defence-analysis institute."),
@@ -2408,6 +2539,21 @@ function oppsFor(id){
   if((BRANCHOF[id]==='b_events') || (typeof EVENT_NEXT!=='undefined' && EVENT_NEXT[id])){
     return "This is a trade event, not a procurement route — see the next-edition details above and register via the organiser's site.";
   }
+  // Entity types where a national procurement/tender portal is the WRONG frame.
+  // These bodies don't buy via tender services, so linking one would mislead.
+  const ety = (typeof entityType==='function') ? entityType(id) : null;
+  if(ety==='policy'){
+    return "Not a procurement route. As a policy institute it engages through its research, publications, events and fellowships — approach it directly for collaboration, briefings or membership rather than via a tender portal.";
+  }
+  if(ety==='research'){
+    return "Not a tender portal. Research bodies typically engage through joint R&D, PhD/postdoc programmes, grants and collaboration agreements — approach the institute directly, or via its national defence-research funding route, to propose work.";
+  }
+  if(ety==='gateway'){
+    return "This organisation is itself a way in, not a buyer. It connects members to opportunities, partners and government — join or contact it directly to access its network and briefings; live tenders sit with the buyers it links to.";
+  }
+  if(ety==='media'){
+    return "Not a procurement route — this is an information source. Use it for intelligence and announcements; engage directly for editorial, advertising or partnership enquiries.";
+  }
   const code=nationCodeFor(id);
   if(code==='unknown' || !NAT_OPPS[code]){
     // we don't know the right national gateway for this org — ask, don't mislead
@@ -2420,6 +2566,59 @@ function oppsFor(id){
     return "Engage as a supplier via the company's own supplier/procurement portal; prime requirements also appear on the national defence tender service. "+nat;
   }
   return nat;
+}
+
+/* ---------- potential funding availability ----------
+   Shows ONLY where it makes sense and there is something real to say:
+   - node-specific figures (FUNDING map) win;
+   - otherwise a type/offer-aware default explains whether the body funds directly,
+     routes funding through others, or spends rather than grants;
+   - returns null for organisations where a funding statement would be padding
+     (ordinary suppliers, events, media, gateways with no funding role) so the
+     panel section stays hidden. */
+const FUNDING={
+  // — bodies that disburse money directly, with representative scale where public —
+  dasa:"Funds directly. Runs themed and open competitions; typical DASA contracts run from tens of thousands up to a few million pounds per project, paid as R&D contracts (not grants or equity).",
+  diana:"Funds directly. NATO's accelerator awards grants to selected companies (around €100k at the initial phase, with follow-on funding for those that progress) plus access to test centres; complemented by the separate NATO Innovation Fund for equity.",
+  nif:"Funds directly (equity). The NATO Innovation Fund is a €1bn sovereign VC investing in deep-tech and dual-use start-ups across member states, writing venture-scale cheques.",
+  innovateuk:"Funds directly. The UK's innovation agency awards grants and contracts across competitions; defence and dual-use calls run from tens of thousands to several million pounds.",
+  edf:"Funds directly. The European Defence Fund is a ~€8bn (2021–27) programme co-financing collaborative defence R&D; awards flow to multinational consortia, not single firms.",
+  eudis:"Funds directly. The EDF's dual-use/SME scheme offers grants, matchmaking and blended finance to start-ups and SMEs entering the defence market.",
+  ukdi:"Funds directly. The UK Defence Innovation front door channels problem-holders to funded competitions and pipelines; award sizes vary by route.",
+  iqt:"Funds directly (strategic investment). In-Q-Tel makes mission-driven investments and technology-development deals on behalf of the US national-security community.",
+  sbir:"Funds directly. The US SBIR/STTR programme awards phased R&D funding — roughly $0.1–0.3m at Phase I and $1–2m at Phase II — as non-dilutive contracts/grants.",
+  asca:"Funds directly. Australia's accelerator runs mission- and need-led programmes with a path to acquisition; award sizes vary by challenge.",
+  ideas_ca:"Funds directly. Canada's IDEaS programme awards competitive contracts and grants across components, contests and test drives.",
+  // — bodies that fund indirectly / route money through others —
+  eda:"Does not fund suppliers directly in most cases — it prepares and manages collaborative programmes that member states and the EDF fund; engage through its projects.",
+  occar:"Manages funded collaborative programmes on behalf of member nations rather than issuing its own grants — money originates with the participating governments."
+};
+function fundingFor(id){
+  if(FUNDING[id]) return FUNDING[id];
+  const t=tagsFor(id); const ety=(typeof entityType==='function')?entityType(id):null;
+  const o=(t&&t.o)||[];
+  const isEvent=(BRANCHOF[id]==='b_events')||(typeof EVENT_NEXT!=='undefined'&&EVENT_NEXT[id]);
+  if(isEvent) return null;
+  // direct grant/contract funders
+  if(o.indexOf('grant')>=0){
+    return "Can fund directly — awards grant or competition funding to selected organisations. Amounts vary by call; check its live calls and the linked page for current programmes.";
+  }
+  // equity investors
+  if(ety==='investor' || o.indexOf('investment')>=0 || o.indexOf('funding')>=0){
+    return "Funds through investment — deploys capital (typically equity) into companies that fit its thesis rather than running open grant calls. Approach directly with a fit for its focus and stage.";
+  }
+  // government buyers that don't grant but fund via contract + route to innovation money
+  if(ety==='gov'){
+    const code=nationCodeFor(id);
+    const route = (code && NAT_OPPS[code]) ? " It funds work primarily through contracts, and routes early-stage R&D money via its national innovation and SBIR-style schemes." : " It funds work primarily through contracts rather than grants.";
+    return "Funds indirectly."+route;
+  }
+  // research bodies generally spend allocated funding rather than award it
+  if(ety==='research'){
+    return "Not a funder in the grant sense — it is itself funded (mostly by government) to perform research. Money reaches partners through collaborative programmes and subcontracts, not open calls.";
+  }
+  // everything else (ordinary suppliers, gateways, policy, media): no meaningful funding role → hide section
+  return null;
 }
 
 /* ---------- collapse state ---------- */
@@ -2616,18 +2815,18 @@ const VERIFIED_DOMAINS = new Set([
   // UK government / bodies
   'gov.uk','mod.uk','des.mod.uk','dstl.gov.uk','www.find-tender.service.gov.uk','find-tender.service.gov.uk','www.contractsfinder.service.gov.uk','contractsfinder.service.gov.uk',
   // US
-  'darpa.mil','diu.mil','afwerx.com','dodsbirsttr.mil','sam.gov','navy.mil','af.mil','army.mil','defense.gov','arl.devcom.army.mil','onr.navy.mil','afrl.af.mil','cto.mil',
-  'mitre.org','ll.mit.edu','jhuapl.edu','aerospace.org','rand.org','ida.org','energy.gov',
-  'shield.ai','saronic.com','skydio.com','epirussystems.com','scale.com','appliedintuition.com','vannevarlabs.com','hermeus.com','castelion.com','infleqtion.com','govini.com','ursamajor.com','anduril.com','palantir.com',
+  'darpa.mil','diu.mil','afwerx.com','dodsbirsttr.mil','sam.gov','navy.mil','af.mil','army.mil','defense.gov','arl.devcom.army.mil','onr.navy.mil','afrl.af.mil','cto.mil','spaceforce.mil','jcs.mil','socom.mil','mda.mil','sda.mil','dla.mil','dtra.mil','disa.mil','dcma.mil','acq.osd.mil','jcs.mil','ndia.org','aia-aerospace.org','afa.org','navyleague.org','afcea.org','cybercom.mil','cisa.gov','dc3.mil',
+  'mitre.org','ll.mit.edu','jhuapl.edu','aerospace.org','rand.org','ida.org','energy.gov','sei.cmu.edu','gtri.gatech.edu','draper.com','cna.org',
+  'shield.ai','saronic.com','skydio.com','epirussystems.com','scale.com','appliedintuition.com','vannevarlabs.com','hermeus.com','castelion.com','infleqtion.com','govini.com','ursamajor.com','anduril.com','palantir.com','l3harris.com','leidos.com','saic.com','caci.com','peraton.com','boozallen.com','hii.com','sncorp.com','leonardodrs.com','kratosdefense.com','avinc.com',
   // primes (global, stable)
   'lockheedmartin.com','rtx.com','northropgrumman.com','gd.com','boeing.com','baesystems.com','rolls-royce.com','leonardo.com','leonardodrs.com','thalesgroup.com','airbus.com','saab.com','rheinmetall.com','kongsberg.com','mbda-systems.com','knds.com',
   // NATO / EU
-  'nato.int','nspa.nato.int','ncia.nato.int','diana.nato.int','nif.fund','sto.nato.int',
+  'nato.int','ac.nato.int','nspa.nato.int','ncia.nato.int','diana.nato.int','nif.fund','sto.nato.int',
   'eda.europa.eu','ec.europa.eu','europa.eu','ted.europa.eu','eudis.eu','occar.int',
   // France
-  'defense.gouv.fr','onera.fr','cnes.fr','dassault-aviation.com','thalesgroup.com','naval-group.com','knds.fr','safran-group.com','arquus-defense.com','ariane.group','eurenco.com','exail.com','ixarm.com','marches-publics.gouv.fr','bpifrance.fr',
+  'defense.gouv.fr','cyber.gouv.fr','onera.fr','cnes.fr','dassault-aviation.com','thalesgroup.com','naval-group.com','knds.fr','safran-group.com','arquus-defense.com','unseenlabs.space','exotrail.com','latitude.eu','parrot.com','cerbair.com','preligens.com','ariane.group','eurenco.com','exail.com','ixarm.com','marches-publics.gouv.fr','bpifrance.fr',
   // Germany
-  'baainbw.de','cyberinnovationhub.de','bundeswehr.de','bwi.de','dlr.de','hensoldt.net','diehl.com','thyssenkrupp-marinesystems.com','renk.com','arxrobotics.com','rheinmetall.com','knds.com','heckler-koch.com','helsing.ai','quantum-systems.com',
+  'baainbw.de','cyberinnovationhub.de','bundeswehr.de','bwi.de','cir.bundeswehr.de','dlr.de','hensoldt.net','diehl.com','thyssenkrupp-marinesystems.com','renk.com','arxrobotics.com','stark-defence.com','tytan-technologies.com','alpine-eagle.com','isaraerospace.com','rheinmetall.com','knds.com','heckler-koch.com','helsing.ai','quantum-systems.com',
   // Italy
   'difesa.it','leonardo.com','fincantieri.com','avio.com','elettronicagroup.com','ivecodefencevehicles.com','beretta.com','rwm-italia.com',
   // Netherlands
@@ -2635,7 +2834,7 @@ const VERIFIED_DOMAINS = new Set([
   // Nordics
   'fmv.se','foi.se','forsvarsmakten.se','saab.com','forsvarsmateriell.no','ffi.no','nammo.com','doffin.no','logistiikkalaitos.fi','patriagroup.com','millog.fi','insta.fi','bittium.com','sako.fi','vttresearch.com','fmi.dk','eifo.dk','terma.com','weibel.dk','systematic.com','gomspace.com','hankintailmoitukset.fi',
   // Spain / Portugal / Greece / Romania / Belgium / CZ
-  'defensa.gob.es','inta.es','navantia.es','indracompany.com','gdels.com','contrataciondelestado.es','aeroespacial.sener','gmv.com','grupooesia.com','iddportugal.pt','defesa.gov.pt','ogma.pt','mapn.ro','romarm.ro','aerostar.ro','romaero.com','iar.ro','elmec.ro','mta.ro','mod.mil.gr','elkak.gr','haicorp.com','intracomdefense.com','eas.gr','eodh.com','theon.com','mil.be','johncockerill.com','fnherstal.com','army.cz','coltczgroup.com','czechoslovakgroup.cz','vop.cz','lompraha.cz','aero.cz','vtusp.cz','unob.cz','ezamowienia.gov.pl',
+  'defensa.gob.es','emad.defensa.gob.es','ejercitodelaire.defensa.gob.es','inta.es','navantia.es','indracompany.com','gdels.com','contrataciondelestado.es','aeroespacial.sener','gmv.com','grupooesia.com','iddportugal.pt','defesa.gov.pt','ogma.pt','mapn.ro','romarm.ro','aerostar.ro','romaero.com','iar.ro','elmec.ro','mta.ro','mod.mil.gr','elkak.gr','haicorp.com','intracomdefense.com','eas.gr','eodh.com','theon.com','mil.be','johncockerill.com','fnherstal.com','army.cz','coltczgroup.com','czechoslovakgroup.cz','vop.cz','lompraha.cz','aero.cz','vtusp.cz','unob.cz','ezamowienia.gov.pl',
   // Poland
   'wojsko-polskie.pl','lukasiewicz.gov.pl','wat.edu.pl','grupapgz.pl','wbgroup.pl','hsw.pl','bumar.gliwice.pl','rosomak.eu','mesko.com.pl','pitradwar.com','pcosa.com.pl','pgzsw.pl',
   // Baltics / Ukraine
@@ -2643,8 +2842,8 @@ const VERIFIED_DOMAINS = new Set([
   // Türkiye
   'ssb.gov.tr','baykartech.com','tusas.com','aselsan.com','roketsan.com.tr','havelsan.com.tr','stm.com.tr','tubitak.gov.tr','teknofest.org','otokar.com.tr','fnss.com.tr','bmc.com.tr','nurolmakina.com.tr','asfat.com.tr','mke.gov.tr','tei.com.tr',
   // Five Eyes
-  'canadabuys.canada.ca','canada.ca','ised-isde.canada.ca','irvingshipbuilding.com','seaspan.com','cae.com','bombardier.com','gdlscanada.com','thalesgroup.com.au','asc.com.au',
-  'tenders.gov.au','asca.gov.au','industry.gov.au','gilmour.space','droneshield.com','q-ctrl.com','eos-aus.com','gets.govt.nz','defence.govt.nz','nzdia.co.nz','sckcen.be','andoyaspace.no',
+  'canadabuys.canada.ca','canada.ca','ised-isde.canada.ca','irvingshipbuilding.com','seaspan.com','cae.com','bombardier.com','gdlscanada.com','mda.space','magellan.aero','calian.com','krakenrobotics.com','herouxdevtek.com','wescam.com','thalesgroup.com.au','asc.com.au',
+  'tenders.gov.au','asca.gov.au','cyber.gov.au','cyber.gc.ca','industry.gov.au','gilmour.space','droneshield.com','q-ctrl.com','eos-aus.com','advancednavigation.com','hypersonix.com','cea.com.au','defendtex.com','innovaero.com.au','skykraft.com.au','gets.govt.nz','defence.govt.nz','nzdia.co.nz','syosaerospace.com','dawnaerospace.com','keaaerospace.com','rocketlabusa.com','sckcen.be','andoyaspace.no',
   // Indo-Pacific & Israel
   'dapa.go.kr','kdia.or.kr','add.re.kr','hanwha.com','koreaaero.com','lignex1.com','hyundai-rotem.com','hanwhaocean.com','poongsan.co.kr','hanwhasystems.com','hyundai-wia.com',
   'mod.go.jp','keidanren.or.jp','mhi.com','khi.co.jp','mitsubishielectric.com','ihi.co.jp','nec.com','fujitsu.com','shinmaywa.co.jp','mod.gov.il','industry.org.il','rafael.co.il','iai.co.il','elbitsystems.com','israel-shipyards.com','uvisionuav.com','smart-shooter.com','plasan.com',
@@ -2668,7 +2867,7 @@ const VERIFIED_DOMAINS = new Set([
   'plexal.com','cylonlab.com','starburst.aero','atadastral.co.uk','asd-europe.org','dtecbw.de','fraunhofer.de','vvs.fraunhofer.de',
   'orizzontesn.it','bumar.gliwice.pl','czechoslovakgroup.cz','escribano.aero','edisoft.pt','mod.gov.ua',
   'nsin.mil','spacewerx.us','aal.army','armyfuturescommand.com','mcwl.marines.mil','sofwerx.org','firestorm.us','chaos.us',
-  'regentcraft.com','hadrian.co','ai.mil','iqt.org','sda.mil','ssc.spaceforce.mil','mda.mil','dtra.mil','spaceforce.mil',
+  'regentcraft.com','hadrian.co','ai.mil','iqt.org','sda.mil','ssc.spaceforce.mil','mda.mil','dtra.mil','spaceforce.mil','a16z.com','foundersfund.com','8vc.com','generalcatalyst.com','shieldcap.com','razorsedge.vc','dcvc.com','decisivepoint.com','scout.vc','trueanomaly.space','apexspace.com','k2space.com','cesiumastro.com','divergent3d.com',
   'gdls.com','gdmissionsystems.com','gdit.com','thalesaleniaspace.com','defence.gov.au','dst.defence.gov.au','asa.gov.au',
   'gspacetech.com','nzdf.mil.nz','hyundai-holdings.com','ihls.com','adsgroup.org.uk','techuk.org','maritimeindustries.org',
   'farnboroughinternational.co.uk','dsei.co.uk','rina.org.uk','imeche.org','theiet.org','aerosociety.com'
@@ -2688,13 +2887,13 @@ const VERIFIED_DOMAINS = new Set([
   'dsei.co.uk','eurosatory.com','farnboroughinternational.co.uk','siae.fr','targikielce.pl','idexuae.ae','worlddefenseshow.com','idef.com.tr','defea.gr','cansec.ca','ausa.org','seaairspace.org','iitsec.org','indopacificexpo.com.au','dsaexhibition.com','milipol.com','hellios.com',
   'gicat.com','gifas.fr','gican.asso.fr','bdsv.eu','bdli.de','aiad.it','tedae.org','nidv.eu','soff.se','fsi.no','afda.fi','fad.di.dk','agoria.be','przemysl-obronny.pl','aobp.cz','sekpy.gr','aedcluster.com','academiamilitar.pt','sasad.org.tr','defenceandsecurity.ca','patromil.ro',
   'janes.com','defensenews.com','breakingdefense.com','defenseone.com','shephardmedia.com','twz.com','navalnews.com','aviationweek.com','flightglobal.com','ukdefencejournal.org.uk','forces.net','esut.de','monch.com','edrmagazine.eu','armadainternational.com',
-  'rusi.org','iiss.org','chathamhouse.org','csis.org','cnas.org','atlanticcouncil.org','rand.org','cepa.org','geostrategy.org.uk','policyexchange.org.uk','egmontinstitute.be','sipri.org','ifri.org','dgap.org','ndc.nato.it','gov.uk',
+  'rusi.org','iiss.org','chathamhouse.org','csis.org','cnas.org','atlanticcouncil.org','rand.org','brookings.edu','csbaonline.org','hudson.org','aei.org','heritage.org','stimson.org','mitchellaerospacepower.org','understandingwar.org','warontherocks.com','cepa.org','geostrategy.org.uk','policyexchange.org.uk','egmontinstitute.be','sipri.org','ifri.org','dgap.org','ndc.nato.it','gov.uk',
   'dsrbank.com','eib.org','kfw.de','bpifrance.fr','cdp.it','bgk.pl','ico.es','caissedesdepots.fr',
   'starburst.aero','nsin.mil','techstars.com','plexal.com','d3vc.com','bmnt.com','startupbootcamp.org',
   'canny-comms.co.uk','blackjellyfish.co.uk',
   'crowncommercial.gov.uk','defence-industry-space.ec.europa.eu','nspa.nato.int',
   'icds.ee','liia.lv','tspmi.vu.lt','fiia.fi','ui.se','thinkeuropa.dk','pism.pl','pulaski.pl','globsec.org','sfpa.sk','iir.cz','amo.cz','pssi.cz','newstrategycenter.ro','sofiaforum.bg','bezbednost.org','dcaf.ch',
-  'iris-france.org','swp-berlin.org','iai.it','ispionline.it','realinstitutoelcano.org','cidob.org','clingendael.org','hcss.nl','nupi.no','prio.org','diis.dk','eliamep.gr','ipri.pt','kki.hu','cgai.ca','aspi.org.au','jiia.or.jp','kida.re.kr','inss.org.il','jiss.org.il',
+  'iris-france.org','frstrategie.org','irsem.fr','swp-berlin.org','iai.it','ispionline.it','realinstitutoelcano.org','cidob.org','clingendael.org','hcss.nl','nupi.no','prio.org','diis.dk','eliamep.gr','ipri.pt','kki.hu','cgai.ca','cdainstitute.ca','aspi.org.au','jiia.or.jp','kida.re.kr','inss.org.il','jiss.org.il',
   'defence24.com','defence-ua.com','rid.it','analisidifesa.it','opex360.com','infodefensa.com','defenceturkey.com','hartpunkt.de',
   'tehnopol.ee','unibw.de','eurodefense.tech','vtt.fi',
   'eeas.europa.eu','defense.gov','whitehouse.gov','sgdsn.gouv.fr','nationalesicherheitsstrategie.de','eda.europa.eu'
@@ -2772,6 +2971,18 @@ function openPanel(id){
       `<span style="color:${ACCESSCOL[t.a]}">${ACCESSLAB[t.a]}</span>`;
   } else sfit.style.display='none';
   { const oppsRaw = oppsFor(id);
+    // Adapt the section heading so it doesn't promise "open calls" for bodies that don't run them.
+    const _lab=document.getElementById('poppsLab');
+    if(_lab){
+      const _ety=(typeof entityType==='function')?entityType(id):null;
+      const _ev=(BRANCHOF[id]==='b_events')||(typeof EVENT_NEXT!=='undefined'&&EVENT_NEXT[id]);
+      let _txt='Open calls & opportunities';
+      if(OPPS[id]) _txt='Open calls & opportunities';
+      else if(_ev) _txt='Attending & registering';
+      else if(_ety==='policy'||_ety==='research'||_ety==='media') _txt='How to engage';
+      else if(_ety==='gateway') _txt='How to get in';
+      _lab.textContent=_txt;
+    }
     if(oppsRaw.indexOf('@@SUGGEST_GATEWAY@@')>=0){
       const html = linkifyProse(oppsRaw.replace('@@SUGGEST_GATEWAY@@','')) +
         `<button class="gwsuggest" id="gwSuggestBtn">✎ Tell us the right gateway</button>`;
@@ -2780,7 +2991,17 @@ function openPanel(id){
       if(gb) gb.onclick=()=>{ const nm=NODE[id]?NODE[id].l:id;
         openSuggestForm(nm, 'National procurement gateway', 'The correct national procurement gateway / tender portal for '+nm+' should be: \n\n(please add the body name and link)\n\n[entry id: '+id+']'); };
     } else {
-      document.getElementById('popps').innerHTML = linkifyProse(oppsRaw) + '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>';
+      const _ety2=(typeof entityType==='function')?entityType(id):null;
+      const _hasCalls = OPPS[id] || (_ety2!=='policy'&&_ety2!=='research'&&_ety2!=='gateway'&&_ety2!=='media'&&BRANCHOF[id]!=='b_events'&&!(typeof EVENT_NEXT!=='undefined'&&EVENT_NEXT[id]));
+      document.getElementById('popps').innerHTML = linkifyProse(oppsRaw) + (_hasCalls ? '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>' : '');
+    }
+  }
+  { // Potential funding availability — only shown where it makes sense and info exists.
+    const fsec=document.getElementById('s-funding'); const fbox=document.getElementById('pfunding');
+    let ftxt=null; try{ ftxt=fundingFor(id); }catch(_){ ftxt=null; }
+    if(fsec&&fbox){
+      if(ftxt){ fbox.innerHTML=linkifyProse(ftxt); fsec.style.display=''; }
+      else { fbox.innerHTML=''; fsec.style.display='none'; }
     }
   }
   const kids=document.getElementById('pkids'); kids.innerHTML='';
@@ -3182,6 +3403,14 @@ const ETYPE_OVERRIDES={
   ncia:'gov', nspa:'gov', occar:'gov', occar_eu:'gov',
   // national defence departments, ministries & armed forces — unambiguously government
   us_dod:'gov', ca_dnd:'gov', au_defence:'gov', nz_nzdf:'gov',
+  // US military departments, joint staff & defense agencies
+  us_army:'gov', us_navy:'gov', us_af:'gov', us_spaceforce:'gov', us_jointstaff:'gov', us_socom:'gov',
+  us_dla:'gov', us_disa:'gov', us_dcma:'gov', us_darpa_parent:'gov', us_ousd_as:'gov',
+  us_cybercom:'gov', us_cisa:'gov', us_dc3:'gov',
+  fr_comcyber:'gov', fr_anssi:'gov', de_cir:'gov', ca_cccs:'gov', au_asd_acsc:'gov',
+  nl_dcc:'gov', it_cor:'gov', pl_dkwoc:'gov',
+  fr_cde:'gov', de_wrkdo:'gov', nato_space:'gov',
+  es_mcce:'gov', es_mespa:'gov', au_spacecmd:'gov', jp_sog:'gov',
   // government defence-innovation agencies, labs & delivery units (were falling through to 'industry')
   de_cihbw:'gov', nl_dmo:'gov', nl_nldatahub:'gov', il_mafat:'gov', navalx:'gov', xtech:'gov',
   rccto:'gov', afc:'gov', fr_aid:'gov', se_innovation:'gov', no_kda_ventures:'gov', ca_dish:'gov',
@@ -3192,6 +3421,8 @@ const ETYPE_OVERRIDES={
   tr_sasad:'gateway', ca_cadsi:'gateway', ro_patromil:'gateway',
   ee_edia:'gateway', lv_fsdi:'gateway', lt_ldsia:'gateway',
   hr_cdicc:'gateway', bg_bdia:'gateway', si_industry:'gateway', sk_zbop:'gateway', kr_kdia:'gateway', jp_keidanren:'gateway', il_mai:'gateway',
+  us_ndia:'gateway', us_aia:'gateway', us_ausa:'gateway', us_afa:'gateway', us_navyleague:'gateway', us_afcea:'gateway',
+  us_a16z_ad:'investor', us_foundersfund:'investor', us_8vc:'investor', us_generalcatalyst:'investor', us_shieldcap:'investor', us_razorsedge:'investor', us_dcvc:'investor', us_rtxventures:'investor', us_decisivepoint:'investor', us_scout:'investor',
   // government research agencies & labs mis-read as industry
   se_foi:'research', cmre:'research', fr_onera:'research', pl_wat:'research', cz_unob:'research', ro_mta:'research', hu_ludovika:'research', pt_cinamil:'research', es_inta:'research', kr_add:'research', ee_taltech:'research', lv_rtu:'research', lt_ktu:'research',
   // EU/gov capability & finance bodies mis-read
@@ -3890,7 +4121,112 @@ Object.assign(TAGS,{
   galvion:{w:['sme','prime'],o:['contract'],t:[6,9],d:['human','materials','energy'],a:'prime',g:'uk'},
   au_qctrl:{w:['sme','startup'],o:['contract','partner'],t:[4,8],d:['quantum','c4isr','space'],a:'open',g:'au'},
   infleqtion:{w:['sme','startup'],o:['contract','partner'],t:[4,8],d:['quantum','c4isr','space'],a:'open',g:'us'},
-  idquantique:{w:['sme','prime'],o:['contract','partner'],t:[5,9],d:['quantum','cyber','comms'],a:'open',g:'ch'}
+  idquantique:{w:['sme','prime'],o:['contract','partner'],t:[5,9],d:['quantum','cyber','comms'],a:'open',g:'ch'},
+  us_army:{w:['sme','prime','startup'],o:['contract','grant'],t:[3,9],d:['land','c4isr','weapons'],a:'open',g:'us'},
+  us_navy:{w:['sme','prime','startup'],o:['contract','grant'],t:[3,9],d:['maritime','air','c4isr'],a:'open',g:'us'},
+  us_af:{w:['sme','prime','startup'],o:['contract','grant'],t:[3,9],d:['air','space','c4isr'],a:'open',g:'us'},
+  us_spaceforce:{w:['sme','prime','startup'],o:['contract','grant'],t:[3,9],d:['space','c4isr','comms'],a:'open',g:'us'},
+  us_jointstaff:{w:['prime'],o:['advice'],t:[1,9],d:['xcut'],a:'restricted',g:'us'},
+  us_socom:{w:['sme','startup','prime'],o:['contract','grant'],t:[4,9],d:['counteruas','ai','c4isr'],a:'open',g:'us'},
+  us_dla:{w:['sme','prime'],o:['contract'],t:[6,9],d:['logistics'],a:'open',g:'us'},
+  us_disa:{w:['prime','sme'],o:['contract'],t:[4,9],d:['comms','cyber','c4isr'],a:'open',g:'us'},
+  us_dcma:{w:['prime'],o:['advice'],t:[1,9],d:['xcut'],a:'restricted',g:'us'},
+  us_darpa_parent:{w:['prime','academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  us_ousd_as:{w:['prime'],o:['advice'],t:[1,9],d:['xcut'],a:'restricted',g:'us'},
+  us_ndia:{w:['sme','prime','startup','academic'],o:['advice','partner'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  us_aia:{w:['prime','sme'],o:['advice','partner'],t:[3,9],d:['air','space'],a:'open',g:'us'},
+  us_ausa:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['land','c4isr'],a:'open',g:'us'},
+  us_afa:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['air','space'],a:'open',g:'us'},
+  us_navyleague:{w:['sme','prime'],o:['advice','partner'],t:[1,9],d:['maritime'],a:'open',g:'us'},
+  us_afcea:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['c4isr','cyber','comms'],a:'open',g:'us'},
+  pol_brookings:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_csba:{w:['academic','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_hudson:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_aei:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_heritage:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_stimson:{w:['academic'],o:['advice'],t:[1,9],d:['nuclear','xcut'],a:'open',g:'us'},
+  pol_mitchell:{w:['academic'],o:['advice'],t:[1,9],d:['air','space'],a:'open',g:'us'},
+  pol_isw:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  pol_wotr:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'us'},
+  us_sei:{w:['academic','sme','prime'],o:['research','advice'],t:[3,9],d:['cyber','ai','c4isr'],a:'open',g:'us'},
+  us_gtri:{w:['academic','sme','prime'],o:['research','advice'],t:[2,8],d:['c4isr','cyber','materials'],a:'open',g:'us'},
+  us_draper:{w:['prime','sme'],o:['research','contract'],t:[3,9],d:['c4isr','space','nuclear'],a:'open',g:'us'},
+  us_cna:{w:['academic'],o:['research','advice'],t:[1,9],d:['maritime','xcut'],a:'open',g:'us'},
+  us_l3harris:{w:['prime','sme'],o:['contract'],t:[5,9],d:['comms','space','weapons'],a:'prime',g:'us'},
+  us_leidos:{w:['prime','sme'],o:['contract'],t:[4,9],d:['c4isr','cyber','ai'],a:'prime',g:'us'},
+  us_saic:{w:['prime','sme'],o:['contract'],t:[4,9],d:['c4isr','space','cyber'],a:'prime',g:'us'},
+  us_caci:{w:['prime','sme'],o:['contract'],t:[4,9],d:['c4isr','cyber','comms'],a:'prime',g:'us'},
+  us_peraton:{w:['prime','sme'],o:['contract'],t:[4,9],d:['space','cyber','c4isr'],a:'prime',g:'us'},
+  us_booz:{w:['prime','sme'],o:['contract'],t:[3,9],d:['ai','cyber','c4isr'],a:'prime',g:'us'},
+  us_hii:{w:['prime','sme'],o:['contract'],t:[5,9],d:['maritime','nuclear'],a:'prime',g:'us'},
+  us_snc:{w:['prime','sme'],o:['contract'],t:[5,9],d:['air','space','c4isr'],a:'prime',g:'us'},
+  us_leonardodrs:{w:['prime','sme'],o:['contract'],t:[5,9],d:['c4isr','energy','land'],a:'prime',g:'us'},
+  us_kratos:{w:['prime','sme','startup'],o:['contract'],t:[5,9],d:['air','counteruas','hypersonic'],a:'prime',g:'us'},
+  us_aerovironment:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','counteruas','weapons'],a:'prime',g:'us'},
+  us_a16z_ad:{w:['startup','sme'],o:['funding'],t:[1,7],d:['ai','space','xcut'],a:'open',g:'us'},
+  us_foundersfund:{w:['startup','sme'],o:['funding'],t:[1,7],d:['ai','space','xcut'],a:'open',g:'us'},
+  us_8vc:{w:['startup','sme'],o:['funding'],t:[1,7],d:['ai','maritime','xcut'],a:'open',g:'us'},
+  us_generalcatalyst:{w:['startup','sme'],o:['funding'],t:[1,8],d:['ai','xcut'],a:'open',g:'us'},
+  us_shieldcap:{w:['startup','sme'],o:['funding'],t:[1,6],d:['cyber','ai','space'],a:'open',g:'us'},
+  us_razorsedge:{w:['startup','sme'],o:['funding'],t:[1,6],d:['c4isr','cyber','space'],a:'open',g:'us'},
+  us_dcvc:{w:['startup','sme'],o:['funding'],t:[1,7],d:['ai','space','materials'],a:'open',g:'us'},
+  us_rtxventures:{w:['startup','sme'],o:['funding'],t:[2,8],d:['air','space','energy'],a:'open',g:'us'},
+  us_decisivepoint:{w:['startup','sme'],o:['funding'],t:[1,6],d:['xcut'],a:'open',g:'us'},
+  us_scout:{w:['startup','sme'],o:['funding'],t:[1,5],d:['ai','xcut'],a:'open',g:'us'},
+  trueanomaly:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space','c4isr','ai'],a:'open',g:'us'},
+  apexspace:{w:['startup','sme'],o:['contract'],t:[6,9],d:['space'],a:'open',g:'us'},
+  k2space:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space','comms'],a:'open',g:'us'},
+  cesiumastro:{w:['startup','sme'],o:['contract'],t:[6,9],d:['comms','space','c4isr'],a:'open',g:'us'},
+  divergent:{w:['startup','sme','prime'],o:['contract'],t:[6,9],d:['materials','weapons','air'],a:'open',g:'us'},
+  us_cybercom:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'us'},
+  us_cisa:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['cyber','c4isr'],a:'open',g:'us'},
+  us_dc3:{w:['sme','startup','academic'],o:['advice','partner'],t:[2,9],d:['cyber'],a:'open',g:'us'},
+  fr_comcyber:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'fr'},
+  fr_anssi:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['cyber'],a:'open',g:'fr'},
+  de_cir:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr','comms'],a:'restricted',g:'de'},
+  ca_cccs:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['cyber'],a:'open',g:'ca'},
+  au_asd_acsc:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['cyber','c4isr'],a:'open',g:'au'},
+  nl_dcc:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'eu'},
+  it_cor:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'it'},
+  pl_dkwoc:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'pl'},
+  fr_cde:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['space','c4isr'],a:'restricted',g:'fr'},
+  de_wrkdo:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['space','c4isr'],a:'restricted',g:'de'},
+  nato_space:{w:['prime','sme'],o:['advice','partner'],t:[3,9],d:['space','c4isr'],a:'restricted',g:'nato'},
+  es_mcce:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['cyber','c4isr'],a:'restricted',g:'es'},
+  es_mespa:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['space','c4isr'],a:'restricted',g:'es'},
+  au_spacecmd:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['space','c4isr'],a:'restricted',g:'au'},
+  jp_sog:{w:['prime','sme','startup'],o:['contract'],t:[4,9],d:['space','c4isr'],a:'restricted',g:'jp'},
+  fr_unseenlabs:{w:['startup','sme'],o:['contract'],t:[6,9],d:['space','maritime','c4isr'],a:'open',g:'fr'},
+  fr_exotrail:{w:['startup','sme'],o:['contract'],t:[6,9],d:['space'],a:'open',g:'fr'},
+  fr_latitude:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space'],a:'open',g:'fr'},
+  fr_parrot:{w:['sme','prime'],o:['contract'],t:[7,9],d:['air','counteruas','c4isr'],a:'open',g:'fr'},
+  fr_cerbair:{w:['startup','sme'],o:['contract'],t:[6,9],d:['counteruas','c4isr'],a:'open',g:'fr'},
+  fr_safranai:{w:['sme','prime'],o:['contract'],t:[6,9],d:['ai','space','c4isr'],a:'open',g:'fr'},
+  fr_frs:{w:['academic'],o:['advice'],t:[1,9],d:['nuclear','xcut'],a:'open',g:'fr'},
+  fr_irsem:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'fr'},
+  de_stark:{w:['startup','sme'],o:['contract'],t:[6,9],d:['air','weapons','ai'],a:'open',g:'de'},
+  de_tytan:{w:['startup','sme'],o:['contract'],t:[6,9],d:['counteruas','air','ai'],a:'open',g:'de'},
+  de_alpineeagle:{w:['startup','sme'],o:['contract'],t:[6,9],d:['counteruas','air'],a:'open',g:'de'},
+  de_isar:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space'],a:'open',g:'de'},
+  de_dgap:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'de'},
+  de_vsquared:{w:['startup','sme'],o:['funding'],t:[1,7],d:['space','ai','xcut'],a:'open',g:'de'},
+  ca_mdaspace:{w:['prime','sme'],o:['contract'],t:[5,9],d:['space','c4isr','maritime'],a:'prime',g:'ca'},
+  ca_magellan:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','space'],a:'prime',g:'ca'},
+  ca_calian:{w:['prime','sme'],o:['contract'],t:[4,9],d:['cyber','training','c4isr'],a:'prime',g:'ca'},
+  ca_kraken:{w:['sme','prime'],o:['contract'],t:[5,9],d:['maritime','c4isr'],a:'open',g:'ca'},
+  ca_heroux:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air'],a:'prime',g:'ca'},
+  ca_wescam:{w:['prime','sme'],o:['contract'],t:[6,9],d:['air','c4isr','counteruas'],a:'prime',g:'ca'},
+  ca_cdai:{w:['academic'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'ca'},
+  au_advnav:{w:['sme','prime','startup'],o:['contract'],t:[6,9],d:['c4isr','maritime','quantum'],a:'open',g:'au'},
+  au_hypersonix:{w:['startup','sme'],o:['contract'],t:[4,8],d:['hypersonic','air','space'],a:'open',g:'au'},
+  au_cea:{w:['prime','sme'],o:['contract'],t:[6,9],d:['c4isr','air','maritime'],a:'prime',g:'au'},
+  au_defendtex:{w:['sme','startup'],o:['contract'],t:[6,9],d:['weapons','counteruas','land'],a:'open',g:'au'},
+  au_innovaero:{w:['sme','startup'],o:['contract'],t:[6,9],d:['air','weapons'],a:'open',g:'au'},
+  au_skykraft:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space','c4isr'],a:'open',g:'au'},
+  nz_syos:{w:['sme','startup'],o:['contract'],t:[6,9],d:['air','maritime','land'],a:'open',g:'nz'},
+  nz_dawn:{w:['startup','sme'],o:['contract'],t:[5,9],d:['space'],a:'open',g:'nz'},
+  nz_kea:{w:['startup','sme'],o:['contract'],t:[5,8],d:['air','c4isr','space'],a:'open',g:'nz'},
+  nz_rocketlab:{w:['prime','sme','startup'],o:['contract'],t:[7,9],d:['space'],a:'open',g:'nz'}
 });
 
 /* ---- thin-domain retag: append accurate tech domains to existing nodes so under-represented
@@ -4233,6 +4569,14 @@ populateHomeSelect();
 document.getElementById('whomeSel').addEventListener('change',e=>{ setHome(e.target.value,{noFit:true}); closeWelcome(); setTimeout(fit,80); });
 document.getElementById('wAboutLink').onclick=openAbout;
 document.getElementById('aboutBtn').onclick=openAbout;
+{ const _fb=document.getElementById('feedbackBtn');
+  if(_fb) _fb.onclick=()=>{
+    if(window._closeMenuSheet) window._closeMenuSheet();
+    // Reuse the maintainer's existing suggestions form — general feedback, no specific node attached.
+    openSuggestForm('General feedback', 'General feedback / idea',
+      'Your feedback on The Defence Ecosystem — a missing organisation, a broken link, a feature idea, or anything else:\n\n');
+  };
+}
 document.getElementById('aClose').onclick=closeAbout;
 document.getElementById('about').addEventListener('click',e=>{ if(e.target.id==='about')closeAbout(); });
 document.getElementById('plink').onclick=()=>{ if(selected) shareHash('node='+selected); };
@@ -4375,9 +4719,15 @@ function importCRM(file){ const r=new FileReader(); r.onload=()=>{ try{ const d=
 
 function openAddNode(presetParent){
   const sel=document.getElementById('an_parent'); sel.innerHTML='';
-  const opt=(id,label,indent)=>{ const o=document.createElement('option'); o.value=id; o.textContent=(indent?'   › ':'')+label; sel.appendChild(o); };
-  opt('root','— Top level —',false);
-  TREE.children.forEach(b=>{ opt(b.id,b.l,false); (b.children||[]).forEach(c=>{ opt(c.id,c.l,true); (c.children||[]).forEach(g=>opt(g.id,g.l,true)); }); });
+  const opt=(id,label,depth)=>{ const o=document.createElement('option'); o.value=id; o.textContent=(depth>0?('　'.repeat(Math.min(depth,4))+'› '):'')+label; sel.appendChild(o); };
+  opt('root','— Top level —',0);
+  // Recurse the whole tree so a parent at ANY depth can be chosen (previously capped at 3
+  // levels, which silently dropped prime sub-divisions and other deep nodes).
+  (function walk(nodes,depth){ (nodes||[]).forEach(n=>{ opt(n.id, n.l, depth); if(n.children&&n.children.length) walk(n.children, depth+1); }); })(TREE.children, 1);
+  // Guarantee the preset parent is selectable even if it's a leaf not yet in the list.
+  if(presetParent && NODE[presetParent] && !Array.prototype.some.call(sel.options,o=>o.value===presetParent)){
+    opt(presetParent, NODE[presetParent].l+' (selected)', 1);
+  }
   sel.value = presetParent && NODE[presetParent] ? presetParent : 'root';
   document.getElementById('an_name').value=''; document.getElementById('an_does').value=''; document.getElementById('an_entry').value='';
   document.getElementById('an_dupes').innerHTML=''; document.getElementById('an_access').value='';
@@ -4517,7 +4867,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (thin-domain national balance · 915 orgs)';
+let DATA_AS_OF='August 2026 (potential funding availability shown where it applies · 1026 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -4610,7 +4960,7 @@ function freshnessFlag(id){
 function verifiedLine(id){ const uv=(CRM.verified||{})[id];
   const vd=verifiedDate(id);
   let s=`Last reviewed <b>${vd}</b> · dataset <b>${DATA_AS_OF}</b>.`;
-  if(uv) s+=` You marked this verified on <b>${uv}</b>.`;
+  if(uv) s+=` <span style="color:var(--phos)">✓ You marked this verified on <b>${uv}</b>.</span>`;
   return s; }
 function deriveSourceFromEntry(id){
   const n=NODE[id]; if(!n||!n.entry) return '';
@@ -4631,16 +4981,21 @@ function renderPanelExtras(id){
   const pflag=document.getElementById('pfreshness');
   if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }
   const a=document.getElementById('pactions');
+  const _vDate=(CRM.verified||{})[id];
   a.innerHTML =
     `<button class="pabtn ${isFav(id)?'on':''}" id="pa_fav">${isFav(id)?'★ Favourited':'☆ Favourite'}</button>`+
     `<button class="pabtn ${compareList.includes(id)?'on':''}" id="pa_pin">${compareList.includes(id)?'⇄ In compare':'⇄ Compare'}</button>`+
-    `<button class="pabtn" id="pa_ver">✓ Mark verified</button>`+
+    `<button class="pabtn ${_vDate?'on':''}" id="pa_ver" title="${_vDate?('You marked this verified on '+_vDate+' — click to clear'):'Mark that you have checked this entry is correct today'}">${_vDate?('✓ Verified '+_vDate):'✓ Mark verified'}</button>`+
     `<button class="pabtn" id="pa_link">⤶ Copy link</button>`+
     `<button class="pabtn" id="pa_share">⤴ Share this</button>`+
     `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`;
   document.getElementById('pa_fav').onclick=()=>{ toggleFav(id); renderPanelExtras(id); showToast(isFav(id)?'Added to favourites':'Removed from favourites'); };
   document.getElementById('pa_pin').onclick=()=>{ togglePin(id); renderPanelExtras(id); };
-  document.getElementById('pa_ver').onclick=()=>{ (CRM.verified=CRM.verified||{})[id]=new Date().toISOString().slice(0,10); saveCRM(); renderPanelExtras(id); showToast('Marked verified today'); };
+  document.getElementById('pa_ver').onclick=()=>{
+    CRM.verified=CRM.verified||{};
+    if(CRM.verified[id]){ delete CRM.verified[id]; saveCRM(); renderPanelExtras(id); showToast('Cleared your verification'); }
+    else { CRM.verified[id]=new Date().toISOString().slice(0,10); saveCRM(); renderPanelExtras(id); showToast('Marked verified today'); }
+  };
   document.getElementById('pa_link').onclick=()=>{ try{ history.replaceState(null,'','#node='+encodeURIComponent(id)); }catch(_){ location.hash='node='+id; } copyText(location.href); showToast('Link to this node copied'); };
   document.getElementById('pa_share').onclick=()=>shareEntry(id);
   document.getElementById('pa_cor').onclick=()=>openCorrect(id);
