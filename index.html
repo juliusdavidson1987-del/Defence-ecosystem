@@ -240,6 +240,7 @@
   #welcome .wbrand{display:flex;align-items:center;gap:11px;margin-bottom:2px}
   #welcome .wbrand .wmark{width:38px;height:38px;flex:0 0 auto}
   #welcome h1{font-family:"Space Grotesk",sans-serif;font-size:32px;margin:9px 0 7px;letter-spacing:.2px}
+  #welcome .wtagline{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--phos);margin:0 0 14px}
   #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
   #welcome .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:24px}
   #welcome .wtile{background:rgba(12,20,36,.7);border:1px solid var(--line);border-radius:13px;padding:15px 15px 16px;cursor:pointer;transition:.14s}
@@ -473,6 +474,7 @@
   #panel .pabtn:hover{border-color:var(--phos);color:var(--txt)}
   #panel .pabtn.on{color:#FFD46B;border-color:#FFD46B66}
   #panel .pverify{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);margin-top:9px;line-height:1.5}
+  #panel .paffil{color:var(--phos);font-size:10px;letter-spacing:.3px;margin-bottom:5px;line-height:1.45}
   #panel .pserial{display:inline-block;margin-top:7px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;color:var(--phos);border:1px solid rgba(120,200,180,.35);border-radius:4px;padding:2px 7px;cursor:pointer;user-select:all}
   #panel .pserial:hover{background:rgba(120,200,180,.12)}
   #panel .pserial::before{content:"◈ ";opacity:.7}
@@ -896,6 +898,7 @@
       <div class="wk">◎ Interactive briefing</div>
     </div>
     <h1>The Defence Ecosystem</h1>
+    <div class="wtagline">Innovation · Navigation · Collaboration</div>
     <p class="lead">A working map of who's who in defence innovation and procurement — over a thousand organisations across the UK, United States, Europe, Canada, Australia, New Zealand, NATO and allied partners, from government buyers and research labs to primes, start-ups, investors and the accelerators that connect them. It's built to answer one question: <b>who do I actually talk to, and how do I get in?</b> No single nation sits at the centre — pick where you're starting from and it maps the real route.</p>
     <div class="whome">
       <div class="whomeq">Where are you starting from? <span>— sets your default view; change it anytime</span></div>
@@ -1429,12 +1432,59 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("diana_hq","DIANA Headquarters (London)","diana.nato.int · Imperial White City, London","The programme's HQ, in the heart of the UK deep-tech ecosystem; runs challenge programmes, commercial guidance and defence-user engagement."),
      L("diana_tallinn","DIANA Regional Hub (Tallinn)","diana.nato.int · Tallinn, Estonia","DIANA's European regional hub, opened 2024 — connects the programme to the Baltic and Nordic deep-tech ecosystems."),
      L("diana_halifax","DIANA North American Office (Halifax)","diana.nato.int · Halifax, Canada","DIANA's North American office, linking the programme to Canadian and US innovation ecosystems."),
-     L("diana_accel_net","DIANA Accelerator Network","diana.nato.int","The ~16 accelerator sites that deliver DIANA's cohort programming — typically existing national accelerators, science parks and university hubs designated as DIANA sites (e.g. Tehnopol in Estonia, VTT in Finland, Palladion at UniBw Munich). Selected companies are placed at a site for their programme."),
-     L("diana_testcentres","DIANA Test Centre Network","diana.nato.int/test-centres.html","180+ affiliated test centres across the allies where innovators de-risk, demonstrate and validate dual-use technology. The official site publishes the full country-by-country list; many centres (e.g. VTT, Fraunhofer, DLR, TÜBİTAK, INTA, CMRE) also appear elsewhere in this map as research bodies in their own right."),
+     B("diana_accel_net","DIANA Accelerator Sites","The 16 accelerator sites that deliver DIANA's cohort programming — each an existing national accelerator, science park or university hub designated as a DIANA site. Independent institutions in their own right; listed here with their DIANA affiliation noted.",[
+       L("dia_bii","BioInnovation Institute (BII)","bii.dk · Copenhagen","Danish life-sciences incubator and DIANA accelerator site — deep-tech and biotech ventures."),
+       L("dia_cove","COVE","coveocean.com · Halifax","Centre for Ocean Ventures & Entrepreneurship — Canadian ocean-tech hub and DIANA accelerator site."),
+       L("dia_czechinvest","CzechInvest","czechinvest.org · Prague","Czech national investment and business-development agency; runs the Czech DIANA accelerator."),
+       L("dia_dualtech","DualTech (Takeoff Accelerator)","takeoffaccelerator.com · Italy","Italian deep-tech accelerator delivering DIANA's DualTech programme."),
+       L("dia_ignity","IGNITY","ignity.be · Belgium","Belgian defence-and-security accelerator and DIANA site."),
+       L("dia_spain","Spanish-DIANA Accelerator (INCIBE & UPM)","incibe.es · Spain","Spain's DIANA accelerator, run by the national cybersecurity institute INCIBE with the Polytechnic University of Madrid."),
+       L("dia_demokritos","Innovation Accelerator @Demokritos","demokritos.gr · Athens","Accelerator at NCSR Demokritos, Greece's largest research centre; the Greek DIANA site."),
+       L("dia_janus","Janus Allies (with UKDI)","diana.nato.int · United Kingdom","The UK DIANA accelerator, delivered in partnership with UK Defence Innovation."),
+       L("dia_fortkrakow","FORT Kraków DIANA Accelerator","diana.krakow.pl · Kraków","Poland's first NATO accelerator — a joint AGH University of Kraków and Kraków Technology Park initiative."),
+       L("dia_masschallenge","MassChallenge","masschallenge.org · Boston","US zero-equity startup accelerator and DIANA site."),
+       L("dia_odtu","ODTÜ Teknokent","odtuteknokent.com.tr · Ankara","Middle East Technical University's technopark, Türkiye's DIANA accelerator site."),
+       L("dia_palladion","Palladion Defence Accelerator","diana.nato.int · Germany","Germany's DIANA accelerator, hosted with the Bundeswehr University Munich ecosystem."),
+       L("dia_vtt","VTT Dual-Use LaunchPad","vttresearch.com · Finland","Finland's DIANA accelerator, run by VTT Technical Research Centre."),
+       L("dia_tehnopol","Tehnopol Startup Incubator","tehnopol.ee · Tallinn","Tallinn Science Park Tehnopol — Estonia's DIANA accelerator site."),
+       L("dia_thegate","The Gate (Brainport Eindhoven)","thegate-eindhoven.com · Netherlands","Deep-tech accelerator in the Brainport Eindhoven region; the Netherlands' DIANA site."),
+       L("dia_unilab","UniLab Defence","diana.nato.int · Latvia","Latvia's DIANA accelerator site."),
+     ]),
+     B("diana_testcentres","DIANA Test Centres (notable)","200+ affiliated test centres across the allies where innovators de-risk, demonstrate and validate dual-use technology. The official site lists the full network; below are notable independent institutions that are DIANA test centres in their own right. Many major research bodies (VTT, Fraunhofer, DLR, TÜBİTAK, INTA, CMRE) also appear elsewhere in this map.",[
+       L("dia_imperial","Imperial College I-Hub","imperial.ac.uk · London","Imperial College London's innovation hub at White City — a DIANA test centre for AI, cyber, quantum and biotech (and host of DIANA HQ)."),
+       L("dia_forth","FORTH","forth.gr · Heraklion","Foundation for Research & Technology – Hellas, a leading Greek research institution and DIANA test centre."),
+       L("dia_nbi","Niels Bohr Institute","nbi.ku.dk · Copenhagen","University of Copenhagen physics institute — a DIANA test centre for quantum and related deep tech."),
+       L("dia_iddportugal","idD Portugal Defence","iddportugal.pt · Lisbon","Portugal's state defence-industry body and a DIANA test centre across data, biotech, materials and energy."),
+       L("dia_wsl","WSL (Wallonia)","wsl.be · Belgium","Wallonia's science-and-technology business accelerator and a DIANA test centre."),
+       L("dia_pcss","PCSS (Poznań Supercomputing)","psnc.pl · Poznań","Poznań Supercomputing & Networking Center — a Polish DIANA test centre for autonomy, quantum, big data, AI and cyber."),
+       L("dia_ogr","OGR / Plug and Play Turin","ogrtorino.it · Turin","Officine Grandi Riparazioni, Turin — innovation hub and DIANA test/accelerator site for aerospace."),
+     ]),
    ]),
    L("ncia","NATO Communications & Information Agency (NCI Agency)","ncia.nato.int · Brussels","NATO's C4ISR, cyber and IT acquisition and delivery agency; a major procurement channel via its NITEC industry engagement."),
    L("nspa","NATO Support & Procurement Agency (NSPA)","nspa.nato.int · Capellen, Luxembourg","NATO's shared acquisition, logistics and life-cycle management agency; runs multinational support programmes."),
    L("nato_sto","NATO Science & Technology Organization (STO)","sto.nato.int · Brussels","The Alliance's collaborative defence science network; the largest of its kind, spanning seven technical panels."),
+   B("nato_coes","NATO Centres of Excellence","~30 NATO-accredited Centres of Excellence — nationally or multi-nationally funded, independent institutions offering recognised expertise in a defined domain. Not part of the NATO command structure; coordinated by Allied Command Transformation. Listed here as first-class institutions with their COE accreditation noted.",[
+     L("coe_ccdcoe","Cooperative Cyber Defence CoE (CCDCOE)","ccdcoe.org · Tallinn","NATO's cyber-defence hub — home of the Tallinn Manual, the CyCon conference and the Locked Shields live-fire exercise; the largest COE."),
+     L("coe_stratcom","Strategic Communications CoE","stratcomcoe.org · Riga","NATO's strategic communications and information-environment centre; disinformation, influence and hybrid-threat analysis."),
+     L("coe_ccoe","Civil-Military Cooperation CoE (CCOE)","cimic-coe.org · The Hague","Expertise on civil-military cooperation for the Alliance."),
+     L("coe_cwo","Cold Weather Operations CoE","coecwo.org · Norway","Cold-weather and Arctic warfare expertise, hosted by Norway."),
+     L("coe_mw","Mountain Warfare CoE","mwcoe.org · Slovenia","Mountain-warfare doctrine, training and interoperability."),
+     L("coe_ensec","Energy Security CoE (ENSEC)","enseccoe.org · Vilnius","Energy security in defence — resilience, critical-energy-infrastructure protection."),
+     L("coe_japcc","Joint Air Power Competence Centre (JAPCC)","japcc.org · Kalkar","NATO's air and space power think tank and competence centre."),
+     L("coe_mileng","Military Engineering CoE (MILENG)","milengcoe.org · Ingolstadt","Military engineering doctrine, counter-mobility and force protection."),
+     L("coe_cbrn","Joint CBRN Defence CoE","jcbrncoe.org · Vyškov","Chemical, biological, radiological and nuclear defence expertise, hosted by Czechia."),
+     L("coe_cied","Counter-IED CoE (C-IED)","ciedcoe.org · Madrid","Countering improvised explosive devices — doctrine, training and lessons."),
+     L("coe_eod","Explosive Ordnance Disposal CoE (EOD)","eodcoe.org · Trenčín","EOD doctrine and interoperability, hosted by Slovakia."),
+     L("coe_dat","Defence Against Terrorism CoE (DAT)","coedat.nato.int · Ankara","Counter-terrorism analysis, training and doctrine."),
+     L("coe_csw","Confined & Shallow Waters CoE (CSW)","coecsw.org · Kiel","Littoral and shallow-water naval operations expertise."),
+     L("coe_nmw","Naval Mine Warfare CoE","coenmw.eu · Ostend","Naval mine warfare and mine countermeasures, hosted by Belgium."),
+     L("coe_marsec","Maritime Security CoE (MARSEC)","marseccoe.org · Aksaz","Maritime security doctrine and interoperability, hosted by Türkiye."),
+     L("coe_iamd","Integrated Air & Missile Defence CoE","iamdcoe.org · Crete","Integrated air and missile defence expertise, hosted by Greece."),
+     L("coe_ms","Modelling & Simulation CoE (M&S)","mscoe.org · Rome","Modelling and simulation for training, analysis and experimentation."),
+     L("coe_milmed","Military Medicine CoE (MILMED)","coemed.org · Budapest","Military medical doctrine, training and interoperability."),
+     L("coe_space","Space CoE","spacecoe.org · Toulouse","NATO's space-domain Centre of Excellence, hosted by France."),
+     L("coe_climate","Climate Change & Security CoE","nato.int · Montreal","NATO's climate-change and security centre, hosted by Canada."),
+   ]),
    L("nato_space","NATO Space Centre","ac.nato.int · Ramstein","The Alliance's space coordination hub at Allied Air Command — provides space products and services to NATO operations, following space's 2019 designation as NATO's fifth operational domain; complemented by the NATO Space Centre of Excellence in Toulouse."),
    L("nato_cso","STO Collaboration Support Office (CSO)","sto.nato.int · Paris","Runs STO's collaborative research programme — technical teams, symposia and lecture series across the nations."),
    L("nato_ocs","Office of the Chief Scientist","nato.int · Brussels","Principal S&T adviser to NATO; steers the science and technology strategy."),
@@ -2539,6 +2589,50 @@ function colorOf(id){ if(id==="root")return ROOTCOLOR; return BRANCHCOLORS[BRANC
 function depthOf(id){let d=0,cur=id;while(PARENT[cur]!=null){d++;cur=PARENT[cur];}return d;}
 function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
 
+/* ---------- affiliations ----------
+   Many organisations are independent institutions in their own right that are ALSO part of a
+   NATO/allied network (e.g. a university lab that is a DIANA accelerator, a nationally-funded
+   institute accredited as a NATO Centre of Excellence, a UK Catapult, a Fraunhofer institute).
+   We list them as first-class nodes typed for what they actually are, and note the affiliation
+   as a light line in the panel — not a rebuild of each network's internal structure. */
+const DIANA_AFFILIATED = {
+  // 16 accelerator sites (run DIANA's acceleration programme)
+  dia_bii:'accelerator', dia_cove:'accelerator', dia_czechinvest:'accelerator', dia_dualtech:'accelerator',
+  dia_ignity:'accelerator', dia_spain:'accelerator', dia_demokritos:'accelerator', dia_janus:'accelerator',
+  dia_fortkrakow:'accelerator', dia_masschallenge:'accelerator', dia_odtu:'accelerator', dia_palladion:'accelerator',
+  dia_vtt:'accelerator', dia_tehnopol:'accelerator', dia_thegate:'accelerator', dia_unilab:'accelerator',
+  // notable independent test-centre institutions
+  dia_imperial:'test centre', dia_forth:'test centre', dia_nbi:'test centre', dia_iddportugal:'test centre',
+  dia_wsl:'test centre', dia_pcss:'test centre', dia_ogr:'test centre'
+};
+// AFFILIATIONS: id -> { net: display name, role: what it is in that network, note: honest qualifier }
+const AFFILIATIONS = {};
+Object.keys(DIANA_AFFILIATED).forEach(id=>{
+  AFFILIATIONS[id]={ net:'NATO DIANA', role:DIANA_AFFILIATED[id], note:'an independent institution affiliated with the DIANA network, not run by it' };
+});
+function registerAffiliation(map, net, note){ Object.keys(map).forEach(id=>{ AFFILIATIONS[id]={ net, role:map[id], note }; }); }
+// NATO Centres of Excellence — accredited but independent, nationally funded, outside the command structure
+const NATO_COE_IDS={coe_ccdcoe:1,coe_stratcom:1,coe_ccoe:1,coe_cwo:1,coe_mw:1,coe_ensec:1,coe_japcc:1,coe_mileng:1,coe_cbrn:1,coe_cied:1,coe_eod:1,coe_dat:1,coe_csw:1,coe_nmw:1,coe_marsec:1,coe_iamd:1,coe_ms:1,coe_milmed:1,coe_space:1,coe_climate:1};
+const NATO_COE_MAP={}; Object.keys(NATO_COE_IDS).forEach(id=>NATO_COE_MAP[id]='Centre of Excellence');
+registerAffiliation(NATO_COE_MAP,'NATO-accredited','a nationally-funded independent institution accredited by NATO, not part of the command structure');
+// UK Catapults — independent innovation centres in the government's Catapult network (via Innovate UK)
+const UK_CATAPULT_MAP={digicat:'Catapult',satcat:'Catapult',csac:'Catapult',cpc:'Catapult',c_hvmc:'Catapult'};
+registerAffiliation(UK_CATAPULT_MAP,'UK','an independent innovation centre in the UK Catapult Network, overseen by Innovate UK');
+// HVMC centres — part of the High Value Manufacturing Catapult
+const HVMC_MAP={mtc:'centre',ncc:'centre',amrc:'centre',nuamrc:'centre',cpi:'centre'};
+registerAffiliation(HVMC_MAP,'High Value Manufacturing Catapult','part of the HVM Catapult, an independent manufacturing-research institution');
+// Fraunhofer defence institutes — independent institutes within the Fraunhofer-Gesellschaft
+const FRAUNHOFER_MAP={de_fraunhofer:'defence institutes'};
+registerAffiliation(FRAUNHOFER_MAP,'Fraunhofer','independent institutes within the Fraunhofer-Gesellschaft, Europe\u2019s largest applied-research organisation');
+// FFRDC / UARC sponsor lines — independent centres sponsored by a US federal agency
+const FFRDC_MAP={mitre:'FFRDC',lincoln:'FFRDC',jhuapl:'UARC',aerospace:'FFRDC',ida:'FFRDC',sandia:'FFRDC',us_sei:'FFRDC',us_gtri:'UARC',us_draper:'not-for-profit lab'};
+Object.keys(FFRDC_MAP).forEach(id=>{ AFFILIATIONS[id]={ net:(FFRDC_MAP[id]==='FFRDC'?'US Federally Funded R&D Center':FFRDC_MAP[id]==='UARC'?'US University-Affiliated Research Center':'Independent research laboratory'), role:'', note:(FFRDC_MAP[id]==='FFRDC'?'an independent institution sponsored by a US federal agency (FFRDC)':FFRDC_MAP[id]==='UARC'?'an independent university research center sponsored by the US DoD (UARC)':'a not-for-profit lab serving US government sponsors') }; });
+function affiliationLine(id){
+  const a=AFFILIATIONS[id]; if(!a) return '';
+  const head=(a.net+(a.role?(' '+a.role):'')).trim();
+  return `◇ ${head} — ${a.note}.`;
+}
+
 /* ---------- open calls / opportunities ---------- */
 /* ENTRY_POINTS — the specific "work with us / apply / supplier / tender" page for a body,
    so the trail doesn't end at a homepage. Verified, representative set for the highest-value
@@ -2971,6 +3065,8 @@ const VERIFIED_DOMAINS = new Set([
   'lockheedmartin.com','rtx.com','northropgrumman.com','gd.com','boeing.com','baesystems.com','rolls-royce.com','leonardo.com','leonardodrs.com','thalesgroup.com','airbus.com','saab.com','rheinmetall.com','kongsberg.com','mbda-systems.com','knds.com','qinetiq.com',
   // NATO / EU
   'nato.int','ac.nato.int','nspa.nato.int','ncia.nato.int','diana.nato.int','nif.fund','sto.nato.int',
+  'bii.dk','coveocean.com','czechinvest.org','takeoffaccelerator.com','ignity.be','incibe.es','demokritos.gr','diana.krakow.pl','masschallenge.org','odtuteknokent.com.tr','vttresearch.com','tehnopol.ee','thegate-eindhoven.com','imperial.ac.uk','forth.gr','nbi.ku.dk','iddportugal.pt','wsl.be','psnc.pl','ogrtorino.it',
+  'ccdcoe.org','stratcomcoe.org','cimic-coe.org','coecwo.org','mwcoe.org','enseccoe.org','japcc.org','milengcoe.org','jcbrncoe.org','ciedcoe.org','eodcoe.org','coedat.nato.int','coecsw.org','coenmw.eu','marseccoe.org','iamdcoe.org','mscoe.org','coemed.org','spacecoe.org',
   'eda.europa.eu','ec.europa.eu','europa.eu','ted.europa.eu','eudis.eu','occar.int',
   // France
   'defense.gouv.fr','cyber.gouv.fr','onera.fr','cnes.fr','dassault-aviation.com','thalesgroup.com','naval-group.com','knds.fr','safran-group.com','arquus-defense.com','unseenlabs.space','exotrail.com','latitude.eu','parrot.com','cerbair.com','preligens.com','ariane.group','eurenco.com','exail.com','ixarm.com','marches-publics.gouv.fr','bpifrance.fr',
@@ -3626,6 +3722,16 @@ const BRANCH_ETYPE={
 };
 // explicit overrides where branch/inference gets it wrong
 const ETYPE_OVERRIDES={
+  // NATO Centres of Excellence — knowledge/research institutions (StratCom leans policy)
+  coe_ccdcoe:'research', coe_stratcom:'policy', coe_ccoe:'research', coe_cwo:'research', coe_mw:'research',
+  coe_ensec:'research', coe_japcc:'research', coe_mileng:'research', coe_cbrn:'research', coe_cied:'research',
+  coe_eod:'research', coe_dat:'research', coe_csw:'research', coe_nmw:'research', coe_marsec:'research',
+  coe_iamd:'research', coe_ms:'research', coe_milmed:'research', coe_space:'research', coe_climate:'research',
+  // DIANA accelerator sites are a way in (gateway); test centres are research institutions
+  dia_bii:'gateway', dia_cove:'gateway', dia_czechinvest:'gateway', dia_dualtech:'gateway', dia_ignity:'gateway',
+  dia_spain:'gateway', dia_demokritos:'research', dia_janus:'gateway', dia_fortkrakow:'gateway', dia_masschallenge:'gateway',
+  dia_odtu:'gateway', dia_palladion:'gateway', dia_vtt:'research', dia_tehnopol:'gateway', dia_thegate:'gateway', dia_unilab:'gateway',
+  dia_imperial:'research', dia_forth:'research', dia_nbi:'research', dia_iddportugal:'gov', dia_wsl:'gateway', dia_pcss:'research', dia_ogr:'gateway',
   // Military/government bodies whose names lack an obvious keyword, so they defaulted to
   // 'industry' — corrected here to gov. (ETG is the Field Army's trials organisation, etc.)
   etg:'gov', natoact:'gov', sofwerx:'gov', replicator:'gov', apfit:'gov', dib:'gov', sbir:'gov',
@@ -4350,7 +4456,56 @@ Object.assign(TAGS,{
 
 /* ---- targeted domains for research agencies & platforms previously cross-cutting ---- */
 Object.assign(TAGS,{
-  tr_sasad:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['xcut'],a:'open',g:'tr'},
+  // NATO Centres of Excellence — domain-specific research/advice bodies (engage via, not open procurement)
+  coe_ccdcoe:{w:['academic','sme','prime'],o:['research','advice','training'],t:[3,9],d:['cyber'],a:'via',g:'nato'},
+  coe_stratcom:{w:['academic','prime'],o:['research','advice'],t:[3,9],d:['c4isr','ai'],a:'via',g:'nato'},
+  coe_ccoe:{w:['academic','prime'],o:['research','advice','training'],t:[4,9],d:['human'],a:'via',g:'nato'},
+  coe_cwo:{w:['prime','sme'],o:['research','advice','training'],t:[4,9],d:['land','human'],a:'via',g:'nato'},
+  coe_mw:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['land','human'],a:'via',g:'nato'},
+  coe_ensec:{w:['academic','prime','sme'],o:['research','advice'],t:[3,9],d:['energy'],a:'via',g:'nato'},
+  coe_japcc:{w:['prime','academic'],o:['research','advice'],t:[4,9],d:['air','space'],a:'via',g:'nato'},
+  coe_mileng:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['land'],a:'via',g:'nato'},
+  coe_cbrn:{w:['prime','sme','academic'],o:['research','advice','training'],t:[3,9],d:['human','materials'],a:'via',g:'nato'},
+  coe_cied:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['land','weapons'],a:'via',g:'nato'},
+  coe_eod:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['weapons','land'],a:'via',g:'nato'},
+  coe_dat:{w:['prime','academic'],o:['research','advice','training'],t:[4,9],d:['c4isr','human'],a:'via',g:'nato'},
+  coe_csw:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['maritime'],a:'via',g:'nato'},
+  coe_nmw:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['maritime','weapons'],a:'via',g:'nato'},
+  coe_marsec:{w:['prime','sme'],o:['advice','training'],t:[4,9],d:['maritime'],a:'via',g:'nato'},
+  coe_iamd:{w:['prime','sme'],o:['research','advice','training'],t:[4,9],d:['air','weapons'],a:'via',g:'nato'},
+  coe_ms:{w:['prime','sme','academic'],o:['research','advice','simulation'],t:[3,9],d:['simulation','training'],a:'via',g:'nato'},
+  coe_milmed:{w:['academic','prime'],o:['research','advice','training'],t:[4,9],d:['human'],a:'via',g:'nato'},
+  coe_space:{w:['prime','academic'],o:['research','advice'],t:[3,9],d:['space'],a:'via',g:'nato'},
+  coe_climate:{w:['academic','prime'],o:['research','advice'],t:[3,9],d:['energy','xcut'],a:'via',g:'nato'},
+});
+Object.assign(TAGS,{
+  // DIANA accelerator sites — a genuine way in for dual-use start-ups (gateway/accelerator)
+  dia_bii:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['human','materials'],a:'open',g:'eu'},
+  dia_cove:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['maritime'],a:'open',g:'ca'},
+  dia_czechinvest:{w:['startup','sme'],o:['advice','grant'],t:[3,8],d:['xcut'],a:'open',g:'eu'},
+  dia_dualtech:{w:['startup','sme'],o:['advice'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  dia_ignity:{w:['startup','sme'],o:['advice'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  dia_spain:{w:['startup','sme'],o:['advice'],t:[3,7],d:['cyber'],a:'open',g:'eu'},
+  dia_demokritos:{w:['startup','sme','academic'],o:['advice','research','test'],t:[2,7],d:['ai','materials'],a:'open',g:'eu'},
+  dia_janus:{w:['startup','sme'],o:['advice','grant'],t:[3,7],d:['xcut'],a:'open',g:'uk'},
+  dia_fortkrakow:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['ai','cyber','quantum'],a:'open',g:'eu'},
+  dia_masschallenge:{w:['startup','sme'],o:['advice'],t:[3,8],d:['xcut'],a:'open',g:'us'},
+  dia_odtu:{w:['startup','sme','academic'],o:['advice','test'],t:[3,7],d:['xcut'],a:'open',g:'tr'},
+  dia_palladion:{w:['startup','sme'],o:['advice'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  dia_vtt:{w:['startup','sme','academic'],o:['advice','research','test'],t:[3,8],d:['materials','cyber'],a:'open',g:'eu'},
+  dia_tehnopol:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['ai','cyber','space'],a:'open',g:'eu'},
+  dia_thegate:{w:['startup','sme'],o:['advice'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  dia_unilab:{w:['startup','sme'],o:['advice'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  // DIANA test centres — independent research institutions (research)
+  dia_imperial:{w:['academic','startup'],o:['research','test'],t:[2,9],d:['ai','cyber','quantum'],a:'open',g:'uk'},
+  dia_forth:{w:['academic'],o:['research','test'],t:[2,8],d:['ai','materials'],a:'open',g:'eu'},
+  dia_nbi:{w:['academic'],o:['research','test'],t:[2,6],d:['quantum'],a:'open',g:'eu'},
+  dia_iddportugal:{w:['sme','prime'],o:['advice','test'],t:[3,8],d:['materials','energy'],a:'open',g:'eu'},
+  dia_wsl:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['xcut'],a:'open',g:'eu'},
+  dia_pcss:{w:['academic','startup'],o:['research','test'],t:[3,8],d:['ai','cyber','quantum'],a:'open',g:'eu'},
+  dia_ogr:{w:['startup','sme'],o:['advice','test'],t:[3,7],d:['space','air'],a:'open',g:'eu'},
+});
+Object.assign(TAGS,{
   ca_cadsi:{w:['sme','prime','startup'],o:['advice','partner'],t:[1,9],d:['xcut'],a:'open',g:'ca'},
   ro_patromil:{w:['sme','prime'],o:['advice','partner'],t:[1,9],d:['xcut'],a:'open',g:'ro'},
   lv_fsdi:{w:['sme','prime','academic'],o:['advice','partner'],t:[1,9],d:['xcut'],a:'open',g:'lv'},
@@ -5196,7 +5351,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (welcome copy rewritten for current scale + capability · 1025 orgs)';
+let DATA_AS_OF='August 2026 (fixed branch-arg bug; network affiliations complete · 1069 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5315,7 +5470,8 @@ function renderPanelExtras(id){
   if(src){ srcHtml=`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Source</span> ${linkifyProse(src)}`; }
   else { const d=deriveSourceFromEntry(id); if(d && domainVerified(d)){ srcHtml=`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Official site</span> ${linkifyProse(d)}`; } }
   document.getElementById('psource').innerHTML = srcHtml;
-  document.getElementById('pverify').innerHTML = verifiedLine(id);
+  { const aff=affiliationLine(id);
+    document.getElementById('pverify').innerHTML = (aff?`<div class="paffil">${aff}</div>`:'') + verifiedLine(id); }
   const ff=freshnessFlag(id);
   const pflag=document.getElementById('pfreshness');
   if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }
