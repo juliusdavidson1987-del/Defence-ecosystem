@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Defence Ecosystem</title>
 <meta name="description" content="An interactive map of the defence innovation and procurement ecosystem — UK, NATO, Europe, USA and Five Eyes. Find the right organisation for your technology, research, problem or capital.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230A1220' stroke='%233FE0D0' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%233FE0D0' stroke-opacity='0.5' stroke-width='1'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%233FE0D0'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='26' fill='%23070C16'/%3E%3Ccircle cx='60' cy='60' r='44' fill='none' stroke='%2325406a' stroke-width='4'/%3E%3Cpath d='M60 26 L90 43 L90 77 L60 94 L30 77 L30 43 Z' fill='none' stroke='%232f6d59' stroke-width='4'/%3E%3Ccircle cx='60' cy='26' r='8' fill='%233FE0D0'/%3E%3Ccircle cx='60' cy='60' r='9' fill='%23070C16' stroke='%233FE0D0' stroke-width='5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,7 +21,8 @@
   header{position:fixed;top:0;left:0;right:0;height:58px;z-index:40;display:flex;align-items:center;gap:16px;
     padding:0 18px;background:linear-gradient(180deg,rgba(7,12,22,.98),rgba(7,12,22,.72));
     border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
-  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px}
+.brand .brandmark{width:26px;height:26px;flex:0 0 auto}
   .brand .t{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:16px;letter-spacing:.2px}
   .brand .s{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--phos);letter-spacing:2px;text-transform:uppercase;opacity:.8}
   .spacer{flex:1}
@@ -149,6 +150,17 @@
   #panel .cchip.cplain:hover{background:rgba(140,150,170,.05);border-color:var(--line);box-shadow:none}
   #panel .iplain{color:var(--mut);border-bottom:1px dotted color-mix(in srgb,var(--mut) 40%,transparent)}
   #panel #popps{font-size:12.5px;line-height:1.62;color:#D2DCEE}
+  #panel #pfunding{font-size:12.5px;line-height:1.62;color:#D2DCEE}
+  #panel #pentry{margin-top:9px}
+  #panel .pentrylink{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;letter-spacing:.3px;color:#0b1220;background:var(--phos);border-radius:5px;padding:6px 11px;text-decoration:none;transition:opacity .15s}
+  #panel .pentrylink:hover{opacity:.85}
+  #panel .pentryhint{font-size:11px;line-height:1.55;color:var(--faint);font-style:italic}
+  .gterm{border-bottom:1px dotted rgba(120,200,180,.6);cursor:help;text-underline-offset:2px}
+  .gterm:hover,.gterm:focus{background:rgba(120,200,180,.14);outline:none;border-radius:2px}
+  #lvEmpty{padding:34px 26px;text-align:center;max-width:520px;margin:0 auto}
+  #lvEmpty .lvempk{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.5px;color:var(--phos);margin-bottom:10px}
+  #lvEmpty .lvempb{font-size:12.5px;line-height:1.6;color:var(--faint)}
+  #lvEmpty .lvempclear{background:none;border:none;color:var(--phos);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
   .gwsuggest{display:inline-block;margin-top:8px;background:color-mix(in srgb,var(--phos) 16%,transparent);color:var(--phos);border:1px solid color-mix(in srgb,var(--phos) 50%,transparent);border-radius:8px;padding:6px 12px;font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:600;cursor:pointer}
   .gwsuggest:hover{background:color-mix(in srgb,var(--phos) 26%,transparent)}
   .pcoverage{margin-top:10px;padding:8px 10px;background:rgba(12,20,36,.6);border:1px solid var(--line);border-radius:8px;font-size:11.5px;color:var(--mut)}
@@ -216,11 +228,17 @@
   /* ---- product layer: welcome, about, share, export ---- */
   #welcome{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
     overflow-y:auto;-webkit-overflow-scrolling:touch;
-    background:radial-gradient(120% 100% at 50% 28%,rgba(12,26,46,.86),rgba(6,10,18,.95));backdrop-filter:blur(9px);transition:opacity .35s}
+    background:radial-gradient(120% 100% at 50% 28%,#0c1a2e,#060a12);backdrop-filter:blur(9px);transition:opacity .35s}
   #welcome.hide{opacity:0;pointer-events:none}
+  /* While the welcome screen is up, keep the header hidden so it doesn't ghost through the
+     translucent overlay — the tool's chrome appears only once you enter. */
+  body:has(#welcome:not(.hide)) header{opacity:0;pointer-events:none}
+  header{transition:opacity .35s}
   #welcome .wcard{max-width:660px;width:100%;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);
     border-radius:20px;padding:32px 32px 26px;box-shadow:0 40px 110px rgba(0,0,0,.65);margin:auto}
   #welcome .wk{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--phos)}
+  #welcome .wbrand{display:flex;align-items:center;gap:11px;margin-bottom:2px}
+  #welcome .wbrand .wmark{width:38px;height:38px;flex:0 0 auto}
   #welcome h1{font-family:"Space Grotesk",sans-serif;font-size:32px;margin:9px 0 7px;letter-spacing:.2px}
   #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
   #welcome .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:24px}
@@ -455,6 +473,10 @@
   #panel .pabtn:hover{border-color:var(--phos);color:var(--txt)}
   #panel .pabtn.on{color:#FFD46B;border-color:#FFD46B66}
   #panel .pverify{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);margin-top:9px;line-height:1.5}
+  #panel .pserial{display:inline-block;margin-top:7px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;color:var(--phos);border:1px solid rgba(120,200,180,.35);border-radius:4px;padding:2px 7px;cursor:pointer;user-select:all}
+  #panel .pserial:hover{background:rgba(120,200,180,.12)}
+  #panel .pserial::before{content:"◈ ";opacity:.7}
+  .lvserial{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.5px;color:var(--faint);margin-top:2px}
   #panel .pfreshness{margin-top:8px}
   #panel .pfreshness .stale-warn{display:block;font-size:11px;line-height:1.5;padding:7px 10px;border-radius:8px;background:rgba(255,150,80,.12);border:1px solid rgba(255,150,80,.35);color:#ffb877}
   #panel .pfreshness .stale-note{display:block;font-size:11px;line-height:1.5;padding:7px 10px;border-radius:8px;background:rgba(120,160,220,.10);border:1px solid rgba(120,160,220,.28);color:#9fc0e8}
@@ -509,6 +531,9 @@
   .briefSheet .bitem .bwhat{font-size:12px;color:#445;line-height:1.5;margin-top:2px}
   .briefSheet .bitem .blink{font-size:11.5px;color:#0b6e5c;font-family:"IBM Plex Mono",monospace;margin-top:3px;word-break:break-all}
   .briefSheet .brecommend{background:#f0f9f6;border:1px solid #0b6e5c44;border-radius:8px;padding:10px 12px;margin-bottom:9px}
+  .briefSheet .bseq{margin:0 0 6px;padding:0 0 0 22px}
+  .briefSheet .bseq li{font-size:12.5px;line-height:1.55;color:#1c2a3a;margin-bottom:8px;padding-left:4px}
+  .briefSheet .bseq li b{color:#0b6e5c}
   .briefSheet .brecommend .bname::before{content:"★ ";color:#0b6e5c}
   .briefSheet .bfoot{margin-top:22px;padding-top:14px;border-top:2px solid #e6ebf2;font-size:10px;color:#889;line-height:1.5}
   @media print{
@@ -553,18 +578,21 @@
   html[data-device="phone"] #stage .hint{display:none}
   /* full-screen panels on phone */
   html[data-device="phone"] #panel{width:100%;max-width:100%;top:0;z-index:90}
-  /* Modals must sit ABOVE the full-screen phone panel (z-index 90), or they open
-     hidden behind the very entry you're acting on. Keep briefModal (95) on top of all. */
+  /* Action modals open FROM a node and must sit ABOVE the full-screen phone panel (z-index 90),
+     or they'd hide behind the very entry you're acting on. */
   html[data-device="phone"] #correct,
   html[data-device="phone"] #addnode,
   html[data-device="phone"] #reconcile,
   html[data-device="phone"] #pathway,
   html[data-device="phone"] #about,
   html[data-device="phone"] #finder,
-  html[data-device="phone"] #listview,
-  html[data-device="phone"] #compare,
   html[data-device="phone"] #crm{z-index:96}
   html[data-device="phone"] #briefModal{z-index:97}
+  /* Explore & Compare are BROWSE surfaces: tapping a row opens the node card, which must sit
+     ABOVE them (so the card pops in front, not behind). Panel is bumped over them below. */
+  html[data-device="phone"] #listview,
+  html[data-device="phone"] #compare{z-index:84}
+  html[data-device="phone"] #panel{z-index:92}
   html[data-device="phone"] #finder{width:100%;max-width:100%}
   html[data-device="phone"] #listview,html[data-device="phone"] #compare,html[data-device="phone"] #correct{padding:0}
   html[data-device="phone"] #listview .lvcard,html[data-device="phone"] #compare .lvcard{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none;padding:14px 12px}
@@ -610,7 +638,16 @@
   <button class="fhbtn" id="fhClose">Got it</button>
 </div></div>
 <header>
-  <div class="brand"><div class="t">The Defence Ecosystem</div></div>
+  <div class="brand"><svg class="brandmark" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="#1b2740" stroke-width="2.4"/>
+      <g stroke="#2f6d59" stroke-width="2" fill="none" opacity=".9"><path d="M60 22 L91 38 L91 82 L60 98 L29 82 L29 38 Z"/></g>
+      <circle cx="60" cy="22" r="6.5" fill="var(--phos)"/>
+      <circle cx="91" cy="38" r="4.4" fill="#dbe5f2"/><circle cx="91" cy="82" r="4.4" fill="var(--phos)"/>
+      <circle cx="60" cy="98" r="4.4" fill="#dbe5f2"/><circle cx="29" cy="82" r="4.4" fill="var(--phos)"/>
+      <circle cx="29" cy="38" r="4.4" fill="#dbe5f2"/>
+      <circle cx="60" cy="60" r="7" fill="var(--ink)" stroke="var(--phos)" stroke-width="3"/>
+      <circle cx="60" cy="60" r="2.2" fill="var(--phos)"/>
+    </svg><div class="t">The Defence Ecosystem</div></div>
   <div class="spacer"></div>
   <button class="btn find" id="findBtn">◎ Find your door</button>
   <div class="search"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -707,12 +744,18 @@
         <button class="msitem" id="pathwayBtn">⇢ Innovation pathway</button>
       </div>
       <div class="msgroup">
-        <div class="msh">Settings</div>
+        <div class="msh">Reference</div>
+        <button class="msitem" id="upcomingBtn">📅 Events &amp; what's coming up</button>
+        <button class="msitem" id="glossaryBtn">🔤 Acronym glossary</button>
+      </div>
+      <div class="msgroup">
+        <div class="msh">Display</div>
         <button class="msitem" id="themeBtn">◐ Switch theme</button>
         <button class="msitem" id="deviceSwitch">⇄ <span id="deviceSwitchLabel">Desktop view</span></button>
-        <button class="msitem" id="upcomingBtn">📅 What's coming up</button>
-        <button class="msitem" id="glossaryBtn">🔤 Acronym glossary</button>
-        <button class="msitem" id="feedbackBtn">✉ Feedback</button>
+      </div>
+      <div class="msgroup">
+        <div class="msh">About &amp; help</div>
+        <button class="msitem" id="feedbackBtn">✉ Send feedback</button>
         <button class="msitem" id="aboutBtn">ⓘ About &amp; licence</button>
       </div>
     </div>
@@ -816,6 +859,7 @@
 <section id="panel"><button class="close" id="pclose">×</button>
   <div class="eye" id="peye"></div><h2 id="pname"></h2>
   <div class="tag" id="ptag"><i></i><span></span></div>
+  <div class="pserial" id="pserial" title="Stable reference code for this entry — quote it when reporting an issue or correction"></div>
   <div class="sect" id="s-fit"><div class="lab">Fit</div><p id="pfit"></p></div>
   <div class="psource" id="psource"></div>
   <div class="pverify" id="pverify"></div>
@@ -824,9 +868,10 @@
   <button class="plink" id="plink">⤴ Copy shareable link</button>
   <div class="sect" id="s-entry"><div class="lab">Point of entry / contact</div><p id="pentry"></p></div>
   <div class="sect" id="s-does"><div class="lab">What they do</div><p id="pdoes"></p><div id="pcoverage" class="pcoverage" style="display:none"></div></div>
-  <div class="sect" id="s-opps"><div class="lab" id="poppsLab">Open calls &amp; opportunities</div><div id="popps"></div></div>
+  <div class="sect" id="s-opps"><div class="lab" id="poppsLab">Open calls &amp; opportunities</div><div id="popps"></div><div id="pentry"></div></div>
   <div class="sect" id="s-funding"><div class="lab">Potential funding availability</div><div id="pfunding"></div></div>
   <div class="sect" id="s-kids"><div class="lab">Contains / connects to</div><div class="kids" id="pkids"></div></div>
+  <div class="sect" id="s-related"><div class="lab">Related organisations</div><div class="kids" id="prelated"></div></div>
   <div class="sect" id="s-crm"><div id="pcrm"></div></div>
   <button class="plink" id="paddsub">＋ Add a sub-part / department here</button>
 </section>
@@ -836,9 +881,22 @@
 
 <div id="welcome">
   <div class="wcard">
-    <div class="wk">◎ Interactive briefing</div>
+    <div class="wbrand">
+      <svg class="wmark" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#1b2740" stroke-width="2"/>
+        <circle cx="60" cy="60" r="30" fill="none" stroke="#25406a" stroke-width="1.4"/>
+        <g stroke="#2f6d59" stroke-width="1.6" fill="none" opacity=".9"><path d="M60 22 L91 38 L91 82 L60 98 L29 82 L29 38 Z"/></g>
+        <circle cx="60" cy="22" r="5.4" fill="var(--phos)"/>
+        <circle cx="91" cy="38" r="3.8" fill="#dbe5f2"/><circle cx="91" cy="82" r="3.8" fill="var(--phos)"/>
+        <circle cx="60" cy="98" r="3.8" fill="#dbe5f2"/><circle cx="29" cy="82" r="3.8" fill="var(--phos)"/>
+        <circle cx="29" cy="38" r="3.8" fill="#dbe5f2"/>
+        <circle cx="60" cy="60" r="6" fill="var(--ink)" stroke="var(--phos)" stroke-width="2.4"/>
+        <circle cx="60" cy="60" r="2" fill="var(--phos)"/>
+      </svg>
+      <div class="wk">◎ Interactive briefing</div>
+    </div>
     <h1>The Defence Ecosystem</h1>
-    <p class="lead">A shared, navigable map of the organisations behind defence innovation and procurement across NATO and allied nations — the UK, United States, Europe, Canada, Australia, New Zealand and the alliance bodies that connect them. No single nation sits at the centre: choose your starting point and find the right door for a technology, a research idea, a problem, or capital.</p>
+    <p class="lead">A working map of who's who in defence innovation and procurement — over a thousand organisations across the UK, United States, Europe, Canada, Australia, New Zealand, NATO and allied partners, from government buyers and research labs to primes, start-ups, investors and the accelerators that connect them. It's built to answer one question: <b>who do I actually talk to, and how do I get in?</b> No single nation sits at the centre — pick where you're starting from and it maps the real route.</p>
     <div class="whome">
       <div class="whomeq">Where are you starting from? <span>— sets your default view; change it anytime</span></div>
       <select class="whomesel" id="whomeSel" aria-label="Choose your home nation or bloc">
@@ -854,12 +912,12 @@
     </div>
     <div class="wpick">Pick how you'd like to start:</div>
     <div class="wgrid">
-      <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door →</div><div class="wd">Describe your thing and get a ranked shortlist of who to approach — in any allied nation.</div></div>
-      <div class="wtile" id="wExplore"><div class="wi">◍</div><div class="wt">Explore everything →</div><div class="wd">Browse and filter every organisation, or trace how bodies connect on the map.</div></div>
-      <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search by name →</div><div class="wd">Already know who you're after? Jump straight to any organisation.</div></div>
+      <div class="wtile" id="wFind"><div class="wi">◎</div><div class="wt">Find your door →</div><div class="wd">Tell it what you do and who you are — it ranks the right organisations and builds a step-by-step plan for getting in.</div></div>
+      <div class="wtile" id="wExplore"><div class="wi">◍</div><div class="wt">Explore everything →</div><div class="wd">Browse and filter all 1,000+ bodies by nation, technology, type and how you actually engage each one.</div></div>
+      <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search by name →</div><div class="wd">Know who you're after? Jump straight to any organisation, or its reference code.</div></div>
     </div>
     <div class="wbtns"><button class="wenter" id="wEnter">Enter →</button><button class="wabout" id="wAboutLink">About &amp; disclaimer</button></div>
-    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. It began as a UK map and is being extended to give every allied nation the same depth — coverage varies by nation today. Organisation details, contacts and fit ratings are best-effort and may change — always verify on the organisation's own site.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
+    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. Coverage is deepest for the UK — where it began — and substantial across the US, Europe and the major allies, but it's representative, not exhaustive, and thinner for smaller nations. Organisation details, access routes and fit ratings are best-effort and change over time — always verify on the organisation's own site before acting.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Corrections welcome via any entry's ✎ button. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
   </div>
 </div>
 
@@ -993,7 +1051,7 @@
   <h2 style="font-family:'Space Grotesk',sans-serif;font-size:21px;margin:7px 0 2px">All organisations — filter &amp; scan</h2>
   <button class="lvftoggle" id="lvFToggle" aria-expanded="true" aria-controls="lvFilters"><span id="lvFTlabel">Filters</span> <span class="lvftcount" id="lvFTcount"></span> <span class="lvftchev" id="lvFTchev">▾</span></button>
   <div class="lvfilters" id="lvFilters"></div>
-  <div class="lvscroll"><table class="lvtable" id="lvTable"></table></div>
+  <div class="lvscroll"><table class="lvtable" id="lvTable"></table><div id="lvEmpty" style="display:none"></div></div>
 </div></div>
 
 <div id="compare" role="dialog" aria-modal="true" aria-label="Compare organisations"><div class="lvcard">
@@ -1328,7 +1386,6 @@ const TREE = B("root","The Defence Ecosystem","The whole system, from strategy t
      L("alpinespace","Alpine Space Ventures","alpinespace.vc","Space-industrial VC led by senior SpaceX alumni; NIF- and EIF-backed, EDIN and NATO SPACENET member."),
      L("de_vsquared","Vsquared Ventures","vsquared.vc","Munich-based deep-tech VC — a leading European backer of defence, space, AI and dual-use hardware (Quantum Systems, Isar Aerospace and others)."),
      L("otb","OTB Ventures","otb.vc","Central-European deep-tech VC (~$350m) — spacetech, enterprise AI and cyber; a leading CEE defence/dual-use backer."),
-     L("vsquared","Vsquared Ventures","vsquared.vc","Munich deep-tech VC backing defence, space and dual-use (NIF-backed); part of Europe's densest defence-tech hub."),
      L("keen","Keen Venture Partners","keenventurepartners.com","European growth VC focused on defence, security and resilience technology."),
      L("d3vc","D3 / Darkstar / Green Flag","","New wave of dedicated European defence funds (D3, Darkstar, Green Flag Ventures) driving a third of 2025 deal flow."),
      L("v201","201 Ventures","Madrid · via European Defense Investor Network","Solo-GP pre-seed/seed fund (Eric Slesinger) backing intelligence, defence and dual-use in Europe; find it via EDIN or Dealroom."),
@@ -2210,6 +2267,67 @@ function indexTree(){
 }
 indexTree();
 
+/* ---------- stable per-node serial numbers ----------
+   A short, human-readable serial (e.g. "US-113", "EU-050") for every node, so a
+   specific entry can be named unambiguously for rework or issue reports. Serials are
+   DERIVED FROM the permanent node id (alphabetical within each branch), so they never
+   shift when the tree is reordered — the same organisation always keeps the same serial.
+   Newly user-added nodes get a "NEW-###" serial. */
+const SERIAL={}, SERIAL_REV={};
+const BRANCH_CODE={
+  b_strat:'STR', b_strategy:'SGY', b_acq:'ACQ', b_sti:'STI', b_flc:'FLC', b_ics:'ICS',
+  b_nuke:'NUK', b_acad:'ACA', b_cat:'CAT', b_te:'TE', b_primes:'PRI', b_supply:'SUP',
+  b_tech:'TEC', b_fund:'FND', b_finance:'FIN', b_gov:'GOV', b_trade:'TRD', b_events:'EVT',
+  b_media:'MED', b_policy:'POL', b_eu:'EU', b_us:'US', b_5eyes:'5EY', b_partners:'PTR',
+  b_nato:'NAT', b_multi:'MUL', b_incubators:'INC', b_frameworks:'FRM', b_comms:'COM'
+};
+function buildSerials(){
+  for(const k in SERIAL) delete SERIAL[k];
+  for(const k in SERIAL_REV) delete SERIAL_REV[k];
+  const byBranch={};
+  Object.keys(NODE).forEach(id=>{ if(id==='root')return; const b=BRANCHOF[id]||id; (byBranch[b]=byBranch[b]||[]).push(id); });
+  Object.keys(byBranch).forEach(b=>{
+    byBranch[b].sort();
+    const code=BRANCH_CODE[b] || b.replace(/^b_/,'').slice(0,3).toUpperCase();
+    byBranch[b].forEach((id,i)=>{ const s=code+'-'+String(i+1).padStart(3,'0'); SERIAL[id]=s; SERIAL_REV[s.toUpperCase()]=id; });
+  });
+}
+buildSerials();
+function serialOf(id){ return SERIAL[id]||''; }
+function nodeBySerial(s){ return SERIAL_REV[String(s||'').trim().toUpperCase()]||null; }
+
+/* ---------- related organisations ----------
+   Suggests a few genuinely-adjacent bodies so people discover the org they didn't know
+   to search for. Scores by shared nation, same entity type, and overlapping technology
+   domains — never the node itself, its children, or things already cross-linked. */
+function relatedNodes(id, max){
+  max=max||5;
+  const t=tagsFor(id); if(!t) return [];
+  const myType=entityType(id); const myNat=nationCodeFor(id);
+  const myDom=(t.d||[]).filter(d=>d!=='xcut');
+  const already=new Set([id]);
+  const n=NODE[id]; if(n&&n.children)n.children.forEach(c=>already.add(c.id));
+  (XLINK[id]||[]).forEach(x=>already.add(x));
+  if(PARENT[id])already.add(PARENT[id]);
+  const orgIds=Object.keys(NODE).filter(x=>NODE[x].entry&&!NODE[x].children&&!already.has(x));
+  const scored=[];
+  orgIds.forEach(x=>{
+    const tx=tagsFor(x); if(!tx) return;
+    let s=0;
+    const sameNat = nationCodeFor(x)===myNat;
+    const sameType = entityType(x)===myType;
+    const domX=(tx.d||[]).filter(d=>d!=='xcut');
+    const domShared = myDom.filter(d=>domX.includes(d)).length;
+    if(domShared) s += domShared*3;          // shared technology area is the strongest signal
+    if(sameType) s += 2;                       // same kind of body
+    if(sameNat) s += 2;                        // same country
+    if(sameNat && sameType) s += 1;            // both → likely a genuine peer
+    if(s>=4) scored.push([x,s]);               // threshold: avoid weak/noisy matches
+  });
+  scored.sort((a,b)=> b[1]-a[1] || (NODE[a[0]].l<NODE[b[0]].l?-1:1));
+  return scored.slice(0,max).map(p=>p[0]);
+}
+
 /* ================= LENS ENGINE — view the same data by alliance/country or by technology ================= */
 /* Snapshot the original UK-structured tree so it remains available as a lens and as the content source. */
 const ORIGINAL_CHILDREN = TREE.children.slice();
@@ -2422,6 +2540,31 @@ function depthOf(id){let d=0,cur=id;while(PARENT[cur]!=null){d++;cur=PARENT[cur]
 function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
 
 /* ---------- open calls / opportunities ---------- */
+/* ENTRY_POINTS — the specific "work with us / apply / supplier / tender" page for a body,
+   so the trail doesn't end at a homepage. Verified, representative set for the highest-value
+   nodes; every other node falls back to a smart, honest hint (see entryPointFor). Links change,
+   so these are starting points to confirm, not guarantees. */
+const ENTRY_POINTS = {
+  dasa:{u:'gov.uk/government/organisations/defence-and-security-accelerator',t:'DASA competitions & how to apply'},
+  ukdi:{u:'gov.uk/government/organisations/defence-and-security-accelerator',t:'UK Defence Innovation front door'},
+  dstl:{u:'gov.uk/government/organisations/defence-science-and-technology-laboratory',t:'Dstl research frameworks & procurement'},
+  innovateuk:{u:'apply-for-innovation-funding.service.gov.uk',t:'Innovate UK — apply for funding'},
+  diana:{u:'diana.nato.int',t:'DIANA challenges & application'},
+  nif:{u:'nif.fund',t:'NATO Innovation Fund — for founders'},
+  eda:{u:'eda.europa.eu',t:'EDA procurement gateway'},
+  edf:{u:'defence-industry-space.ec.europa.eu',t:'European Defence Fund calls'},
+  us_diu:{u:'diu.mil',t:'DIU — work with us'},
+  afwerx:{u:'afwerx.com',t:'AFWERX open topics & SBIR'},
+  sbir:{u:'dodsbirsttr.mil',t:'DoD SBIR/STTR submissions'},
+  bae:{u:'baesystems.com/en/what-we-do/suppliers',t:'BAE Systems — become a supplier'},
+  babcock:{u:'babcockinternational.com/suppliers/',t:'Babcock — supplier information'},
+  qinetiq:{u:'qinetiq.com/en/suppliers',t:'QinetiQ — supplier information'},
+  lmt_aero:{u:'lockheedmartin.com/en-us/suppliers.html',t:'Lockheed Martin — suppliers'},
+  rtx_raytheon:{u:'rtx.com/our-company/suppliers',t:'RTX — suppliers'},
+  noc_aero:{u:'northropgrumman.com/suppliers',t:'Northrop Grumman — suppliers'}
+};
+function entryPointFor(id){ return ENTRY_POINTS[id]||null; }
+
 const OPPS = {
  ukdi:"UKDI competitions — including the multi-cycle ‘Innovation Support to Operations’ themed competition (fast, TRL 6+, months not years) plus wider themed and loan routes. Live cycles and the five innovation themes appear on gov.uk and the UKDI submission service.",
  dasa:"DASA finds and funds exploitable innovation through themed and open competitions; now part of UKDI and running its cycles. Current competitions are listed on gov.uk (search ‘DASA’ or ‘UKDI competitions’). Contact accelerator@dstl.gov.uk.",
@@ -2564,6 +2707,12 @@ function oppsFor(id){
   const nat=NAT_OPPS[code];
   if(t && t.a==='prime'){
     return "Engage as a supplier via the company's own supplier/procurement portal; prime requirements also appear on the national defence tender service. "+nat;
+  }
+  // Gov/military bodies you can't approach directly: be honest that engagement runs through an
+  // innovation intermediary or a specific programme of work, then point at the tender service.
+  if((typeof accessOf==='function') && accessOf(id)==='via'){
+    const innov={uk:'DASA / UK Defence Innovation',us:'DIU, SBIR or the service accelerators',fr:'AID',de:'the Cyber Innovation Hub / BAAINBw routes',ca:'Defence IDEaS',au:'ASCA',nz:'the Defence Technology Agency'}[code]||'the national defence-innovation route';
+    return "Not an open front door. This body engages mainly through an innovation intermediary ("+innov+") or on a specific programme of work — approach it via those routes rather than cold. Once a requirement is live it is advertised on the national tender service. "+nat;
   }
   return nat;
 }
@@ -2819,7 +2968,7 @@ const VERIFIED_DOMAINS = new Set([
   'mitre.org','ll.mit.edu','jhuapl.edu','aerospace.org','rand.org','ida.org','energy.gov','sei.cmu.edu','gtri.gatech.edu','draper.com','cna.org',
   'shield.ai','saronic.com','skydio.com','epirussystems.com','scale.com','appliedintuition.com','vannevarlabs.com','hermeus.com','castelion.com','infleqtion.com','govini.com','ursamajor.com','anduril.com','palantir.com','l3harris.com','leidos.com','saic.com','caci.com','peraton.com','boozallen.com','hii.com','sncorp.com','leonardodrs.com','kratosdefense.com','avinc.com',
   // primes (global, stable)
-  'lockheedmartin.com','rtx.com','northropgrumman.com','gd.com','boeing.com','baesystems.com','rolls-royce.com','leonardo.com','leonardodrs.com','thalesgroup.com','airbus.com','saab.com','rheinmetall.com','kongsberg.com','mbda-systems.com','knds.com',
+  'lockheedmartin.com','rtx.com','northropgrumman.com','gd.com','boeing.com','baesystems.com','rolls-royce.com','leonardo.com','leonardodrs.com','thalesgroup.com','airbus.com','saab.com','rheinmetall.com','kongsberg.com','mbda-systems.com','knds.com','qinetiq.com',
   // NATO / EU
   'nato.int','ac.nato.int','nspa.nato.int','ncia.nato.int','diana.nato.int','nif.fund','sto.nato.int',
   'eda.europa.eu','ec.europa.eu','europa.eu','ted.europa.eu','eudis.eu','occar.int',
@@ -2941,6 +3090,10 @@ function openPanel(id){
   const n=NODE[id]; const br=BRANCHOF[id]||id; const brName = NODE[br]?NODE[br].l:"";
   document.getElementById('peye').textContent = id==="root"?"Ecosystem root": (BRANCHCOLORS[id]?"Branch":(brName));
   document.getElementById('pname').textContent=n.l;
+  { const ser=document.getElementById('pserial'); const s=serialOf(id);
+    if(ser){ if(s && id!=='root'){ ser.textContent=s; ser.style.display='';
+        ser.onclick=()=>{ try{ navigator.clipboard.writeText(s); showToast('Copied '+s); }catch(_){ showToast(s); } };
+      } else { ser.textContent=''; ser.style.display='none'; } } }
   const tag=document.getElementById('ptag'); tag.querySelector('i').style.background=colorOf(id);
   const isOrg = !(BRANCHCOLORS[id]||id==="root") && !n.children;
   if(isOrg){ const ty=entityType(id); const et=ETYPES[ty];
@@ -2950,7 +3103,7 @@ function openPanel(id){
   }
   const se=document.getElementById('s-entry'), sd=document.getElementById('s-does'), sk=document.getElementById('s-kids');
   if(n.entry){se.style.display=''; document.getElementById('pentry').innerHTML=linkifyContact(n.entry);} else se.style.display='none';
-  document.getElementById('pdoes').textContent=n.does||"";
+  document.getElementById('pdoes').innerHTML=annotateGlossary(n.does||"");
   // coverage indicator for nation branches (alliance lens) — honest signal of how complete a nation is
   const covEl=document.getElementById('pcoverage');
   if(covEl){ covEl.style.display='none';
@@ -2968,7 +3121,7 @@ function openPanel(id){
     const t=tagsFor(id); sfit.style.display='';
     document.getElementById('pfit').innerHTML =
       `For ${t.w.map(x=>WHOLAB[x]).join(', ')} · TRL ${t.t[0]}–${t.t[1]} · ${t.d.map(x=>DOMLAB[x]).join(', ')} · `+
-      `<span style="color:${ACCESSCOL[t.a]}">${ACCESSLAB[t.a]}</span>`;
+      `<span style="color:${ACCESSCOL[accessOf(id)]}">${ACCESSLAB[accessOf(id)]}</span>`;
   } else sfit.style.display='none';
   { const oppsRaw = oppsFor(id);
     // Adapt the section heading so it doesn't promise "open calls" for bodies that don't run them.
@@ -2996,6 +3149,19 @@ function openPanel(id){
       document.getElementById('popps').innerHTML = linkifyProse(oppsRaw) + (_hasCalls ? '<span class="ocav">Live calls rotate — check the linked page for what is open now.</span>' : '');
     }
   }
+  { // Specific entry point — the "how to actually engage here" deep link, so the trail
+    // doesn't end at a homepage. Verified set; otherwise an honest generic hint.
+    const eb=document.getElementById('pentry');
+    if(eb){ const ep=entryPointFor(id); const ety3=(typeof entityType==='function')?entityType(id):null;
+      const showHint = !ep && !(BRANCHCOLORS[id]||id==='root'||n.children) && (ety3==='industry'||ety3==='gov'||ety3==='gateway');
+      if(ep){
+        const href=/^https?:\/\//i.test(ep.u)?ep.u:('https://'+ep.u);
+        eb.innerHTML=`<a class="pentrylink" href="${href}" target="_blank" rel="noopener noreferrer">→ ${ep.t}</a>`;
+      } else if(showHint){
+        eb.innerHTML=`<div class="pentryhint">Tip: on their site, look for a “Suppliers”, “Work with us”, “Procurement” or “Careers” page — that's usually the real way in.</div>`;
+      } else { eb.innerHTML=''; }
+    }
+  }
   { // Potential funding availability — only shown where it makes sense and info exists.
     const fsec=document.getElementById('s-funding'); const fbox=document.getElementById('pfunding');
     let ftxt=null; try{ ftxt=fundingFor(id); }catch(_){ ftxt=null; }
@@ -3016,6 +3182,18 @@ function openPanel(id){
         refresh(); select(cid); centerOn(cid);
       }; kids.appendChild(b); });
   }
+  { // Related organisations — discovery aid; only for leaf/org nodes
+    const rsec=document.getElementById('s-related'); const rbox=document.getElementById('prelated');
+    let rel=[]; if(!(BRANCHCOLORS[id]||id==='root'||n.children)){ try{ rel=relatedNodes(id,5); }catch(_){ rel=[]; } }
+    if(rbox){ rbox.innerHTML='';
+      if(rel.length && rsec){ rsec.style.display='';
+        rel.forEach(rid=>{ if(!NODE[rid])return; const b=document.createElement('button');
+          b.textContent=NODE[rid].l; b.title=(serialOf(rid)?serialOf(rid)+' · ':'')+(NODE[rid].does||'');
+          b.onclick=()=>{ let cur=PARENT[rid]; while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];} refresh(); select(rid); centerOn(rid); };
+          rbox.appendChild(b); });
+      } else if(rsec){ rsec.style.display='none'; }
+    }
+  }
   renderContacts(id);
   renderPanelExtras(id);
   const ps=document.getElementById('paddsub'); if(ps) ps.style.display='';
@@ -3024,6 +3202,7 @@ function openPanel(id){
 }
 function closePanel(){panel.classList.remove('open'); curPanelId=null; if(typeof pushNav==='function') pushNav();}
 document.getElementById('pclose').onclick=()=>{selected=null;Object.values(nodeEls).forEach(el=>el.classList.remove('sel','dim'));closePanel();};
+document.getElementById('panel').addEventListener('click',e=>{ const g=e.target.closest?e.target.closest('.gterm'):null; if(g&&g.dataset.def){ showToast(g.dataset.def); } });
 
 /* search */
 const q=document.getElementById('q');
@@ -3069,6 +3248,29 @@ const GLOSSARY=[
   ['UAS / UAV','Uncrewed Aerial System / Vehicle — a drone.'],
   ['VC','Venture Capital.']
 ];
+/* Build a fast lookup and an inline annotator so jargon is explained where people meet it,
+   not only in a separate list. Matches whole-word acronyms/terms in a description and wraps
+   them with a hover/tap definition — turning the tool from "for insiders" to newcomer-friendly. */
+const GLOSSARY_MAP={};
+GLOSSARY.forEach(g=>{ String(g[0]).split(/\s*\/\s*/).forEach(term=>{ const k=term.trim(); if(k) GLOSSARY_MAP[k.toUpperCase()]=g[1]; }); });
+const GLOSSARY_TERMS=Object.keys(GLOSSARY_MAP).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length);
+function annotateGlossary(text){
+  if(!text) return '';
+  let s=String(text).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const used=new Set();
+  GLOSSARY_TERMS.forEach(term=>{
+    if(used.has(term)) return;
+    const esc=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re=new RegExp('(?<![\\w>])('+esc+')(?![\\w])');
+    if(re.test(s)){
+      const def=GLOSSARY_MAP[term].replace(/"/g,'&quot;');
+      s=s.replace(re,'<span class="gterm" tabindex="0" data-def="'+def+'" title="'+def+'">$1</span>');
+      used.add(term);
+    }
+  });
+  return s;
+}
+
 (function wireGlossary(){
   const sheet=document.getElementById('glossarySheet');
   const openBtn=document.getElementById('glossaryBtn');
@@ -3161,7 +3363,50 @@ const SEARCH_SYNONYMS={
   'hypersonic':['hypersonics','high-speed'],
   'directed energy':['laser','high-energy','dew'],
   'munitions':['ammunition','ordnance','artillery'],
-  'ammunition':['munitions','ordnance']
+  'ammunition':['munitions','ordnance'],
+  'loitering munition':['loitering','one-way','kamikaze drone','switchblade','uas'],
+  'counter-uas':['c-uas','counter-drone','anti-drone','counter-uav'],
+  'grant':['funding','competition','non-dilutive','award'],
+  'funding':['grant','investment','finance','capital','money'],
+  'investment':['funding','equity','venture','capital'],
+  'contract':['tender','procurement','supplier','framework'],
+  'tender':['contract','procurement','bid','competition'],
+  'test':['trials','evaluation','t&e','range','experimentation'],
+  'trials':['test','evaluation','experimentation'],
+  'export':['trade','international','overseas'],
+  'training':['education','simulation','learning'],
+  'logistics':['sustainment','supply chain','support'],
+  'materials':['manufacturing','advanced manufacturing','additive','3d printing'],
+  'energy':['power','propulsion','battery'],
+  'human':['medical','soldier','wearable','ppe','protection'],
+  'autonomy':['autonomous','ai','unmanned','robotics'],
+  'robotics':['autonomy','unmanned','uxv'],
+  'land':['army','vehicles','ground'],
+  'air':['aviation','aircraft','aerospace','rotary'],
+  'nuclear':['strategic','deterrent','submarine'],
+  'sensors':['radar','eo/ir',' isr','surveillance'],
+  'radar':['sensors','phased array'],
+  'comms':['communications','networks','sdr','tactical comms'],
+  'communications':['comms','networks','satcom'],
+  // key bodies & programmes people type as acronyms
+  'dasa':['defence and security accelerator','competition'],
+  'diana':['nato accelerator','defence innovation'],
+  'dstl':['defence science','laboratory','porton down'],
+  'diu':['defense innovation unit','pentagon'],
+  'darpa':['advanced research','pentagon'],
+  'sbir':['small business innovation research','non-dilutive'],
+  'nif':['nato innovation fund','venture'],
+  'edf':['european defence fund','eu funding'],
+  'ukdi':['uk defence innovation','front door'],
+  'aukus':['australia uk us','pillar two','submarines'],
+  'gcap':['global combat air','tempest','fighter'],
+  // role/intent words a newcomer types
+  'accelerator':['incubator','innovation','cohort','programme'],
+  'gateway':['association','front door','network','trade body'],
+  'buyer':['procurement','government','customer','mod'],
+  'primes':['prime contractor','major','tier 1'],
+  'scaleup':['scale-up','startup','growth'],
+  'university':['academic','research','institute']
 };
 function expandQuery(v){
   const terms=new Set([v]);
@@ -3171,7 +3416,7 @@ function expandQuery(v){
   return [...terms];
 }
 function nodeMatchesQuery(n,v){
-  const hay=(n.l+' '+(n.does||'')+' '+(n.entry||'')).toLowerCase();
+  const hay=(n.l+' '+(n.does||'')+' '+(n.entry||'')+' '+(serialOf(n.id)||'')).toLowerCase();
   return expandQuery(v).some(t=>hay.includes(t));
 }
 q.addEventListener('input',()=>{
@@ -3381,6 +3626,11 @@ const BRANCH_ETYPE={
 };
 // explicit overrides where branch/inference gets it wrong
 const ETYPE_OVERRIDES={
+  // Military/government bodies whose names lack an obvious keyword, so they defaulted to
+  // 'industry' — corrected here to gov. (ETG is the Field Army's trials organisation, etc.)
+  etg:'gov', natoact:'gov', sofwerx:'gov', replicator:'gov', apfit:'gov', dib:'gov', sbir:'gov',
+  ua_brave1:'gov', ua_brave1market:'gov', ua_dotchain:'gov', ua_unite:'gov', ua_zbroyari:'gov',
+  tr_asfat:'gov', lu_govsat:'gov',
   // NATO DIANA programme structure — offices and networks are gov, not industry
   diana:'gov', diana_hq:'gov', diana_tallinn:'gov', diana_halifax:'gov', diana_accel_net:'gov', diana_testcentres:'gov',
   // nuclear enterprise: some are industry, not gov
@@ -3457,13 +3707,18 @@ function entityType(id){
   if(w.includes('prime')||w.includes('sme')||w.includes('startup')) return 'industry';
   // a portal/procurement access with no prime role → likely a gov buyer
   if(t.a==='portal' && o.includes('procurement')) return 'gov';
+  // Last-ditch: a clearly governmental/military DOMAIN with no industry (prime/contract) signal.
+  // Catches ministry/forces bodies whose NAME lacks an obvious keyword (e.g. an experimentation
+  // group) but whose web address is unmistakably state/military.
+  if(/(\.mod\.[a-z.]+|\.mil\b|\.mil\.[a-z.]+|\.gov\b|\.gov\.[a-z.]+|bundeswehr\.de|defensie\.nl|difesa\.it|defensa\.gob\.es|defence\.gov|army\.|navy\.|af\.mil|forces\.)/i.test(entry)
+     && !w.includes('prime') && !w.includes('sme') && !w.includes('startup') && !o.includes('contract')) return 'gov';
   return 'industry';
 }
 const NEEDLAB={grant:'Grant funding',investment:'Investment',contract:'Route to contract',research:'Research partner',test:'Test & evaluation',export:'Export support',advice:'Advice',procurement:'Procurement'};
 const DOMLAB={air:'Air',land:'Land',maritime:'Maritime',space:'Space',cyber:'Cyber',c4isr:'C4ISR/EW',comms:'Comms/networks',ai:'AI & autonomy',counteruas:'Counter-UAS',weapons:'Weapons/effects',nuclear:'Nuclear',directed:'Directed energy',hypersonic:'Hypersonics',simulation:'Simulation',wargaming:'Wargaming',training:'Training/education',logistics:'Logistics/sustainment',energy:'Energy/power',materials:'Materials/mfg',medical:'Human/medical',human:'Human/medical',quantum:'Quantum',xcut:'Cross-cutting'};
 const GEOLAB={uk:'UK',nato:'NATO',eu:'Europe',us:'USA',ca:'Canada',au:'Australia',nz:'New Zealand'};
-const ACCESSLAB={open:'Open front door',prime:'Via a prime',invite:'Invite / classified',portal:'Tender portal'};
-const ACCESSCOL={open:'#57D9A3',prime:'#E3A24B',invite:'#E36C6C',portal:'#5FB0E0'};
+const ACCESSLAB={open:'Open front door',via:'Via intermediary / programme',prime:'Via a prime',invite:'Invite / classified',portal:'Tender portal',restricted:'Restricted / closed'};
+const ACCESSCOL={open:'#57D9A3',via:'#C9A86A',prime:'#E3A24B',invite:'#E36C6C',portal:'#5FB0E0',restricted:'#E36C6C'};
 const NODOOR=new Set(['sdr','dis','reform','headoffice','ai','uas','deeptech','fiveeyes','ttcp','aukus','gcap','nato_hq','aco','cnad','niag','pesco','asd']);
 function isDoorNode(n){ if(!n||NODOOR.has(n.id))return false; const k=n.children&&n.children.length; return !k || !!TAGS[n.id]; }
 
@@ -3808,7 +4063,6 @@ const TAGS={
  al_akcesk:{w:['govmil','sme'],o:['advice'],t:[4,9],d:['cyber'],a:'open',g:'eu'},
  alpinespace:{w:['startup','sme'],o:['investment'],t:[3,9],d:['space','materials'],a:'open',g:'eu'},
  otb:{w:['startup','sme'],o:['investment'],t:[3,9],d:['space','cyber','ai'],a:'open',g:'eu'},
- vsquared:{w:['startup','sme'],o:['investment'],t:[2,8],d:['ai','space'],a:'open',g:'de'},
  keen:{w:['startup','sme'],o:['investment'],t:[4,9],d:['xcut'],a:'open',g:'eu'},
  d3vc:{w:['startup','sme'],o:['investment'],t:[2,8],d:['xcut'],a:'open',g:'eu'},
  v201:{w:['startup'],o:['investment'],t:[1,6],d:['ai','xcut'],a:'open',g:'eu'},
@@ -4240,10 +4494,12 @@ function tagsFor(id){
   const nd=NODE[id]; if(nd&&nd.tags) return nd.tags;
   const br=BRANCHOF[id]||id;
   const d={w:['govmil'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'uk'};
+  const pm=id.match(/^([a-z]{2})_/);
   if(/^ca_/.test(id)){d.g='ca';d.o=['procurement'];d.a='portal';}
   else if(/^au_/.test(id)){d.g='au';d.o=['procurement'];d.a='portal';}
   else if(/^nz_/.test(id)){d.g='nz';d.o=['procurement'];d.a='portal';}
-  else if(/^(fr|de|it|nl|se|no|es|pl|fi|dk|ee|lv|lt|gr|cz|ua)_/.test(id)){d.g='eu';d.o=['procurement','research'];d.a='portal';}
+  else if(/^(fr|de|it|nl|se|no|es|pl|fi|dk|ee|lv|lt|gr|cz|ua|sk|hu|ro|bg|pt|hr|si|be|tr)_/.test(id)){d.g='eu';d.o=['procurement','research'];d.a='portal';}
+  else if(pm && ({jp:1,kr:1,il:1})[pm[1]]){d.g=pm[1];d.o=['procurement','research'];d.a='portal';}
   switch(br){
     case 'b_primes': d.w=['prime','sme'];d.o=['contract','procurement'];d.t=[6,9];d.a='prime';break;
     case 'b_supply': d.w=['sme','prime'];d.o=['contract'];d.t=[5,9];d.a='prime';break;
@@ -4259,11 +4515,43 @@ function tagsFor(id){
   }
   return d;
 }
-/* national gateway / "front door" body per nation — surfaced first in Find your door when that nation is the user's home */
+/* ---------- honest access correction ----------
+   "Open front door" was over-applied: it was landing on command HQs, service commands, policy
+   and intelligence bodies that you CAN'T simply walk up to — you reach them via an innovation
+   intermediary (DASA/UKDI/DIU…), via a prime, or only on a specific programme of work. accessOf
+   keeps a genuine "open" only for the bodies whose PURPOSE is to be the open door (accelerators,
+   innovation hubs, front doors, gateways); other gov/military bodies become "via intermediary". */
+const OPEN_DOOR_IDS=new Set([
+  // UK innovation front doors / accelerators — genuinely open
+  'dasa','ukdi','diu','jhub','battlelab','nstix','daic','serapis','ploughshare','foundry','dcto','nelson','astra','defence_bl',
+  // NATO / allied accelerators & innovation funds
+  'diana','diana_accel','diana_hq','nif','natofund',
+  // US innovation front doors
+  'afwerx','sofwerx','us_diu','diu_mil','army_xtech','riif','apfit','dib','replicator',
+  // other national accelerators
+  'asca','ideas_ca','au_asca',
+  // Ukraine open platforms
+  'ua_brave1','ua_brave1market','ua_unite','ua_dotchain'
+]);
+function accessOf(id){
+  const t=tagsFor(id); if(!t) return 'open';
+  let a=t.a||'open';
+  // Only correct the over-broad "open". Everything else (prime/portal/invite/restricted) stands.
+  if(a!=='open') return a;
+  const ety=(typeof entityType==='function')?entityType(id):null;
+  // Gateways and events are genuinely "a way in" — leave open.
+  if(ety==='gateway') return 'open';
+  // Innovation front doors stay open.
+  if(OPEN_DOOR_IDS.has(id)) return 'open';
+  // Industry/investor/research/policy/media keep their meaning of "open" (approachable directly).
+  if(ety!=='gov') return a;
+  // Remaining gov/military bodies: engagement is via an intermediary or a programme of work.
+  return 'via';
+}
 const GATEWAY = {
-  uk:'dosbg', us:'diu', fr:'fr_gicat', de:'de_bdsv', it:'it_aiad', es:'es_tedae', nl:'nl_nidv',
+  uk:'dosbg', us:'us_ndia', fr:'fr_gicat', de:'de_bdsv', it:'it_aiad', es:'es_tedae', nl:'nl_nidv',
   se:'se_soff', no:'no_fsi', fi:'fi_afda', dk:'dk_fad', be:'be_bsdi', pl:'pl_piit', cz:'cz_aobp',
-  gr:'gr_sekpy', pt:'pt_danotec', ee:'ee_edia', nz:'nz_industry', ca:'ev_cansec', au:'au_asca'
+  gr:'gr_sekpy', pt:'pt_danotec', ee:'ee_edia', nz:'nz_industry', ca:'ca_cadsi', au:'au_asca'
 };
 function gatewayFor(natCode){ return natCode && GATEWAY[natCode] ? GATEWAY[natCode] : null; }
 function scoreNode(id,sel){
@@ -4282,7 +4570,7 @@ function scoreNode(id,sel){
   if(sel.trl){ const lo=t.t[0],hi=t.t[1]; if(sel.trl>=lo&&sel.trl<=hi){s+=2;why.push('TRL '+lo+'–'+hi+' fit');} else {const dist=sel.trl<lo?lo-sel.trl:sel.trl-hi; s-= dist>=3?2:1;} }
   if((sel.domains||[]).length){ const isX=t.d.includes('xcut'); const hits=sel.domains.filter(x=>t.d.includes(x)); if(hits.length){s+=Math.min(3,hits.length*2); hits.forEach(x=>why.push(DOMLAB[x]));} else if(isX){s+=0.5;} else {s-=1;} }
   if(sel.geo&&sel.geo!=='any'){ if(t.g===sel.geo){s+=2;why.push(GEOLAB[sel.geo]);} else {s-=1.5;} }
-  if(roles.includes('sme')||roles.includes('startup')){ if(t.a==='open')s+=1.5; else if(t.a==='prime')s-=1; else if(t.a==='invite')s-=2; }
+  if(roles.includes('sme')||roles.includes('startup')){ const aa=accessOf(id); if(aa==='open')s+=1.5; else if(aa==='via')s+=0.3; else if(aa==='prime')s-=1; else if(aa==='invite'||aa==='restricted')s-=2; }
   /* national gateway boost: if this is the home nation's front-door body, surface it near the top as the recommended first contact */
   if(sel.homeGateway && id===sel.homeGateway){ s+=6; why.unshift('★ your national front door'); }
   return {s,why};
@@ -4313,7 +4601,7 @@ function renderFinderResults(sel){
   let html=`<div class="ractions"><button class="rbtn" id="dlCsv">⤓ Download CSV</button><button class="rbtn" id="shareFind">⤴ Share results</button><button class="rbtn" id="saveFind">★ Save search</button></div><div class="rcount">${scored.length} best-fit ${scored.length===1?'door':'doors'}</div>`;
   scored.forEach(r=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
     const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
-    const ac=ACCESSCOL[t.a], al=ACCESSLAB[t.a];
+    const ac=ACCESSCOL[accessOf(r.id)], al=ACCESSLAB[accessOf(r.id)];
     const isGate = sel.homeGateway && r.id===sel.homeGateway;
     html+=`<div class="rcard${isGate?' rcard-gate':''}" data-id="${r.id}">
       ${isGate?`<div class="rgate">★ Recommended first contact — your national gateway</div>`:''}
@@ -4386,7 +4674,7 @@ function exportShortlist(){
   const head=['Rank','Organisation','Branch','Access','TRL band','Domains','Website','Email','Why it matched'];
   const rows=[head];
   lastScored.forEach((r,i)=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const brName=(NODE[BRANCHOF[r.id]]||{}).l||'';
-    rows.push([ i+1, n.l, brName, ACCESSLAB[t.a], 'TRL '+t.t[0]+'-'+t.t[1], t.d.map(x=>DOMLAB[x]).join('; '),
+    rows.push([ i+1, n.l, brName, ACCESSLAB[accessOf(r.id)], 'TRL '+t.t[0]+'-'+t.t[1], t.d.map(x=>DOMLAB[x]).join('; '),
       firstUrl(n.entry), firstEmail(n.entry), [...new Set(r.why)].join('; ') ]); });
   const csv=rows.map(row=>row.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   try{
@@ -4476,6 +4764,43 @@ function briefTopDoors(natCode, role, needs, n){
     .filter(x=>x.b>1.5)
     .sort((a,b)=>b.b-a.b).slice(0,n);
 }
+/* sequenceFor — the real order of operations for getting in, tailored to role and nation.
+   Encodes the practitioner's "do this, then this" rather than just listing bodies. */
+function sequenceFor(natCode, role){
+  const g=gatewayFor(natCode); const gName=g&&NODE[g]?NODE[g].l:'your national industry association';
+  const nat=(NAT_OPPS[natCode]||'').replace(/\s*\(www[^)]*\)/g,'');
+  const portalName={uk:'Find a Tender / the Defence Sourcing Portal',us:'SAM.gov',fr:'PLACE',de:'e-Vergabe',ca:'CanadaBuys',au:'AusTender',nz:'GETS'}[natCode]||'the national tender service';
+  const innov={uk:'DASA',us:'DIU / SBIR / the service accelerators (AFWERX, Army xTech)',fr:'AID',de:'the Cyber Innovation Hub / BAAINBw innovation routes',ca:'Defence IDEaS',au:'ASCA',nz:'the Defence Technology Agency'}[natCode]||'the national defence-innovation route';
+  const s=[];
+  if(role==='startup'){
+    s.push(`Get oriented: join or follow <b>${gName}</b> to learn the language, the buyers and the live priorities before you pitch anyone.`);
+    s.push(`Win a first funded pilot through <b>${innov}</b> — a themed competition is the fastest, lowest-friction way to get a defence customer and non-dilutive money.`);
+    s.push(`If your tech is dual-use, add NATO <b>DIANA</b> (grants + test centres) and, for equity, the <b>NATO Innovation Fund</b> or a specialist defence VC.`);
+    s.push(`Register on <b>${portalName}</b> so you can see and bid for live requirements as you mature.`);
+    s.push(`As you scale, approach the <b>primes</b> as routes to programme integration — via their supplier portals, not cold.`);
+  } else if(role==='sme'){
+    s.push(`Register as a supplier on <b>${portalName}</b> — this is where requirements are advertised.`);
+    s.push(`Join <b>${gName}</b> for the network, framework news and introductions to buyers and primes.`);
+    s.push(`Use <b>${innov}</b> for funded innovation work if you have something novel — it's a faster door than open tender.`);
+    s.push(`Target the <b>primes'</b> supplier registration portals; most defence work flows through their supply chains.`);
+    s.push(`Tap small-business support schemes for pipeline visibility and bid help.`);
+  } else if(role==='academic'){
+    s.push(`Approach the national defence <b>research</b> body and labs directly to propose collaboration — they partner, they don't tender.`);
+    s.push(`Pursue funded research through <b>${innov}</b> and cross-border programmes (EDF/DIANA where eligible).`);
+    s.push(`Partner with an <b>SME or prime</b> to route your research toward a customer and a real programme.`);
+    s.push(`Engage <b>policy institutes</b> if your work shapes strategy as much as capability.`);
+  } else if(role==='prime'){
+    s.push(`Track requirements on <b>${portalName}</b> and the ministry's acquisition pipeline.`);
+    s.push(`Engage <b>${gName}</b> and the acquisition authority directly at programme level.`);
+    s.push(`Use <b>${innov}</b> and accelerators to scout and de-risk novel suppliers and technologies.`);
+    s.push(`Build your own <b>supplier onboarding</b> so SMEs and start-ups can reach you.`);
+  } else {
+    s.push(`Start with <b>${gName}</b> to map the landscape.`);
+    s.push(`Register on <b>${portalName}</b> for live requirements.`);
+    s.push(`Explore <b>${innov}</b> for funded innovation routes.`);
+  }
+  return s;
+}
 function buildBrief(){
   const natCode=document.getElementById('briefNation').value;
   const role=document.getElementById('briefRole').value;
@@ -4498,6 +4823,10 @@ function buildBrief(){
   let html=`<h1>Getting into defence — ${esc(natName)}</h1>`+
     `<div class="bsub">A starting map for: ${esc(roleLabel)}</div>`+
     `<div class="bmeta">The Defence Ecosystem · generated ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} · unofficial navigational aid</div>`;
+  // Suggested sequence — the real order of operations, tailored to role. This is the
+  // "what do I actually do, in what order" that a directory alone can't give.
+  const seq=sequenceFor(natCode, role);
+  if(seq.length){ html+=`<h3>Suggested sequence</h3><ol class="bseq">`+seq.map(s=>`<li>${s}</li>`).join('')+`</ol>`; }
   if(gateways.length){ html+=`<h3>Start here — your national front door</h3>`; gateways.forEach(id=>html+=itemHtml(id,true)); }
   if(contracts.length){ html+=`<h3>Where the contracts are</h3>`; if(natOpp)html+=`<div class="bitem"><div class="bwhat">${linkifyProseText(natOpp)}</div></div>`; contracts.forEach(id=>html+=itemHtml(id)); }
   if(funding.length){ html+=`<h3>Funding &amp; investment</h3>`; funding.forEach(id=>html+=itemHtml(id)); }
@@ -4636,7 +4965,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','
 function v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
 function slugify(s){ return (s||'org').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,24)||'org'; }
 function mergeCustom(){ (CRM.custom||[]).forEach(c=>{ const parent=NODE[c.parent]||TREE; if(!parent.children)parent.children=[]; if(!parent.children.some(x=>x.id===c.id)) parent.children.push({id:c.id,l:c.l,entry:c.entry||'',does:c.does||'',custom:true,tags:c.tags||null}); }); }
-function rebuildAll(){ mergeCustom(); indexTree(); Object.values(nodeEls).forEach(el=>el.remove()); nodeEls={}; build(); saveCRM(); }
+function rebuildAll(){ mergeCustom(); indexTree(); buildSerials(); Object.values(nodeEls).forEach(el=>el.remove()); nodeEls={}; build(); saveCRM(); }
 
 function totalContacts(){ let n=0; for(const k in CRM.contacts)n+=(CRM.contacts[k]||[]).length; return n; }
 function updateCrmBadge(){ const b=document.getElementById('crmBadge'); if(!b)return; const n=totalContacts(); b.textContent=n||''; b.style.display=n?'inline-block':'none'; }
@@ -4867,7 +5196,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (potential funding availability shown where it applies · 1026 orgs)';
+let DATA_AS_OF='August 2026 (welcome copy rewritten for current scale + capability · 1025 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -4959,7 +5288,17 @@ function freshnessFlag(id){
 }
 function verifiedLine(id){ const uv=(CRM.verified||{})[id];
   const vd=verifiedDate(id);
-  let s=`Last reviewed <b>${vd}</b> · dataset <b>${DATA_AS_OF}</b>.`;
+  // Age-aware freshness so the reader can judge trust at a glance.
+  let ageTxt='', dot='●';
+  try{ const then=new Date(vd), now=new Date();
+    const days=Math.round((now-then)/86400000);
+    if(!isNaN(days)){
+      if(days<=120){ dot='<span style="color:#57D9A3">●</span>'; ageTxt='recently reviewed'; }
+      else if(days<=300){ dot='<span style="color:#E3A24B">●</span>'; ageTxt='review ageing'; }
+      else { dot='<span style="color:#E36C6C">●</span>'; ageTxt='review may be stale'; }
+    }
+  }catch(_){}
+  let s=`${dot} Last reviewed <b>${vd}</b>${ageTxt?(' · '+ageTxt):''}. <span style="color:var(--faint)">Details and links change — verify on the organisation's own site before acting.</span>`;
   if(uv) s+=` <span style="color:var(--phos)">✓ You marked this verified on <b>${uv}</b>.</span>`;
   return s; }
 function deriveSourceFromEntry(id){
@@ -5015,7 +5354,7 @@ function openSuggestForm(org, field, details){
 }
 /* ---- suggest a correction ---- */
 let correctId=null;
-function openCorrect(id){ correctId=id; document.getElementById('corTitle').textContent='Correction — '+(NODE[id]?NODE[id].l:id);
+function openCorrect(id){ correctId=id; document.getElementById('corTitle').textContent='Correction — '+(NODE[id]?NODE[id].l:id)+(serialOf(id)?('  ['+serialOf(id)+']'):'');
   document.getElementById('cor_text').value=''; document.getElementById('cor_name').value='';
   document.getElementById('correct').classList.add('open'); setTimeout(()=>document.getElementById('cor_text').focus(),50); }
 function closeCorrect(){ document.getElementById('correct').classList.remove('open'); }
@@ -5024,7 +5363,7 @@ document.getElementById('corClose').onclick=closeCorrect;
 document.getElementById('correct').addEventListener('click',e=>{ if(e.target.id==='correct')closeCorrect(); });
 document.getElementById('cor_save').onclick=()=>{
   const text=v('cor_text'); if(!text){showToast('Add the correction first');return;}
-  const note={organisation:NODE[correctId]?NODE[correctId].l:correctId, id:correctId, field:document.getElementById('cor_field').value, correction:text, from:v('cor_name'), date:new Date().toISOString().slice(0,10)};
+  const note={organisation:NODE[correctId]?NODE[correctId].l:correctId, serial:serialOf(correctId), id:correctId, field:document.getElementById('cor_field').value, correction:text, from:v('cor_name'), date:new Date().toISOString().slice(0,10)};
   (CRM.corrections=CRM.corrections||[]).push(note); saveCRM();
   downloadFile('correction-'+correctId+'.json', JSON.stringify(note,null,2), 'application/json');
   closeCorrect(); showToast('Correction downloaded — email it to the maintainer');
@@ -5034,7 +5373,7 @@ document.getElementById('cor_send').onclick=()=>{
   const org=NODE[correctId]?NODE[correctId].l:correctId;
   const field=document.getElementById('cor_field').value;
   const from=v('cor_name');
-  const details=text + (from?('\n\n— '+from):'') + '\n\n[entry id: '+correctId+']';
+  const details=text + (from?('\n\n— '+from):'') + '\n\n[ref: '+(serialOf(correctId)||correctId)+' · entry id: '+correctId+']';
   (CRM.corrections=CRM.corrections||[]).push({organisation:org,id:correctId,field,correction:text,from,date:new Date().toISOString().slice(0,10),sent:true}); saveCRM();
   openSuggestForm(org, field, details);
   closeCorrect(); showToast('Opening the suggestions form — please press Submit there to send');
@@ -5048,7 +5387,7 @@ function lvMatch(id){ const t=tagsFor(id);
   if(LVF.etype && LVF.etype.size && !LVF.etype.has(entityType(id))) return false;
   if(LVF.dom.size){ const ok=t.d.includes('xcut')||[...LVF.dom].some(d=>t.d.includes(d)); if(!ok)return false; }
   if(LVF.trl){ const [lo,hi]=LVF.trl; if(hi<t.t[0]||lo>t.t[1])return false; }
-  if(LVF.access.size && !LVF.access.has(t.a)) return false;
+  if(LVF.access.size && !LVF.access.has(accessOf(id))) return false;
   if(LVF.geo && t.g!==LVF.geo) return false;
   if(LVF.q){ const n=NODE[id]; if(!nodeMatchesQuery(n,LVF.q)) return false; }
   return true;
@@ -5057,7 +5396,7 @@ function buildLvFilters(){
   const box=document.getElementById('lvFilters');
   const doms=['air','land','maritime','space','cyber','c4isr','comms','ai','counteruas','weapons','directed','hypersonic','nuclear','simulation','wargaming','training','logistics','energy','materials','human'];
   const trls=[['1-3',[1,3]],['4-6',[4,6]],['7-9',[7,9]]];
-  const acc=['open','prime','invite','portal']; const geos=['uk','nato','eu','us','ca','au','nz'];
+  const acc=['open','via','prime','portal','invite','restricted']; const geos=['uk','nato','eu','us','ca','au','nz'];
   let h=`<div class="lvfg"><input class="lvsearch" id="lvSearch" placeholder="Search…" aria-label="Search organisations"></div>`;
   h+=`<div class="lvfg"><span class="lvlab">Type</span>`+ETYPE_ORDER.map(k=>`<button class="lvchip lvtchip" data-k="etype" data-v="${k}" style="--et:${ETYPES[k].c}">${ETYPES[k].mark} ${ETYPES[k].short}</button>`).join('')+`</div>`;
   h+=`<div class="lvfg"><span class="lvlab">Domain</span>`+doms.map(d=>`<button class="lvchip" data-k="dom" data-v="${d}">${DOMLAB[d]}</button>`).join('')+`</div>`;
@@ -5105,13 +5444,13 @@ function renderLvTable(){
   if(typeof updateLvFilterCount==='function') updateLvFilterCount();
   const th=(c,label)=>`<th data-c="${c}" tabindex="0" role="button" aria-label="Sort by ${label}">${label}${lvSort.col===c?(lvSort.dir>0?' ▲':' ▼'):''}</th>`;
   let h=`<thead><tr><th aria-label="Favourite"></th>${th('name','Organisation')}<th>Type</th>${th('area','Area')}${th('access','Access')}${th('trl','TRL')}<th>Domains</th><th>Contact</th><th aria-label="Compare"></th></tr></thead><tbody>`;
-  ids.forEach(id=>{ const t=tagsFor(id); const n=NODE[id]; const ac=ACCESSCOL[t.a]; const ty=entityType(id); const et=ETYPES[ty];
+  ids.forEach(id=>{ const t=tagsFor(id); const n=NODE[id]; const ac=ACCESSCOL[accessOf(id)]; const ty=entityType(id); const et=ETYPES[ty];
     h+=`<tr data-id="${id}" tabindex="0" role="button" aria-label="${esc(n.l)}">`+
       `<td><button class="lvstar ${isFav(id)?'on':''}" data-act="fav" aria-label="Favourite">${isFav(id)?'★':'☆'}</button></td>`+
-      `<td><div class="lvname">${esc(n.l)}</div></td>`+
+      `<td><div class="lvname">${esc(n.l)}</div><div class="lvserial">${serialOf(id)||''}</div></td>`+
       `<td><span class="lvtype" style="color:${et.c};border-color:${et.c}66;background:${et.c}14">${et.mark} ${et.short}</span></td>`+
       `<td class="lvarea">${esc((NODE[BRANCHOF[id]]||{}).l||'')}</td>`+
-      `<td><span class="lvbadge" style="color:${ac};border-color:${ac}55">${ACCESSLAB[t.a]}</span></td>`+
+      `<td><span class="lvbadge" style="color:${ac};border-color:${ac}55">${ACCESSLAB[accessOf(id)]}</span></td>`+
       `<td>${t.t[0]}–${t.t[1]}</td>`+
       `<td>${t.d.map(x=>DOMLAB[x]).join(', ')}</td>`+
       `<td>${firstUrl(n.entry)&&domainVerified(firstUrl(n.entry))?`<a class="ilink" href="https://${firstUrl(n.entry).replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">site</a>`:''}${firstUrl(n.entry)&&domainVerified(firstUrl(n.entry))&&firstEmail(n.entry)?' · ':''}${firstEmail(n.entry)?`<a class="ilink mail" href="mailto:${firstEmail(n.entry)}">email</a>`:''}</td>`+
@@ -5119,6 +5458,15 @@ function renderLvTable(){
   });
   h+=`</tbody>`;
   const tbl=document.getElementById('lvTable'); tbl.innerHTML=h;
+  { // Helpful empty state — don't leave the user staring at a blank table.
+    const es=document.getElementById('lvEmpty');
+    if(es){ if(!ids.length){ es.style.display=''; tbl.style.display='none';
+        es.innerHTML=`<div class="lvempk">No organisations match those filters.</div>`+
+          `<div class="lvempb">Try removing a filter, broadening the technology area, or searching a broader term — for example “drone” instead of a specific model, or a capability rather than a company name. You can also <button class="lvempclear" id="lvEmptyClear">clear all filters</button>.</div>`;
+        const c=document.getElementById('lvEmptyClear'); if(c) c.onclick=()=>{ if(typeof clearLvFilters==='function'){clearLvFilters();} else { lvFilters={}; const q=document.getElementById('lvSearch'); if(q)q.value=''; } renderLvTable(); };
+      } else { es.style.display='none'; tbl.style.display=''; }
+    }
+  }
   tbl.querySelectorAll('thead th[data-c]').forEach(th=>{ const go=()=>{ const c=th.dataset.c; if(lvSort.col===c)lvSort.dir*=-1; else {lvSort.col=c;lvSort.dir=1;} renderLvTable(); }; th.onclick=go; th.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}}; });
   tbl.querySelectorAll('tbody tr').forEach(tr=>{ const id=tr.dataset.id;
     const open=()=>{ const phone=document.documentElement.getAttribute('data-device')==='phone';
@@ -5131,7 +5479,7 @@ function renderLvTable(){
 function openList(){ buildLvFilters(); renderLvTable(); document.getElementById('listview').classList.add('open'); }
 function exportListCsv(){ const ids=lvRows(); if(!ids.length){showToast('Nothing to export');return;}
   const rows=[['Organisation','Area','Access','TRL','Domains','Website','Email']];
-  ids.forEach(id=>{ const t=tagsFor(id),n=NODE[id]; rows.push([n.l,(NODE[BRANCHOF[id]]||{}).l||'',ACCESSLAB[t.a],'TRL '+t.t[0]+'-'+t.t[1],t.d.map(x=>DOMLAB[x]).join('; '),firstUrl(n.entry),firstEmail(n.entry)]); });
+  ids.forEach(id=>{ const t=tagsFor(id),n=NODE[id]; rows.push([n.l,(NODE[BRANCHOF[id]]||{}).l||'',ACCESSLAB[accessOf(id)],'TRL '+t.t[0]+'-'+t.t[1],t.d.map(x=>DOMLAB[x]).join('; '),firstUrl(n.entry),firstEmail(n.entry)]); });
   downloadFile('defence-ecosystem-list.csv','\ufeff'+rows.map(r=>r.map(x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8'); showToast('List exported'); }
 document.getElementById('listBtn').onclick=openList;
 document.getElementById('lvClose').onclick=()=>document.getElementById('listview').classList.remove('open');
@@ -5147,7 +5495,7 @@ function renderCompare(){
   const body=document.getElementById('cmpBody');
   if(!compareList.length){ body.innerHTML=`<div class="cmpempty">Nothing pinned yet. Add organisations with the <b>⇄ Compare</b> button on any panel, result, or list row (up to four), then reopen this to see them side by side.</div>`; return; }
   const rowsDef=[['Area',id=>esc((NODE[BRANCHOF[id]]||{}).l||'')],
-    ['Access',id=>{const t=tagsFor(id);return `<span class="lvbadge" style="color:${ACCESSCOL[t.a]};border-color:${ACCESSCOL[t.a]}55">${ACCESSLAB[t.a]}</span>`;}],
+    ['Access',id=>{const a=accessOf(id);return `<span class="lvbadge" style="color:${ACCESSCOL[a]};border-color:${ACCESSCOL[a]}55">${ACCESSLAB[a]}</span>`;}],
     ['TRL band',id=>{const t=tagsFor(id);return 'TRL '+t.t[0]+'–'+t.t[1];}],
     ['Domains',id=>tagsFor(id).d.map(x=>DOMLAB[x]).join(', ')],
     ['Best for',id=>tagsFor(id).w.map(x=>WHOLAB[x]).join(', ')],
