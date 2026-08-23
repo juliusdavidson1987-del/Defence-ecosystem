@@ -1087,7 +1087,114 @@
 function L(id,l,e,d){return{id,l,entry:e,does:d};}
 function B(id,l,d,ch){return{id,l,does:d,children:ch};}
 
-const TREE = B("root","The Defence Ecosystem","The whole system, from strategy to the front line.",[
+/* ---------- Stage 1: data/app separation ----------
+   The organisation data can be loaded from an external data.json (the living dataset) instead of
+   only the hardcoded structures below. applyData() rebuilds TREE and repopulates the maps from a
+   loaded dataset. When served over http(s) the app fetches data.json; offline/file:// it falls back
+   to the structures compiled into this file. Editing data.json changes the app without a rebuild. */
+function applyData(data){
+  if(!data || !Array.isArray(data.nodes)) return false;
+  // Rebuild nested TREE from the flat nodes list (parent + order preserved).
+  const byId={}; const roots=[];
+  data.nodes.forEach(n=>{ byId[n.id]={ id:n.id, l:n.label, does:n.does||'', entry:n.entry||'', _p:n.parent, _o:n.order||0, _kind:n.kind }; });
+  data.nodes.forEach(n=>{ const node=byId[n.id];
+    if(n.parent && byId[n.parent]){ const par=byId[n.parent]; (par.children||(par.children=[])).push(node); }
+    else roots.push(node);
+  });
+  // sort children by original order
+  Object.values(byId).forEach(nd=>{ if(nd.children) nd.children.sort((a,b)=>(a._o-b._o)); });
+  const newTree = byId['root'] || roots[0];
+  if(!newTree) return false;
+  TREE = newTree;
+  // Repopulate the per-org maps from the merged records.
+  const T={},AFF={},EP={},OP={},FU={},ET={},SRC={};
+  data.nodes.forEach(n=>{
+    if(n.tags) T[n.id]=n.tags;
+    if(n.affiliation) AFF[n.id]=n.affiliation;
+    if(n.entryPoint) EP[n.id]=n.entryPoint;
+    if(n.oppsOverride) OP[n.id]=n.oppsOverride;
+    if(n.funding) FU[n.id]=n.funding;
+    if(n.entityTypeOverride) ET[n.id]=n.entityTypeOverride;
+    if(n.source) SRC[n.id]=n.source;
+  });
+  TAGS=T; AFFILIATIONS=AFF; ENTRY_POINTS=EP; OPPS=OP; FUNDING=FU; ETYPE_OVERRIDES=ET; SOURCES=SRC;
+  // Rebuild captures that were taken at parse time from the hardcoded TREE, so they reflect the
+  // freshly-loaded tree (branch colours, original-children snapshot, original parent index).
+  try{
+    if(typeof BRANCHCOLORS==='object'){ for(const k in BRANCHCOLORS) delete BRANCHCOLORS[k];
+      TREE.children.forEach((b,i)=>{ const hue=(i*360/TREE.children.length + 6)%360; BRANCHCOLORS[b.id]=hslToHex(hue,60,66); }); }
+    if(typeof ORIGINAL_CHILDREN!=='undefined'){ ORIGINAL_CHILDREN.length=0; TREE.children.forEach(c=>ORIGINAL_CHILDREN.push(c)); }
+    if(typeof PARENT_ORIG==='object'){ for(const k in PARENT_ORIG) delete PARENT_ORIG[k];
+      (function idx(n,p){ PARENT_ORIG[n.id]=p; if(n.children)n.children.forEach(c=>idx(c,n.id)); })(TREE,'root'); }
+  }catch(_){}
+  // Reference tables
+  if(data.reference){
+    if(data.reference.nations_procurement) NAT_OPPS=data.reference.nations_procurement;
+    if(data.reference.gateways) GATEWAY=data.reference.gateways;
+    if(data.reference.connectors) CONNECTORS=data.reference.connectors;
+    if(data.reference.glossary) GLOSSARY=data.reference.glossary;
+    if(data.reference.search_synonyms) SEARCH_SYNONYMS=data.reference.search_synonyms;
+  }
+  return true;
+}
+// Attempt to load the external living dataset; returns a promise that resolves true if applied.
+/* ---------- Stage 2: Supabase living database ----------
+   Set SUPABASE.url and SUPABASE.anonKey to point the app at your hosted database. When set, the
+   app loads published organisations from Supabase at startup. If it's not configured or
+   unreachable, it falls back to data.json (Stage 1), then to the data compiled into this file.
+   The anon key is safe to expose: row-level security allows the public to READ published rows
+   only, and to submit new rows as 'pending' (which you review). It cannot edit or delete. */
+const SUPABASE = {
+  url: https://igvxlmbndpuegibykygq.supabase.co/rest/v1/  — leave '' to disable Supabase
+  anonKey: sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf
+};
+function supabaseConfigured(){ return !!(SUPABASE.url && SUPABASE.anonKey); }
+// Convert Supabase rows (snake_case) back into the data.json node shape applyData expects.
+function rowToNode(r){
+  return {
+    id:r.id, label:r.label, parent:r.parent, order:r.order, depth:r.depth, kind:r.kind,
+    entry:r.entry||'', does:r.does||'',
+    tags:r.tags||undefined, affiliation:r.affiliation||undefined, entryPoint:r.entry_point||undefined,
+    oppsOverride:r.opps_override||undefined, funding:r.funding||undefined,
+    entityTypeOverride:r.entity_type_override||undefined, source:r.source||undefined
+  };
+}
+async function loadFromSupabase(){
+  if(!supabaseConfigured()) return false;
+  try{
+    const base=SUPABASE.url.replace(/\/+$/,'')+'/rest/v1';
+    const headers={ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey };
+    // published_nodes view returns only published rows in the app's shape
+    const [nRes,rRes]=await Promise.all([
+      fetch(base+'/published_nodes?select=*', {headers}),
+      fetch(base+'/reference?select=key,value', {headers})
+    ]);
+    if(!nRes.ok) return false;
+    const rows=await nRes.json();
+    if(!Array.isArray(rows)||!rows.length) return false;
+    const reference={};
+    if(rRes.ok){ (await rRes.json()).forEach(x=>{ reference[x.key]=x.value; }); }
+    const data={ nodes:rows.map(rowToNode), reference, meta:{ source:'supabase', counts:{ nodes:rows.length } } };
+    const ok=applyData(data);
+    if(ok) try{ console.info('Loaded from Supabase:', rows.length, 'nodes'); }catch(_){}
+    return ok;
+  }catch(e){ return false; }
+}
+async function loadExternalData(){
+  // Preferred: Supabase (living database). Then data.json (Stage 1 file). Then embedded fallback.
+  if(await loadFromSupabase()) return true;
+  try{
+    if(location.protocol==='file:') return false;   // fetch of local files is blocked under file://
+    const res=await fetch('data.json', {cache:'no-store'});
+    if(!res.ok) return false;
+    const data=await res.json();
+    const ok=applyData(data);
+    if(ok && data.meta) try{ console.info('Loaded external dataset:', data.meta.generated, data.meta.counts); }catch(_){}
+    return ok;
+  }catch(e){ return false; }
+}
+
+let TREE = B("root","The Defence Ecosystem","The whole system, from strategy to the front line.",[
 
  B("b_strat","Strategy & Policy","Sets direction, budget and the demand signal.",[
    L("sos","Secretary of State for Defence","Ministerial correspondence · GOV.UK","Political head of the MOD; owns SDR 2025 and the direction the whole system follows."),
@@ -2599,7 +2706,7 @@ function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.c
    institute accredited as a NATO Centre of Excellence, a UK Catapult, a Fraunhofer institute).
    We list them as first-class nodes typed for what they actually are, and note the affiliation
    as a light line in the panel — not a rebuild of each network's internal structure. */
-const DIANA_AFFILIATED = {
+let DIANA_AFFILIATED = {
   // 16 accelerator sites (run DIANA's acceleration programme)
   dia_bii:'accelerator', dia_cove:'accelerator', dia_czechinvest:'accelerator', dia_dualtech:'accelerator',
   dia_ignity:'accelerator', dia_spain:'accelerator', dia_demokritos:'accelerator', dia_janus:'accelerator',
@@ -2610,7 +2717,7 @@ const DIANA_AFFILIATED = {
   dia_wsl:'test centre', dia_pcss:'test centre', dia_ogr:'test centre'
 };
 // AFFILIATIONS: id -> { net: display name, role: what it is in that network, note: honest qualifier }
-const AFFILIATIONS = {};
+let AFFILIATIONS = {};
 Object.keys(DIANA_AFFILIATED).forEach(id=>{
   AFFILIATIONS[id]={ net:'NATO DIANA', role:DIANA_AFFILIATED[id], note:'an independent institution affiliated with the DIANA network, not run by it' };
 });
@@ -2642,7 +2749,7 @@ function affiliationLine(id){
    so the trail doesn't end at a homepage. Verified, representative set for the highest-value
    nodes; every other node falls back to a smart, honest hint (see entryPointFor). Links change,
    so these are starting points to confirm, not guarantees. */
-const ENTRY_POINTS = {
+let ENTRY_POINTS = {
   dasa:{u:'gov.uk/government/organisations/defence-and-security-accelerator',t:'DASA competitions & how to apply'},
   ukdi:{u:'gov.uk/government/organisations/defence-and-security-accelerator',t:'UK Defence Innovation front door'},
   dstl:{u:'gov.uk/government/organisations/defence-science-and-technology-laboratory',t:'Dstl research frameworks & procurement'},
@@ -2663,7 +2770,7 @@ const ENTRY_POINTS = {
 };
 function entryPointFor(id){ return ENTRY_POINTS[id]||null; }
 
-const OPPS = {
+let OPPS = {
  ukdi:"UKDI competitions — including the multi-cycle ‘Innovation Support to Operations’ themed competition (fast, TRL 6+, months not years) plus wider themed and loan routes. Live cycles and the five innovation themes appear on gov.uk and the UKDI submission service.",
  dasa:"DASA finds and funds exploitable innovation through themed and open competitions; now part of UKDI and running its cycles. Current competitions are listed on gov.uk (search ‘DASA’ or ‘UKDI competitions’). Contact accelerator@dstl.gov.uk.",
  dstl:"Research opportunities via the Serapis framework and R-Cloud; tenders on Contracts Finder (www.contractsfinder.service.gov.uk).",
@@ -2721,7 +2828,7 @@ const OPPS = {
  aukus:"Pillar 2 industry engagement via the AUKUS nations' innovation channels (DIU, ASCA, UKDI)."
 };
 /* national procurement & innovation routes — keyed by nation code (accurate to each country) */
-const NAT_OPPS = {
+let NAT_OPPS = {
   uk:"UK — tenders on Find a Tender (www.find-tender.service.gov.uk) and Contracts Finder; MOD suppliers via the Defence Sourcing Portal (Jaggaer). Innovation via UKDI/DASA competitions (gov.uk).",
   us:"US — opportunities on SAM.gov; defence innovation via DIU (diu.mil) and DoD SBIR/STTR (dodsbirsttr.mil); service routes via AFWERX, Army xTech and NavalX.",
   nato:"NATO — NSPA business opportunities (nspa.nato.int) and NCI Agency e-procurement (ncia.nato.int); innovation via DIANA challenges (diana.nato.int).",
@@ -2823,7 +2930,7 @@ function oppsFor(id){
    - returns null for organisations where a funding statement would be padding
      (ordinary suppliers, events, media, gateways with no funding role) so the
      panel section stays hidden. */
-const FUNDING={
+let FUNDING={
   // — bodies that disburse money directly, with representative scale where public —
   dasa:"Funds directly. Runs themed and open competitions; typical DASA contracts run from tens of thousands up to a few million pounds per project, paid as R&D contracts (not grants or equity).",
   diana:"Funds directly. NATO's accelerator awards grants to selected companies (around €100k at the initial phase, with follow-on funding for those that progress) plus access to test centres; complemented by the separate NATO Innovation Fund for equity.",
@@ -3307,7 +3414,7 @@ document.getElementById('panel').addEventListener('click',e=>{ const g=e.target.
 /* search */
 const q=document.getElementById('q');
 /* ---- acronym glossary overlay ---- */
-const GLOSSARY=[
+let GLOSSARY=[
   ['ACT','Allied Command Transformation — NATO\'s warfare development command.'],
   ['ADD','Agency for Defense Development — South Korea\'s state defence R&D body.'],
   ['ATLA','Acquisition, Technology & Logistics Agency — Japan\'s defence procurement/R&D agency.'],
@@ -3430,7 +3537,7 @@ function annotateGlossary(text){
 /* ---- acronym / synonym layer: defence is acronym-dense, so a search for one
    term should find its common equivalents. Each key maps to extra terms that,
    if the query matches the key, are also searched. Bidirectional via expandQuery. ---- */
-const SEARCH_SYNONYMS={
+let SEARCH_SYNONYMS={
   'c-uas':['counter-drone','counter uas','counter-uav','anti-drone','drone defence'],
   'counter-drone':['c-uas','counter-uav','anti-drone'],
   'uas':['drone','uav','unmanned','rpas'],
@@ -3725,7 +3832,7 @@ const BRANCH_ETYPE={
   b_media:'media', b_policy:'policy', b_strategy:'policy', b_frameworks:'gov', b_finance:'investor', b_incubators:'gateway', b_comms:'industry'
 };
 // explicit overrides where branch/inference gets it wrong
-const ETYPE_OVERRIDES={
+let ETYPE_OVERRIDES={
   // NATO Centres of Excellence — knowledge/research institutions (StratCom leans policy)
   coe_ccdcoe:'research', coe_stratcom:'policy', coe_ccoe:'research', coe_cwo:'research', coe_mw:'research',
   coe_ensec:'research', coe_japcc:'research', coe_mileng:'research', coe_cbrn:'research', coe_cied:'research',
@@ -3832,7 +3939,7 @@ const ACCESSCOL={open:'#57D9A3',via:'#C9A86A',prime:'#E3A24B',invite:'#E36C6C',p
 const NODOOR=new Set(['sdr','dis','reform','headoffice','ai','uas','deeptech','fiveeyes','ttcp','aukus','gcap','nato_hq','aco','cnad','niag','pesco','asd']);
 function isDoorNode(n){ if(!n||NODOOR.has(n.id))return false; const k=n.children&&n.children.length; return !k || !!TAGS[n.id]; }
 
-const TAGS={
+let TAGS={
  str_nato_sc:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'nato'},
  str_eu_compass:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'eu'},
  str_eu_capdev:{w:['academic','sme','prime'],o:['advice'],t:[1,9],d:['xcut'],a:'open',g:'eu'},
@@ -4707,7 +4814,7 @@ function accessOf(id){
   // Remaining gov/military bodies: engagement is via an intermediary or a programme of work.
   return 'via';
 }
-const GATEWAY = {
+let GATEWAY = {
   uk:'dosbg', us:'us_ndia', fr:'fr_gicat', de:'de_bdsv', it:'it_aiad', es:'es_tedae', nl:'nl_nidv',
   se:'se_soff', no:'no_fsi', fi:'fi_afda', dk:'dk_fad', be:'be_bsdi', pl:'pl_piit', cz:'cz_aobp',
   gr:'gr_sekpy', pt:'pt_danotec', ee:'ee_edia', nz:'nz_industry', ca:'ca_cadsi', au:'au_asca'
@@ -5288,7 +5395,7 @@ function refreshDupes(){ const box=document.getElementById('an_dupes'); if(!box)
   box.innerHTML=`<div class="dupwarn"><div class="dupt">Possible existing entries — check before adding a duplicate:</div>`+sims.map(s=>`<div class="dupitem" data-id="${s.id}"><span>${esc(NODE[s.id].l)}</span><span class="dupgo">open →</span></div>`).join('')+`</div>`;
   box.querySelectorAll('.dupitem').forEach(it=>it.onclick=()=>{ closeAddNode(); focusNode(it.dataset.id); });
 }
-const CONNECTORS=['ads','techuk','makeuk','smi','growth','dijc','ofsbg','rusi','battlelab','dorsetpark','digicat','satcat','c_hvmc','nstix','ev_dsei','natoact','eda','natofund','mdone','plexal','starburst','teamdefence','baelaunchpad','diana','ua_brave1','eudis'];
+let CONNECTORS=['ads','techuk','makeuk','smi','growth','dijc','ofsbg','rusi','battlelab','dorsetpark','digicat','satcat','c_hvmc','nstix','ev_dsei','natoact','eda','natofund','mdone','plexal','starburst','teamdefence','baelaunchpad','diana','ua_brave1','eudis'];
 const CONNECT_WHY={
  ads:'Represents 1,700+ aerospace, defence & security firms — supply-chain introductions and events.',
  techuk:'Convenes the defence-tech sector — routes you to members, buyers and working groups.',
@@ -5374,7 +5481,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (add-org now offers Submit-to-shared-directory via the form; honest local-copy labelling · 1069 orgs)';
+let DATA_AS_OF='August 2026 (Stage 2: Supabase living database + data.json fallback · 1069 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5426,7 +5533,7 @@ const EVENT_NEXT={
   ev_dsa:{next:'2026 (biennial)',where:'Kuala Lumpur, Malaysia'},
   ev_milipol:{next:'2027 (biennial)',where:'Paris, France'}
 };
-const SOURCES={
+let SOURCES={
  dasa:'https://www.gov.uk/government/organisations/defence-and-security-accelerator',
  des:'https://des.mod.uk', dstl:'https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory',
  ukdi:'https://www.gov.uk/government/organisations/uk-defence-innovation', us_diu:'https://www.diu.mil',
@@ -5711,6 +5818,10 @@ function tryExternalData(){ try{ fetch('./defence-ecosystem-data.json',{cache:'n
 }
 
 /* init */
+(async function boot(){
+  // Stage 1: try to load the external living dataset before building. Falls back silently to the
+  // data compiled into this file if data.json isn't reachable (offline, file://, or not deployed).
+  try{ await loadExternalData(); }catch(_){}
 loadCRM();
 mergeCustom();
 indexTree();
@@ -5732,8 +5843,9 @@ try{
   else if(hset){ applyView(homeToView(homeKey()),{noFit:true}); }
   const wsel=document.getElementById('whomeSel'); if(wsel) wsel.value=homeKey();
 }catch(e){ /* fallback: original tree */ TREE.children=ORIGINAL_CHILDREN.slice(); recolorBranches&&recolorBranches(); indexTree(); }
-setTimeout(()=>{ fit(); applyHash(); tryExternalData(); },70);
+setTimeout(()=>{ fit(); applyHash(); },70);
 window.addEventListener('hashchange',applyHash);
+})(); /* end boot */
 </script>
 </body>
 </html>
