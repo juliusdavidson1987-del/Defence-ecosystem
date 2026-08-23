@@ -1145,8 +1145,8 @@ function applyData(data){
    The anon key is safe to expose: row-level security allows the public to READ published rows
    only, and to submit new rows as 'pending' (which you review). It cannot edit or delete. */
 const SUPABASE = {
-  url: https://igvxlmbndpuegibykygq.supabase.co/rest/v1/  — leave '' to disable Supabase
-  anonKey: sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf
+  url: 'https://igvxlmbndpuegibykygq.supabase.co/rest/v1/',  // leave '' to disable Supabase
+  anonKey: 'sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf'
 };
 function supabaseConfigured(){ return !!(SUPABASE.url && SUPABASE.anonKey); }
 // Convert Supabase rows (snake_case) back into the data.json node shape applyData expects.
