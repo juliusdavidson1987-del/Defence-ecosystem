@@ -206,6 +206,8 @@
   .fgo{flex:1;background:linear-gradient(180deg,color-mix(in srgb,var(--phos) 30%,#0C1424),color-mix(in srgb,var(--phos) 14%,#0A121F));
     border:1px solid var(--phos);color:#EAFBF8;font-weight:600;border-radius:10px;padding:11px;cursor:pointer;font-size:13px;letter-spacing:.3px;transition:.14s}
   .fgo:hover{box-shadow:0 0 20px color-mix(in srgb,var(--phos) 34%,transparent)}
+  .fgo-alt{background:rgba(12,20,36,.8);border:1px solid var(--line);color:var(--txt);font-weight:500}
+  .fgo-alt:hover{border-color:color-mix(in srgb,var(--phos) 45%,transparent);box-shadow:none}
   .freset{background:rgba(12,20,36,.8);border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:12px}
   .freset:hover{border-color:var(--phos);color:#fff}
   #finderResults{margin-top:16px}
@@ -240,7 +242,7 @@
   #welcome .wbrand{display:flex;align-items:center;gap:11px;margin-bottom:2px}
   #welcome .wbrand .wmark{width:38px;height:38px;flex:0 0 auto}
   #welcome h1{font-family:"Space Grotesk",sans-serif;font-size:32px;margin:9px 0 7px;letter-spacing:.2px}
-  #welcome .wtagline{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--phos);margin:0 0 14px}
+  #welcome .wtagline{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:none;color:var(--phos);margin:0 0 14px}
   #welcome p.lead{font-size:14px;color:var(--mut);line-height:1.62;margin:0 0 22px}
   #welcome .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:24px}
   #welcome .wtile{background:rgba(12,20,36,.7);border:1px solid var(--line);border-radius:13px;padding:15px 15px 16px;cursor:pointer;transition:.14s}
@@ -898,7 +900,7 @@
       <div class="wk">◎ Interactive briefing</div>
     </div>
     <h1>The Defence Ecosystem</h1>
-    <div class="wtagline">Innovation · Navigation · Collaboration</div>
+    <div class="wtagline">Navigating the network of networks</div>
     <p class="lead">A working map of who's who in defence innovation and procurement — over a thousand organisations across the UK, United States, Europe, Canada, Australia, New Zealand, NATO and allied partners, from government buyers and research labs to primes, start-ups, investors and the accelerators that connect them. It's built to answer one question: <b>who do I actually talk to, and how do I get in?</b> No single nation sits at the centre — pick where you're starting from and it maps the real route.</p>
     <div class="whome">
       <div class="whomeq">Where are you starting from? <span>— sets your default view; change it anytime</span></div>
@@ -1015,9 +1017,9 @@
 
 <div id="addnode"><div class="acard">
   <button class="aclose" id="an_cancel2">×</button>
-  <div class="ak">＋ Add to the map</div>
+  <div class="ak">＋ Add to your copy</div>
   <h2>Add an organisation or department</h2>
-  <p class="pintro">Record something you discover. Place it under a whole area, or inside a bigger organisation to add a division or team.</p>
+  <p class="pintro">This adds the entry to <b>your own copy</b> of the map, saved in this browser only — handy for tracking things you find. It does <b>not</b> submit it to the shared directory everyone else sees. To get it added for everyone, use “Submit to the shared directory” below once you've filled it in.</p>
   <label class="anlab">Name</label><input class="finput" id="an_name" placeholder="e.g. Acme Robotics — Autonomy Division">
   <div id="an_dupes"></div>
   <label class="anlab">Sits under</label><select class="finput" id="an_parent"></select>
@@ -1033,7 +1035,9 @@
   </div>
   <label class="anlab">Access (optional)</label>
   <select class="finput" id="an_access"><option value="">—</option><option value="open">Open front door</option><option value="prime">Via a prime</option><option value="invite">Invite / classified</option><option value="portal">Tender portal</option></select>
-  <div class="frow"><button class="fgo" id="an_save">Add to map</button><button class="freset" id="an_cancel">Cancel</button></div>
+  <div class="frow"><button class="fgo" id="an_submit">✦ Submit to the shared directory</button></div>
+  <div class="frow"><button class="fgo fgo-alt" id="an_save">Add to my copy only</button><button class="freset" id="an_cancel">Cancel</button></div>
+  <p class="pintro" style="margin-top:8px;font-size:11px">“Submit” opens a short form (pre-filled with what you typed) that comes to the maintainer — the honest way to get an entry added for everyone. “Add to my copy” keeps it in this browser only.</p>
 </div></div>
 
 <div id="reconcile"><div class="acard">
@@ -5216,11 +5220,29 @@ function openAddNode(presetParent){
   document.getElementById('an_name').value=''; document.getElementById('an_does').value=''; document.getElementById('an_entry').value='';
   document.getElementById('an_dupes').innerHTML=''; document.getElementById('an_access').value='';
   document.querySelectorAll('#an_dom .fchip,#an_offer .fchip').forEach(c=>c.classList.remove('on'));
-  dupeConfirmed=false; document.getElementById('an_save').textContent='Add to map';
+  dupeConfirmed=false; document.getElementById('an_save').textContent='Add to my copy only';
   document.getElementById('addnode').classList.add('open');
   setTimeout(()=>document.getElementById('an_name').focus(),50);
 }
 function closeAddNode(){ document.getElementById('addnode').classList.remove('open'); }
+// Submit a proposed organisation to the shared directory via the existing Google Form,
+// pre-filled with what the person typed. This is the honest route for it to reach everyone —
+// as opposed to "Add to my copy", which only writes to this browser's localStorage.
+function submitNewNodeToForm(){
+  const name=v('an_name'); if(!name){ showToast('Add a name first, then submit'); return; }
+  const parent=document.getElementById('an_parent'); const parentLabel=parent&&parent.options[parent.selectedIndex]?parent.options[parent.selectedIndex].textContent.replace(/^[\s　›]+/,''):'';
+  const dom=chipVals('an_dom'), offer=chipVals('an_offer'), access=document.getElementById('an_access').value;
+  const details=[
+    v('an_does')?('What they do: '+v('an_does')):'',
+    v('an_entry')?('Website/contact: '+v('an_entry')):'',
+    parentLabel?('Suggested area/parent: '+parentLabel):'',
+    dom.length?('Technology: '+dom.join(', ')):'',
+    offer.length?('Offers: '+offer.join(', ')):'',
+    access?('Access: '+access):''
+  ].filter(Boolean).join('\n');
+  openSuggestForm(name, 'New organisation to add', details);
+  showToast('Opening the submission form…');
+}
 function saveNewNode(){
   const name=v('an_name'); if(!name){showToast('Name is required');return;}
   const sims=findSimilar(name,1);
@@ -5234,8 +5256,8 @@ function saveNewNode(){
     d: dom.length?dom:['xcut'], a: access||'open', g: geoOfBranch(parent)
   } : null;
   CRM.custom=CRM.custom||[]; CRM.custom.push({id,l:name,parent,entry:v('an_entry'),does:v('an_does'),tags});
-  rebuildAll(); updateCrmBadge(); closeAddNode(); focusNode(id); showToast('Added: '+name);
-  document.getElementById('an_save').textContent='Add to map'; dupeConfirmed=false;
+  rebuildAll(); updateCrmBadge(); closeAddNode(); focusNode(id); showToast('Added to your copy only — use “Submit to the shared directory” to share it with everyone');
+  document.getElementById('an_save').textContent='Add to my copy only'; dupeConfirmed=false;
 }
 document.getElementById('crmBtn').onclick=openCRM;
 document.getElementById('crmClose').onclick=closeCRM;
@@ -5246,6 +5268,7 @@ document.getElementById('crmImport').onclick=()=>document.getElementById('crmFil
 document.getElementById('crmFile').onchange=e=>{ if(e.target.files[0])importCRM(e.target.files[0]); e.target.value=''; };
 document.getElementById('crmAdd').onclick=()=>{ closeCRM(); openAddNode(null); };
 document.getElementById('an_save').onclick=saveNewNode;
+document.getElementById('an_submit').onclick=submitNewNodeToForm;
 document.getElementById('an_cancel').onclick=closeAddNode;
 document.getElementById('an_cancel2').onclick=closeAddNode;
 document.getElementById('addnode').addEventListener('click',e=>{ if(e.target.id==='addnode')closeAddNode(); });
@@ -5351,7 +5374,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (fixed branch-arg bug; network affiliations complete · 1069 orgs)';
+let DATA_AS_OF='August 2026 (add-org now offers Submit-to-shared-directory via the form; honest local-copy labelling · 1069 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
