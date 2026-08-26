@@ -84,7 +84,7 @@ seen.size >= MIN_NODES ? pass('Node count floor', `${seen.size} >= ${MIN_NODES}`
 
 /* ---- 4. TAGS keys resolve to nodes ---- */
 // TAGS is `const TAGS={ id:{...}, ... }` — grab keys at the object's top level.
-const tagsStart = html.indexOf('const TAGS=');
+const tagsStart = html.indexOf('TAGS=', html.indexOf('let TAGS=')>=0?html.indexOf('let TAGS='):html.indexOf('const TAGS='));
 if (tagsStart >= 0) {
   // find the matching close of the object literal
   const from = html.indexOf('{', tagsStart);
@@ -123,6 +123,35 @@ for (const m of nodeEntries) {
 }
 deadLinks.length === 0 ? pass('Node links verified', 'no node renders a dead link')
                        : fail('Node links verified', `unverified: ${deadLinks.slice(0, 12).join(', ')}${deadLinks.length > 12 ? ` (+${deadLinks.length - 12})` : ''}`);
+
+/* ---- 5b. Guessed-abbreviation tripwire (the nwf.org.uk / 7pc.co error class) ----
+   Flags nodes whose domain is a SHORT string that shares no letters with the org
+   name AND isn't the org's own acronym. These are the ones most likely to be a
+   guessed/stale domain that resolves to something unrelated. It's a WARNING, not
+   a failure — legitimate cryptic domains exist (kotadef.sk) — but every hit should
+   be eyeballed against the live site before shipping. */
+const nodeRe2 = /[LB]\("([a-z0-9_]+)",\s*"([^"]*)",\s*"([^"]*)"/g;
+const suspicious = [];
+let m2;
+while ((m2 = nodeRe2.exec(treeSrc))) {
+  const [, id, label, entry] = m2;
+  const dm = entry.match(/([a-z0-9-]+\.)+[a-z]{2,}(\.[a-z]{2,})?/i);
+  if (!dm || /@/.test(dm[0])) continue;
+  const dom = dm[0].toLowerCase();
+  const core = dom.replace(/^www\./, '').replace(/\.[a-z.]+$/, '').replace(/[^a-z0-9]/g, '');
+  if (core.length > 8) continue;                       // only short domains are guess-risk
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const words = label.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length >= 4);
+  const nameMatch = words.some(w => core.includes(norm(w)) || norm(w).includes(core));
+  const paren = (label.match(/\(([A-Z0-9]{2,})\)/) || [])[1];
+  const caps = (label.match(/\b[A-Z]{2,}\b/) || [])[0];
+  const acr = (paren || caps || '').toLowerCase();
+  const acrMatch = acr && (core === acr || core.startsWith(acr) || acr.startsWith(core));
+  const official = /\.gov(\.|$)|gov\.uk|\.mod\.|mod\.gov|\.mil(\.|$)|nato\.int|europa\.eu|\.ac\.|\.edu(\.|$)|\.go\.jp|canada\.ca|govt\.nz|defense\.gouv|defensie\.nl|defensa\.gob|difesa\.it|defesa\.gov|\.army|kam\.lt|kormany\.hu|mosr\.sk|mod\.bg|gov\.si|forsvar|kaitse|catapult\.org|ukri\.org/i.test(dom);
+  if (!nameMatch && !acrMatch && !official) suspicious.push(`${id}:${dom}`);
+}
+suspicious.length === 0 ? pass('Abbreviation tripwire', 'no unexplained short domains')
+                        : pass('Abbreviation tripwire', `⚠ eyeball these ${suspicious.length}: ${suspicious.slice(0, 15).join(', ')}${suspicious.length > 15 ? ` (+${suspicious.length - 15})` : ''}`);
 
 /* ---- 6/7. GATEWAY + CONNECTORS targets exist ---- */
 const gwBlock = (html.match(/const GATEWAY\s*=\s*\{[\s\S]*?\};/) || [''])[0];
