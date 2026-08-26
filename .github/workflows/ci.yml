@@ -1,0 +1,57 @@
+name: Validate & link-check
+
+# Runs the structural validator on every push and pull request (fast, always),
+# and the live link-checker on a weekly schedule and on manual request (slower,
+# needs network). This turns the manual checks we used to run by hand into an
+# automatic gate: a change that breaks the data can't quietly reach the live site.
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  schedule:
+    - cron: '0 7 * * 1'        # every Monday 07:00 UTC — weekly link sweep
+  workflow_dispatch:            # lets you run it by hand from the Actions tab
+
+# Point this at whatever the deployed file is called. If you rename to index.html
+# for GitHub Pages, change TARGET to index.html (or add both).
+env:
+  TARGET: index.html
+
+jobs:
+  validate:
+    name: Structural validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Find the HTML file
+        id: findfile
+        run: |
+          if [ -f "$TARGET" ]; then echo "file=$TARGET" >> "$GITHUB_OUTPUT";
+          elif [ -f index.html ]; then echo "file=index.html" >> "$GITHUB_OUTPUT";
+          else echo "No target HTML found"; exit 1; fi
+      - name: Validate structure
+        run: node validate.mjs "${{ steps.findfile.outputs.file }}"
+
+  linkcheck:
+    name: Live link check
+    runs-on: ubuntu-latest
+    # Only on the schedule or manual run — not on every push, to avoid hammering
+    # external sites and to keep normal pushes fast.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Find the HTML file
+        id: findfile
+        run: |
+          if [ -f "$TARGET" ]; then echo "file=$TARGET" >> "$GITHUB_OUTPUT";
+          elif [ -f index.html ]; then echo "file=index.html" >> "$GITHUB_OUTPUT";
+          else echo "No target HTML found"; exit 1; fi
+      - name: Check links
+        run: node check-links.mjs "${{ steps.findfile.outputs.file }}"
