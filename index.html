@@ -1037,7 +1037,7 @@
   <select class="finput" id="an_access"><option value="">—</option><option value="open">Open front door</option><option value="prime">Via a prime</option><option value="invite">Invite / classified</option><option value="portal">Tender portal</option></select>
   <div class="frow"><button class="fgo" id="an_submit">✦ Submit to the shared directory</button></div>
   <div class="frow"><button class="fgo fgo-alt" id="an_save">Add to my copy only</button><button class="freset" id="an_cancel">Cancel</button></div>
-  <p class="pintro" style="margin-top:8px;font-size:11px">“Submit” opens a short form (pre-filled with what you typed) that comes to the maintainer — the honest way to get an entry added for everyone. “Add to my copy” keeps it in this browser only.</p>
+  <p class="pintro" style="margin-top:8px;font-size:11px">“Submit” sends the entry to the maintainer's review queue — once approved it appears for everyone. “Add to my copy” keeps it in this browser only.</p>
 </div></div>
 
 <div id="reconcile"><div class="acard">
@@ -1078,7 +1078,7 @@
   <label class="anlab">The correction</label>
   <textarea class="finput" id="cor_text" rows="3" placeholder="What's wrong, and what it should say…"></textarea>
   <label class="anlab">Your name (optional)</label><input class="finput" id="cor_name" placeholder="So the maintainer can follow up">
-  <div class="frow"><button class="fgo" id="cor_send">✎ Send via form</button><button class="freset" id="cor_save">Download copy</button><button class="freset" id="cor_cancel">Cancel</button></div>
+  <div class="frow"><button class="fgo" id="cor_send">✎ Send for review</button><button class="freset" id="cor_save">Download copy</button><button class="freset" id="cor_cancel">Cancel</button></div>
   <p class="corlic">Corrections are accepted under the project licence (data CC BY 4.0 · code MIT). Please submit only your own words, not text copied from a website.</p>
 </div></div>
 
@@ -1145,10 +1145,31 @@ function applyData(data){
    The anon key is safe to expose: row-level security allows the public to READ published rows
    only, and to submit new rows as 'pending' (which you review). It cannot edit or delete. */
 const SUPABASE = {
-  url: 'https://igvxlmbndpuegibykygq.supabase.co/rest/v1/',  // leave '' to disable Supabase
-  anonKey: 'sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf'
+  url: '',        // e.g. 'https://abcd.supabase.co'  — leave '' to disable Supabase
+  anonKey: ''     // your project's anon/public key
 };
 function supabaseConfigured(){ return !!(SUPABASE.url && SUPABASE.anonKey); }
+/* Stage 4: lightweight, privacy-respecting analytics. Fire-and-forget inserts to the events
+   table so the maintainer can see which orgs draw interest and — crucially — which searches
+   found nothing (the gaps to fill). No personal data, no cookies, no identifiers. */
+let _trackQueue=[], _trackTimer=null, _lastSearchTerm='';
+function track(kind, ref, meta){
+  if(!supabaseConfigured()) return;
+  try{ _trackQueue.push({kind, ref:ref?String(ref).slice(0,120):null, meta:meta||null});
+    clearTimeout(_trackTimer); _trackTimer=setTimeout(flushTrack, 1500);
+  }catch(_){}
+}
+function flushTrack(){
+  if(!_trackQueue.length) return;
+  const batch=_trackQueue.splice(0,_trackQueue.length);
+  try{
+    fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/events', {
+      method:'POST', keepalive:true,
+      headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body: JSON.stringify(batch)
+    }).catch(()=>{});
+  }catch(_){}
+}
 // Convert Supabase rows (snake_case) back into the data.json node shape applyData expects.
 function rowToNode(r){
   return {
@@ -3294,6 +3315,7 @@ function linkifyProse(t){
 }
 function openPanel(id){
   curPanelId=id;
+  if(!BRANCHCOLORS[id] && id!=='root') track('open_org', id);
   const n=NODE[id]; const br=BRANCHOF[id]||id; const brName = NODE[br]?NODE[br].l:"";
   document.getElementById('peye').textContent = id==="root"?"Ecosystem root": (BRANCHCOLORS[id]?"Branch":(brName));
   document.getElementById('pname').textContent=n.l;
@@ -5350,6 +5372,50 @@ function submitNewNodeToForm(){
   openSuggestForm(name, 'New organisation to add', details);
   showToast('Opening the submission form…');
 }
+// Stage 3: write a proposed organisation straight into Supabase as a 'pending' row, landing in
+// the maintainer's review queue. Falls back to the Google Form if Supabase isn't configured or
+// the write fails. Row-level security only permits inserting pending rows — never published.
+async function submitNewNodeToSupabase(){
+  const name=v('an_name'); if(!name){ showToast('Add a name first, then submit'); return; }
+  if(!supabaseConfigured()) return submitNewNodeToForm();
+  const btn=document.getElementById('an_submit'); const orig=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
+  try{
+    const parent=document.getElementById('an_parent').value||'root';
+    const parentSel=document.getElementById('an_parent'); const parentLabel=parentSel&&parentSel.options[parentSel.selectedIndex]?parentSel.options[parentSel.selectedIndex].textContent.replace(/^[\s　›]+/,''):'';
+    const dom=chipVals('an_dom'), offer=chipVals('an_offer'), access=document.getElementById('an_access').value;
+    // a stable-ish candidate id; the reviewer can rename on approval
+    let base='sub-'+slugify(name), id=base, k=1; while(NODE[id]){ id=base+'-'+(k++); }
+    const tags = (dom.length||offer.length||access) ? {
+      w:deriveWho(offer), o:offer.length?offer:['advice'],
+      t: offer.includes('research')?[1,5]:(offer.includes('test')?[4,8]:[3,8]),
+      d: dom.length?dom:['xcut'], a: access||'open', g: geoOfBranch(parent)
+    } : null;
+    const row={
+      id, label:name, parent, kind:'org', entry:v('an_entry')||'', does:v('an_does')||'',
+      tags, status:'pending',
+      // note the suggested parent label in source so you can see it at a glance in the table
+      source: parentLabel?('suggested area: '+parentLabel):null
+    };
+    const base_url=SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/nodes';
+    const res=await fetch(base_url, { method:'POST',
+      headers:{ 'apikey':SUPABASE.anonKey, 'Authorization':'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', 'Prefer':'return=minimal' },
+      body: JSON.stringify(row) });
+    if(res.ok){
+      if(btn){ btn.textContent=orig; btn.disabled=false; }
+      closeAddNode();
+      showToast('Thanks — submitted for review. It’ll appear once approved.');
+      return;
+    }
+    // fall back to the form on any failure
+    if(btn){ btn.textContent=orig; btn.disabled=false; }
+    showToast('Couldn’t submit directly — opening the form instead…');
+    submitNewNodeToForm();
+  }catch(e){
+    if(btn){ btn.textContent=orig; btn.disabled=false; }
+    submitNewNodeToForm();
+  }
+}
 function saveNewNode(){
   const name=v('an_name'); if(!name){showToast('Name is required');return;}
   const sims=findSimilar(name,1);
@@ -5375,7 +5441,7 @@ document.getElementById('crmImport').onclick=()=>document.getElementById('crmFil
 document.getElementById('crmFile').onchange=e=>{ if(e.target.files[0])importCRM(e.target.files[0]); e.target.value=''; };
 document.getElementById('crmAdd').onclick=()=>{ closeCRM(); openAddNode(null); };
 document.getElementById('an_save').onclick=saveNewNode;
-document.getElementById('an_submit').onclick=submitNewNodeToForm;
+document.getElementById('an_submit').onclick=submitNewNodeToSupabase;
 document.getElementById('an_cancel').onclick=closeAddNode;
 document.getElementById('an_cancel2').onclick=closeAddNode;
 document.getElementById('addnode').addEventListener('click',e=>{ if(e.target.id==='addnode')closeAddNode(); });
@@ -5481,7 +5547,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (Stage 2: Supabase living database + data.json fallback · 1069 orgs)';
+let DATA_AS_OF='August 2026 (Stage 4: admin panel, corrections queue, analytics, claims · 1069 orgs)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5613,7 +5679,9 @@ function renderPanelExtras(id){
     `<button class="pabtn ${_vDate?'on':''}" id="pa_ver" title="${_vDate?('You marked this verified on '+_vDate+' — click to clear'):'Mark that you have checked this entry is correct today'}">${_vDate?('✓ Verified '+_vDate):'✓ Mark verified'}</button>`+
     `<button class="pabtn" id="pa_link">⤶ Copy link</button>`+
     `<button class="pabtn" id="pa_share">⤴ Share this</button>`+
-    `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`;
+    `<button class="pabtn" id="pa_cor">✎ Suggest a correction</button>`+
+    ((!BRANCHCOLORS[id] && id!=='root' && supabaseConfigured())?`<button class="pabtn" id="pa_claim">⚑ I represent this org</button>`:'');
+  const _claimBtn=document.getElementById('pa_claim'); if(_claimBtn) _claimBtn.onclick=()=>openClaim(id);
   document.getElementById('pa_fav').onclick=()=>{ toggleFav(id); renderPanelExtras(id); showToast(isFav(id)?'Added to favourites':'Removed from favourites'); };
   document.getElementById('pa_pin').onclick=()=>{ togglePin(id); renderPanelExtras(id); };
   document.getElementById('pa_ver').onclick=()=>{
@@ -5644,6 +5712,24 @@ function openCorrect(id){ correctId=id; document.getElementById('corTitle').text
   document.getElementById('cor_text').value=''; document.getElementById('cor_name').value='';
   document.getElementById('correct').classList.add('open'); setTimeout(()=>document.getElementById('cor_text').focus(),50); }
 function closeCorrect(){ document.getElementById('correct').classList.remove('open'); }
+/* Stage 4: "claim your organisation" — a representative asks to maintain their entry. Kept
+   minimal (prompt-based) to avoid new modal surface; writes a pending claim you review. */
+async function openClaim(id){
+  if(!supabaseConfigured()){ showToast('Claiming isn\'t available here yet'); return; }
+  const org=NODE[id]?NODE[id].l:id;
+  const email=prompt('To claim "'+org+'", enter your work email (we verify the domain matches the organisation):');
+  if(!email||!/.+@.+\..+/.test(email)){ if(email!==null) showToast('That doesn\'t look like an email'); return; }
+  const name=prompt('Your name:')||'';
+  const role=prompt('Your role at '+org+' (optional):')||'';
+  try{
+    const res=await fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/claims', {
+      method:'POST', headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body: JSON.stringify({ node_id:id, claimant:name, email, role, note:'', status:'pending' })
+    });
+    if(res.ok){ showToast('Thanks — your claim was sent for review.'); }
+    else { showToast('Couldn\'t send the claim just now.'); }
+  }catch(_){ showToast('Couldn\'t send the claim just now.'); }
+}
 document.getElementById('cor_cancel').onclick=closeCorrect;
 document.getElementById('corClose').onclick=closeCorrect;
 document.getElementById('correct').addEventListener('click',e=>{ if(e.target.id==='correct')closeCorrect(); });
@@ -5654,13 +5740,22 @@ document.getElementById('cor_save').onclick=()=>{
   downloadFile('correction-'+correctId+'.json', JSON.stringify(note,null,2), 'application/json');
   closeCorrect(); showToast('Correction downloaded — email it to the maintainer');
 };
-document.getElementById('cor_send').onclick=()=>{
+document.getElementById('cor_send').onclick=async()=>{
   const text=v('cor_text'); if(!text){showToast('Add the correction first');return;}
   const org=NODE[correctId]?NODE[correctId].l:correctId;
   const field=document.getElementById('cor_field').value;
   const from=v('cor_name');
   const details=text + (from?('\n\n— '+from):'') + '\n\n[ref: '+(serialOf(correctId)||correctId)+' · entry id: '+correctId+']';
   (CRM.corrections=CRM.corrections||[]).push({organisation:org,id:correctId,field,correction:text,from,date:new Date().toISOString().slice(0,10),sent:true}); saveCRM();
+  if(supabaseConfigured()){
+    try{
+      const res=await fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/edits', {
+        method:'POST', headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', Prefer:'return=minimal' },
+        body: JSON.stringify({ node_id:correctId, field, suggestion:text, submitted_by:from||null, status:'pending' })
+      });
+      if(res.ok){ closeCorrect(); showToast('Thanks — correction sent for review.'); return; }
+    }catch(_){}
+  }
   openSuggestForm(org, field, details);
   closeCorrect(); showToast('Opening the suggestions form — please press Submit there to send');
 };
@@ -5699,7 +5794,7 @@ function buildLvFilters(){
     else { const set=LVF[k]; if(set.has(val)){set.delete(val);c.classList.remove('on');} else {set.add(val);c.classList.add('on');} }
     renderLvTable();
   });
-  const si=document.getElementById('lvSearch'); si.value=LVF.q; let t; si.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ LVF.q=si.value.trim().toLowerCase(); renderLvTable(); },150); };
+  const si=document.getElementById('lvSearch'); si.value=LVF.q; let t; si.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ LVF.q=si.value.trim().toLowerCase(); renderLvTable(); if(LVF.q && LVF.q.length>1 && LVF.q!==_lastSearchTerm){ _lastSearchTerm=LVF.q; track('search', LVF.q); } },150); };
   document.getElementById('lvApply').onclick=()=>{ applyMapFilter(); document.getElementById('listview').classList.remove('open'); showToast('Filter applied to map — press FIT or Clear'); };
   document.getElementById('lvClear').onclick=()=>{ LVF.dom.clear();LVF.access.clear();LVF.etype.clear();LVF.trl=null;LVF.geo=null;LVF.favs=false;LVF.q=''; clearMapFilter(); buildLvFilters(); renderLvTable(); };
   document.getElementById('lvCsv').onclick=exportListCsv;
@@ -5747,6 +5842,7 @@ function renderLvTable(){
   { // Helpful empty state — don't leave the user staring at a blank table.
     const es=document.getElementById('lvEmpty');
     if(es){ if(!ids.length){ es.style.display=''; tbl.style.display='none';
+        if(LVF.q && LVF.q.length>1) track('search_empty', LVF.q);
         es.innerHTML=`<div class="lvempk">No organisations match those filters.</div>`+
           `<div class="lvempb">Try removing a filter, broadening the technology area, or searching a broader term — for example “drone” instead of a specific model, or a capability rather than a company name. You can also <button class="lvempclear" id="lvEmptyClear">clear all filters</button>.</div>`;
         const c=document.getElementById('lvEmptyClear'); if(c) c.onclick=()=>{ if(typeof clearLvFilters==='function'){clearLvFilters();} else { lvFilters={}; const q=document.getElementById('lvSearch'); if(q)q.value=''; } renderLvTable(); };
