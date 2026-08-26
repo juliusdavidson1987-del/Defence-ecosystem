@@ -301,6 +301,8 @@
   #menuSheet .msitem{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:rgba(12,20,36,.6);border:1px solid var(--line);color:var(--txt);padding:10px 12px;border-radius:9px;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.3px;margin-bottom:6px;transition:.12s}
   #menuSheet .msitem:hover{background:color-mix(in srgb,var(--phos) 15%,transparent);border-color:color-mix(in srgb,var(--phos) 45%,transparent);color:#fff}
   #menuSheet .msitem[disabled]{opacity:.4;cursor:default}
+  #menuSheet .msitem-hi{background:color-mix(in srgb,var(--phos) 16%,transparent);border-color:color-mix(in srgb,var(--phos) 55%,transparent);color:#eafbf8;font-weight:600}
+  #menuSheet .msitem-hi:hover{background:color-mix(in srgb,var(--phos) 26%,transparent)}
   #menuSheet .msitem:focus-visible{outline:2.5px solid var(--phos);outline-offset:2px}
   @media(max-width:560px){#menuSheet .msgrid{grid-template-columns:1fr}}
   #about.open{display:flex}
@@ -395,6 +397,9 @@
   .caddtog:hover{border-color:var(--phos);background:rgba(63,224,208,.05)}
   .caddform{margin-top:9px}
   .node.custom{border-style:dashed}
+  .node.empty-cat{opacity:.5;border-style:dashed;filter:saturate(.6)}
+  .node.empty-cat:hover{opacity:.85}
+  .node.empty-cat .badge.emptybadge{background:transparent;border:1px solid var(--phos);color:var(--phos);font-size:8.5px;letter-spacing:.3px}
   .node.custom .lab::after{content:' ✎';color:var(--phos);font-size:9px;opacity:.7}
   #an_dupes{margin:-2px 0 9px}
   .dupwarn{background:rgba(227,162,75,.08);border:1px solid #E3A24B55;border-radius:9px;padding:8px 10px}
@@ -742,6 +747,7 @@
       </div>
       <div class="msgroup">
         <div class="msh">Tools</div>
+        <button class="msitem msitem-hi" id="suggestAddBtn">＋ Suggest an addition</button>
         <button class="msitem" id="compareBtn">⇄ Compare <span class="crmbadge" id="compareBadge"></span></button>
         <button class="msitem" id="crmBtn">◱ My CRM <span class="crmbadge" id="crmBadge"></span></button>
         <button class="msitem" id="briefBtn">⎙ One-page brief</button>
@@ -1145,8 +1151,8 @@ function applyData(data){
    The anon key is safe to expose: row-level security allows the public to READ published rows
    only, and to submit new rows as 'pending' (which you review). It cannot edit or delete. */
 const SUPABASE = {
-  url: '',        // e.g. 'https://abcd.supabase.co'  — leave '' to disable Supabase
-  anonKey: ''     // your project's anon/public key
+  url: 'https://igvxlmbndpuegibykygq.supabase.co',        // your project URL
+  anonKey: 'sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf'     // your anon/publishable key
 };
 function supabaseConfigured(){ return !!(SUPABASE.url && SUPABASE.anonKey); }
 /* Stage 4: lightweight, privacy-respecting analytics. Fire-and-forget inserts to the events
@@ -2556,23 +2562,42 @@ function nationForOrg(id, ctxBranch, ctxNation){
 }
 
 /* function buckets within a nation (lens A) and cross-cutting groups (lens B) */
-const FUNC_ORDER = ['policy','procurement','science','innovation','industry','capital','test','other'];
+const FUNC_ORDER = ['policy','procurement','science','innovation','frontline','intel','nuclear','academia','rto','test','industry','supply','defencetech','capital','other'];
 const FUNC_META = {
-  policy:{l:'Command, strategy & policy',c:'#8fb7ff'}, procurement:{l:'Acquisition & procurement',c:'#7fd0ff'},
-  science:{l:'Science & research',c:'#8ad6a8'}, innovation:{l:'Innovation & accelerators',c:'#ffd27f'},
-  industry:{l:'Industry & primes',c:'#ff9e9e'}, capital:{l:'Funding & capital',c:'#c9a8ff'},
-  test:{l:'Test, evaluation & ranges',c:'#9ad8d0'}, other:{l:'Other bodies',c:'#b8c2d0'}
+  policy:{l:'Strategy & policy',c:'#8fb7ff'}, procurement:{l:'Acquisition & commercial',c:'#7fd0ff'},
+  science:{l:'Science, technology & innovation',c:'#8ad6a8'}, innovation:{l:'Innovation & accelerators',c:'#ffd27f'},
+  frontline:{l:'Front-line commands & experimentation',c:'#9fd0b0'}, intel:{l:'Intelligence, cyber & space',c:'#b89aff'},
+  nuclear:{l:'Nuclear enterprise',c:'#ffcf8a'}, academia:{l:'Academia & research',c:'#8ad6a8'},
+  rto:{l:'Research & technology organisations',c:'#9ad8d0'}, test:{l:'Test, evaluation & ranges',c:'#9ad8d0'},
+  industry:{l:'Industry — primes',c:'#ff9e9e'}, supply:{l:'Industry — supply chain & specialists',c:'#ffb0a0'},
+  defencetech:{l:'Defence-tech & SMEs',c:'#ffc09e'}, capital:{l:'Funding & investment',c:'#c9a8ff'},
+  other:{l:'Cross-government & other bodies',c:'#b8c2d0'}
 };
 function funcForOrg(id){
-  const t=tagsFor(id); if(!t) return 'other';
-  const o=t.o||[], w=t.w||[], a=t.a;
-  if(o.includes('investment')) return 'capital';
-  if(a==='prime'||w.includes('prime')) return 'industry';
-  if(o.includes('procurement')) return 'procurement';
-  if(o.includes('test')) return 'test';
-  if(o.includes('research')||w.includes('academic')) return 'science';
-  if(o.includes('grant')) return 'innovation';
-  if(w.includes('govmil')) return 'policy';
+  const t=tagsFor(id); const n=NODE[id]||{}; const et=(typeof entityType==='function')?entityType(id):'';
+  const lab=((n.l||'')+' '+(n.does||'')).toLowerCase();
+  const o=(t&&t.o)||[], w=(t&&t.w)||[], a=t&&t.a, dom=(t&&t.d)||[];
+  const kw=(...xs)=>xs.some(x=>lab.includes(x));
+  if(kw('werx','afwerx','spark','sofwerx','spacewerx')) return 'innovation';
+  if(et==='investor'||o.includes('investment')||w.includes('investor')) return 'capital';
+  if(et==='policy'||kw('think tank','strategy','policy institute','strategic studies')) return 'policy';
+  if(et==='research'){ return kw('universit','college','école','ecole','polytechnic','politecnic','academy') ? 'academia' : 'rto'; }
+  if(et==='industry'||a==='prime'||w.includes('prime')){
+    const isPrime=w.includes('prime')&&!w.includes('startup');
+    const isTech=w.includes('startup')||kw('ai','autonomy','drone','uas','robotics','software','defence-tech','defense-tech');
+    if(isPrime) return 'industry';
+    if(isTech) return 'defencetech';
+    if(kw('shipbuild','submarine','aircraft','missile','tank')) return 'industry';
+    return 'supply';
+  }
+  if(kw('nuclear','atomic','naval reactor')||dom.includes('nuclear')) return 'nuclear';
+  if(kw('intelligence','cyber','signals','sigint','space command','space agency','space force')||dom.includes('cyber')||dom.includes('space')) return 'intel';
+  if(o.includes('procurement')||kw('procure','acquisition','armament','materiel','matériel','equipment')) return 'procurement';
+  if(o.includes('test')||kw('test','trial','range','evaluation','proving ground')) return 'test';
+  if(o.includes('grant')||kw('innovation','accelerator','incubator','experimentation','rapid capabilit','challenge')) return 'innovation';
+  if(o.includes('research')||w.includes('academic')||kw('research','laborator','science')) return 'science';
+  if(kw('army','navy','air force','armed forces','marine','fleet','command','warfighting','joint chiefs','general staff')) return 'frontline';
+  if(w.includes('govmil')||et==='gov'||kw('ministry','department','agency','government','regulat')) return 'policy';
   return 'other';
 }
 
@@ -2663,9 +2688,12 @@ function buildAllianceTree(){
     const byFunc={};
     list.forEach(u=>{ (byFunc[u.func]=byFunc[u.func]||[]).push(u.node); });
     FUNC_ORDER.forEach(f=>{
-      const orgs=byFunc[f]; if(!orgs||!orgs.length) return;
-      if(list.length<=6){ orgs.forEach(o=>nb.children.push(o)); } // small nations: flat, no sub-groups
-      else { const fb=synthBranch('nat_'+nat+'_'+f, FUNC_META[f].l, FUNC_META[f].l+'.'); orgs.forEach(o=>fb.children.push(o)); nb.children.push(fb); }
+      const orgs=byFunc[f]||[];
+      if(f==='other' && !orgs.length) return;   // don't show an empty catch-all everywhere
+      const fb=synthBranch('nat_'+nat+'_'+f, FUNC_META[f].l, FUNC_META[f].l+'.');
+      orgs.forEach(o=>fb.children.push(o));
+      if(!orgs.length){ fb.empty=true; fb.does=FUNC_META[f].l+' — no organisations listed yet. A ready-to-fill category; use “Add an organisation” to suggest one.'; }
+      nb.children.push(fb);
     });
     top.push(nb);
   });
@@ -2719,7 +2747,7 @@ function setLens(mode,opts){
 /* ================= END LENS ENGINE ================= */
 function colorOf(id){ if(id==="root")return ROOTCOLOR; return BRANCHCOLORS[BRANCHOF[id]]||"#8fa"; }
 function depthOf(id){let d=0,cur=id;while(PARENT[cur]!=null){d++;cur=PARENT[cur];}return d;}
-function countLeaves(n){ if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
+function countLeaves(n){ if(n.empty) return 0; if(!n.children||!n.children.length)return 1; return n.children.reduce((s,c)=>s+countLeaves(c),0); }
 
 /* ---------- affiliations ----------
    Many organisations are independent institutions in their own right that are ALSO part of a
@@ -3108,19 +3136,21 @@ function build(){
     el.className=`node kind-${kind}`; el.tabIndex=0; el.dataset.id=n.id;
     el.setAttribute('role','button'); el.setAttribute('aria-label', n.l + (n.children&&n.children.length?' — expandable':''));
     if(n.custom)el.classList.add('custom');
+    if(n.empty)el.classList.add('empty-cat');
     const col=colorOf(n.id);
     el.style.setProperty('--c',col);
     const hasKids=!!(n.children&&n.children.length);
     let dot = kind!=="root" ? `<span class="cdot"></span>`:"";
     // leaf nodes get a type-coloured marker so you can read the entity type at a glance on the map
-    if(kind==="leaf"){ const ty=entityType(n.id); const et=ETYPES[ty];
+    if(kind==="leaf" && !n.empty){ const ty=entityType(n.id); const et=ETYPES[ty];
       if(et){ dot = `<span class="cdot etdot" style="background:${et.c};box-shadow:0 0 5px ${et.c}99" title="${et.l}"></span>`;
         el.classList.add('et-'+ty); el.dataset.etype=ty; } }
-    const badge = hasKids && kind!=="root" ? `<span class="badge">${countLeaves(n)}</span>`:"";
+    const badge = n.empty ? `<span class="badge emptybadge">+ add</span>` : (hasKids && kind!=="root" ? `<span class="badge">${countLeaves(n)}</span>`:"");
     const tri = hasKids ? `<span class="tri">▾</span>`:"";
     el.innerHTML = `${dot}<span class="lab">${n.l}</span>${badge}${tri}`;
     world.appendChild(el); nodeEls[n.id]=el;
     el.addEventListener('click',ev=>{ ev.stopPropagation();
+      if(n.empty){ select(n.id); openAddNode(n.id); return; }
       if(hasKids && (ev.target.classList.contains('tri')|| kind==='branch'|| kind==='cat'|| kind==='root')){ toggle(n.id); }
       select(n.id);
     });
@@ -5335,6 +5365,15 @@ let pendingImport=null;
 function importCRM(file){ const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); pendingImport={contacts:d.contacts||{},custom:d.custom||[]}; closeCRM(); openReconcile(); }catch(_){ showToast('Could not read that file'); } }; r.readAsText(file); }
 
 function openAddNode(presetParent){
+  let intendedCategory='';
+  if(presetParent && /^nat_/.test(presetParent) && !NODE[presetParent]){
+    const m=presetParent.match(/^nat_([a-z_]+?)_([a-z]+)$/);
+    if(m){ intendedCategory=(FUNC_META[m[2]]&&FUNC_META[m[2]].l)||'';
+      const natBranchId={fr:'eu_fr',de:'eu_de',it:'eu_it',nl:'eu_nl',ua:'eu_ukraine',tr:'eu_turkey',ca:'ca_grp',au:'au_grp',nz:'nz_grp',kr:'pt_kr',jp:'pt_jp',il:'pt_il'}[m[1]];
+      presetParent = (natBranchId && NODE[natBranchId]) ? natBranchId : 'root';
+    } else presetParent='root';
+  }
+  window._intendedCategory=intendedCategory;
   const sel=document.getElementById('an_parent'); sel.innerHTML='';
   const opt=(id,label,depth)=>{ const o=document.createElement('option'); o.value=id; o.textContent=(depth>0?('　'.repeat(Math.min(depth,4))+'› '):'')+label; sel.appendChild(o); };
   opt('root','— Top level —',0);
@@ -5433,6 +5472,7 @@ function saveNewNode(){
   document.getElementById('an_save').textContent='Add to my copy only'; dupeConfirmed=false;
 }
 document.getElementById('crmBtn').onclick=openCRM;
+document.getElementById('suggestAddBtn').onclick=()=>{ if(window._closeMenuSheet) window._closeMenuSheet(); openAddNode(null); };
 document.getElementById('crmClose').onclick=closeCRM;
 document.getElementById('crm').addEventListener('click',e=>{ if(e.target.id==='crm')closeCRM(); });
 document.getElementById('crmExport').onclick=exportCRM;
@@ -5547,7 +5587,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 (Stage 4: admin panel, corrections queue, analytics, claims · 1069 orgs)';
+let DATA_AS_OF='August 2026 · v3 (menu Suggest-an-addition + categories on all 40 nations + Supabase live)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
