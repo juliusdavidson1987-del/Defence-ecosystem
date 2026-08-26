@@ -23,10 +23,10 @@ jobs:
     name: Structural validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Find the HTML file
         id: findfile
         run: |
@@ -43,10 +43,10 @@ jobs:
     # external sites and to keep normal pushes fast.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Find the HTML file
         id: findfile
         run: |
