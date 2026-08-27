@@ -566,11 +566,12 @@
   /* hide the map-only controls that don't make sense without a big canvas */
   html[data-device="phone"] #expand,
   html[data-device="phone"] #collapse,
-  html[data-device="phone"] #zin,
-  html[data-device="phone"] #zout,
-  html[data-device="phone"] #fit,
   html[data-device="phone"] #lensSeg,
   html[data-device="phone"] #pathwayBtn{display:none}
+  /* zoom + fit stay on phone — they complement pinch-zoom for precise one-handed control */
+  html[data-device="phone"] #zin,
+  html[data-device="phone"] #zout,
+  html[data-device="phone"] #fit{display:inline-flex;height:44px;min-width:44px;font-size:18px;align-items:center;justify-content:center}
   /* make the primary actions big, tappable and full-width-ish */
   html[data-device="phone"] .btn{height:42px;font-size:13px;padding:0 14px}
   html[data-device="phone"] .btn.find{order:1;flex:1 1 100%}
@@ -585,6 +586,10 @@
   /* the radial stage stays available but the list is the front door */
   html[data-device="phone"] #stage{top:0}
   html[data-device="phone"] #stage .hint{display:none}
+  /* bigger, easier-to-tap map nodes and labels on phone */
+  html[data-device="phone"] .node{padding:9px 13px;font-size:13px;min-height:38px}
+  html[data-device="phone"] .node .badge{font-size:11px}
+  html[data-device="phone"] .node .cdot{width:9px;height:9px}
   /* full-screen panels on phone */
   html[data-device="phone"] #panel{width:100%;max-width:100%;top:0;z-index:90}
   /* Action modals open FROM a node and must sit ABOVE the full-screen phone panel (z-index 90),
@@ -917,7 +922,7 @@
     <div class="wdevice">
       <div class="wdeviceq">How are you viewing this? <span>— we'll optimise the layout; change it anytime</span></div>
       <div class="wdrow">
-        <button class="wdopt" id="wdPhone" data-device="phone"><div class="wdi">▢</div><div class="wdt">Phone</div><div class="wdd">A simple, tappable list — no pinch-zoom map</div></button>
+        <button class="wdopt" id="wdPhone" data-device="phone"><div class="wdi">▢</div><div class="wdt">Phone</div><div class="wdd">Tappable list + pinch-zoom map</div></button>
         <button class="wdopt" id="wdPc" data-device="pc"><div class="wdi">▭</div><div class="wdt">Computer</div><div class="wdd">The full interactive radial map</div></button>
       </div>
     </div>
@@ -3732,6 +3737,58 @@ stage.addEventListener('pointerup',e=>{dragging=false;stage.classList.remove('dr
 stage.addEventListener('pointercancel',()=>{dragging=false;stage.classList.remove('drag');});
 stage.addEventListener('wheel',e=>{e.preventDefault();const rect=stage.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
   const ns=Math.max(.06,Math.min(2.4,scale*(e.deltaY<0?1.12:0.89)));const wx=(mx-px)/scale,wy=(my-py)/scale;px=mx-wx*ns;py=my-wy*ns;scale=ns;apply();},{passive:false});
+
+/* ---- touch: two-finger pinch-zoom + one-finger pan ----
+   Pointer events above handle mouse drag; on touch devices we add an explicit touch layer so
+   two-finger pinch zooms toward the midpoint of the fingers and one finger pans smoothly.
+   touch-action:none on #stage (CSS) stops the browser's native pan/zoom from fighting us. */
+(function(){
+  let pinch=false, startDist=0, startScale=1, midWX=0, midWY=0;
+  let tPan=false, tsx=0, tsy=0, tpx=0, tpy=0;
+  const dist=(t1,t2)=>Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
+  const rectOf=()=>stage.getBoundingClientRect();
+
+  stage.addEventListener('touchstart',e=>{
+    if(e.target.closest('.node')) return;            // let node taps through
+    if(e.touches.length===2){
+      e.preventDefault();
+      pinch=true; tPan=false;
+      const [a,b]=e.touches; const r=rectOf();
+      startDist=dist(a,b)||1; startScale=scale;
+      const mx=((a.clientX+b.clientX)/2)-r.left, my=((a.clientY+b.clientY)/2)-r.top;
+      // remember the world-point under the pinch midpoint so we can keep it fixed while scaling
+      midWX=(mx-px)/scale; midWY=(my-py)/scale;
+    } else if(e.touches.length===1){
+      pinch=false; tPan=true; dragMoved=false;
+      tsx=e.touches[0].clientX; tsy=e.touches[0].clientY; tpx=px; tpy=py;
+    }
+  },{passive:false});
+
+  stage.addEventListener('touchmove',e=>{
+    if(pinch && e.touches.length===2){
+      e.preventDefault();
+      const [a,b]=e.touches; const r=rectOf();
+      const d=dist(a,b)||1;
+      const ns=Math.max(.06,Math.min(2.6, startScale*(d/startDist)));
+      const mx=((a.clientX+b.clientX)/2)-r.left, my=((a.clientY+b.clientY)/2)-r.top;
+      // keep the same world-point under the (possibly moved) pinch midpoint → natural zoom + pan
+      px=mx-midWX*ns; py=my-midWY*ns; scale=ns; apply();
+    } else if(tPan && e.touches.length===1){
+      const dx=e.touches[0].clientX-tsx, dy=e.touches[0].clientY-tsy;
+      if(Math.abs(dx)+Math.abs(dy)>4){ dragMoved=true; e.preventDefault(); }
+      px=tpx+dx; py=tpy+dy; apply();
+    }
+  },{passive:false});
+
+  const endTouch=e=>{
+    if(e.touches.length<2) pinch=false;
+    if(e.touches.length===0) tPan=false;
+    // if two fingers lift to one, restart a clean pan from the remaining finger
+    if(e.touches.length===1){ tPan=true; tsx=e.touches[0].clientX; tsy=e.touches[0].clientY; tpx=px; tpy=py; }
+  };
+  stage.addEventListener('touchend',endTouch,{passive:false});
+  stage.addEventListener('touchcancel',endTouch,{passive:false});
+})();
 document.getElementById('zin').onclick=()=>zoomBtn(1.18);
 document.getElementById('zout').onclick=()=>zoomBtn(.85);
 document.getElementById('fit').onclick=()=>{q.value='';q.dispatchEvent(new Event('input'));fit();};
@@ -5587,7 +5644,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 · v3 (menu Suggest-an-addition + categories on all 40 nations + Supabase live)';
+let DATA_AS_OF='August 2026 · v3 (mobile pinch-zoom map + all-nation categories + Supabase live)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
