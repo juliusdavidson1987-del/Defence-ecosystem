@@ -212,6 +212,13 @@
   .freset:hover{border-color:var(--phos);color:#fff}
   #finderResults{margin-top:16px}
   #finderResults .rcount{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
+  .rtier{margin-top:14px}
+  .rtier .rcount{margin-bottom:4px}
+  .rtn{opacity:.55;font-weight:400}
+  .rtsub{font-size:11px;color:var(--faint);margin:-2px 0 9px;line-height:1.45}
+  .rtier-exact>.rcount{color:#7fe0c8}
+  .rtier-close>.rcount{color:#8fb7ff}
+  .rtier-pot>.rcount{color:#ffc09e}
   .rcard{background:linear-gradient(180deg,#111C31,#0C1524);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;cursor:pointer;transition:.14s}
   .rcard-gate{border-color:color-mix(in srgb,var(--phos) 60%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--phos) 18%,transparent)}
   .rgate{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--phos);margin-bottom:7px;font-weight:500}
@@ -863,6 +870,13 @@
     <button class="fchip" data-v="ca">Canada</button>
     <button class="fchip" data-v="au">Australia</button>
     <button class="fchip" data-v="nz">New Zealand</button>
+    <button class="fchip" data-v="kr">South Korea</button>
+    <button class="fchip" data-v="jp">Japan</button>
+    <button class="fchip" data-v="il">Israel</button>
+    <button class="fchip" data-v="in">India</button>
+    <button class="fchip" data-v="sg">Singapore</button>
+    <button class="fchip" data-v="ae">UAE</button>
+    <button class="fchip" data-v="sa">Saudi Arabia</button>
     <button class="fchip on" data-v="any">Any</button>
   </div></div>
 
@@ -4042,7 +4056,7 @@ function entityType(id){
 }
 const NEEDLAB={grant:'Grant funding',investment:'Investment',contract:'Route to contract',research:'Research partner',test:'Test & evaluation',export:'Export support',advice:'Advice',procurement:'Procurement'};
 const DOMLAB={air:'Air',land:'Land',maritime:'Maritime',space:'Space',cyber:'Cyber',c4isr:'C4ISR/EW',comms:'Comms/networks',ai:'AI & autonomy',counteruas:'Counter-UAS',weapons:'Weapons/effects',nuclear:'Nuclear',directed:'Directed energy',hypersonic:'Hypersonics',simulation:'Simulation',wargaming:'Wargaming',training:'Training/education',logistics:'Logistics/sustainment',energy:'Energy/power',materials:'Materials/mfg',medical:'Human/medical',human:'Human/medical',quantum:'Quantum',xcut:'Cross-cutting'};
-const GEOLAB={uk:'UK',nato:'NATO',eu:'Europe',us:'USA',ca:'Canada',au:'Australia',nz:'New Zealand'};
+const GEOLAB={uk:'UK',nato:'NATO',eu:'Europe',us:'USA',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'UAE',sa:'Saudi Arabia'};
 const ACCESSLAB={open:'Open front door',via:'Via intermediary / programme',prime:'Via a prime',invite:'Invite / classified',portal:'Tender portal',restricted:'Restricted / closed'};
 const ACCESSCOL={open:'#57D9A3',via:'#C9A86A',prime:'#E3A24B',invite:'#E36C6C',portal:'#5FB0E0',restricted:'#E36C6C'};
 const NODOOR=new Set(['sdr','dis','reform','headoffice','ai','uas','deeptech','fiveeyes','ttcp','aukus','gcap','nato_hq','aco','cnad','niag','pesco','asd']);
@@ -4969,23 +4983,47 @@ function readFinder(){
 let lastScored=[],lastSel=null;
 function renderFinderResults(sel){
   const cands=Object.values(NODE).filter(n=>isDoorNode(n));
-  const scored=cands.map(n=>({id:n.id,...scoreNode(n.id,sel)})).filter(x=>x.s>2).sort((a,b)=>b.s-a.s).slice(0,8);
-  lastScored=scored; lastSel=sel;
+  const scored=cands.map(n=>({id:n.id,...scoreNode(n.id,sel)})).filter(x=>x.s>2).sort((a,b)=>b.s-a.s);
+  lastSel=sel;
   const box=document.getElementById('finderResults');
   if(!scored.length){ box.innerHTML=`<div class="fnone">No strong match yet — try widening the region to <b>Any</b>, removing a domain, or selecting fewer needs. The general way in for most UK innovators is <b>UKDI / DASA</b>.</div>`; return; }
-  let html=`<div class="ractions"><button class="rbtn" id="dlCsv">⤓ Download CSV</button><button class="rbtn" id="shareFind">⤴ Share results</button><button class="rbtn" id="saveFind">★ Save search</button></div><div class="rcount">${scored.length} best-fit ${scored.length===1?'door':'doors'}</div>`;
-  scored.forEach(r=>{ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
+  function cardHTML(r){ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
     const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
     const ac=ACCESSCOL[accessOf(r.id)], al=ACCESSLAB[accessOf(r.id)];
     const isGate = sel.homeGateway && r.id===sel.homeGateway;
-    html+=`<div class="rcard${isGate?' rcard-gate':''}" data-id="${r.id}">
+    return `<div class="rcard${isGate?' rcard-gate':''}" data-id="${r.id}">
       ${isGate?`<div class="rgate">★ Recommended first contact — your national gateway</div>`:''}
       <div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${n.l}</span>
         <span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div>
       <div class="rwhy">${why}</div>
       <div class="ract">First step: ${linkifyProse((n.entry||oppsFor(r.id)).replace('@@SUGGEST_GATEWAY@@',''))}</div>
     </div>`;
-  });
+  }
+  // grade by facet COVERAGE: how many of the facets you actually chose does this door satisfy?
+  function facetCoverage(id){ const t=tagsFor(id); if(!t) return {m:0,tot:0};
+    let m=0,tot=0;
+    const roles=(sel.roles&&sel.roles.length)?sel.roles:(sel.role?[sel.role]:[]);
+    if(roles.length){ tot++; if(roles.some(r=>t.w.includes(r)||(r==='sme'&&t.w.includes('startup'))||(r==='startup'&&t.w.includes('sme')))) m++; }
+    if((sel.needs||[]).length){ tot++; if((sel.needs).some(nd=>t.o.includes(nd)||(nd==='contract'&&t.o.includes('procurement')))) m++; }
+    if((sel.domains||[]).length){ tot++; if((sel.domains).some(x=>t.d.includes(x))||t.d.includes('xcut')) m++; }
+    if(sel.trl){ tot++; if(sel.trl>=t.t[0]&&sel.trl<=t.t[1]) m++; }
+    if(sel.geo&&sel.geo!=='any'){ tot++; if(t.g===sel.geo) m++; }
+    return {m,tot};
+  }
+  // pull the national gateway out as a recommended first contact so it doesn't crowd the tiers
+  const gate = sel.homeGateway ? scored.find(x=>x.id===sel.homeGateway) : null;
+  const rest = scored.filter(x=>!(gate&&x.id===gate.id));
+  const exactAll=[], closeAll=[], potAll=[];
+  rest.forEach(r=>{ const c=facetCoverage(r.id); const cov=c.tot? c.m/c.tot : 1;
+    if(cov>=0.999) exactAll.push(r); else if(cov>=0.5) closeAll.push(r); else potAll.push(r); });
+  const exact=exactAll.slice(0,6), close=closeAll.slice(0,6), potential=potAll.slice(0,6);
+  lastScored=[...(gate?[gate]:[]),...exact,...close,...potential];
+  let html=`<div class="ractions"><button class="rbtn" id="dlCsv">⤓ Download CSV</button><button class="rbtn" id="shareFind">⤴ Share results</button><button class="rbtn" id="saveFind">★ Save search</button></div>`;
+  if(gate){ html+=`<div class="rtier"><div class="rcount">Your national front door</div>`+cardHTML(gate)+`</div>`; }
+  function section(cls,title,sub,arr){ if(!arr.length) return ''; return `<div class="rtier rtier-${cls}"><div class="rcount">${title} <span class="rtn">${arr.length}</span></div><div class="rtsub">${sub}</div>`+arr.map(cardHTML).join('')+`</div>`; }
+  html+=section('exact','Exact fit','Remit closely matches everything you selected — start here.',exact);
+  html+=section('close','Close fit','Strong on most of what you asked for — well worth approaching.',close);
+  html+=section('pot','Potential collaboration','Partial or adjacent overlap — possible partners, primes to sub-contract to, or convenors who can introduce you.',potential);
   const exclude=new Set(scored.map(x=>x.id));
   const cons=pickConnectors(sel,exclude);
   if(cons.length){
@@ -5644,7 +5682,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 · v3 (mobile pinch-zoom map + all-nation categories + Supabase live)';
+let DATA_AS_OF='August 2026 · v4 (graded finder: exact/close/potential · new partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
