@@ -1,0 +1,48 @@
+name: Sync data.json from Supabase
+
+# Makes Supabase the single source of truth. After you change the database
+# (SQL editor or admin UI), this regenerates the data.json fallback so the two
+# never drift. Runs nightly, on manual request, and can be called by other jobs.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'        # nightly 03:00 UTC
+  workflow_dispatch:            # run on demand from the Actions tab
+    inputs:
+      reason:
+        description: 'Why are you running this? (optional)'
+        required: false
+
+permissions:
+  contents: write               # needed to commit the refreshed data.json
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+
+      - name: Pull Supabase → data.json
+        env:
+          # Optional: set these as repo Secrets to override the public defaults.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/sync-datajson.mjs data.json
+
+      - name: Validate the refreshed data
+        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data.json; then
+            echo "data.json unchanged — nothing to commit."
+          else
+            git config user.name  "ecosystem-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data.json
+            git commit -m "chore: sync data.json from Supabase ($(date -u +%Y-%m-%d))"
+            git push
+            echo "data.json updated and pushed."
+          fi
