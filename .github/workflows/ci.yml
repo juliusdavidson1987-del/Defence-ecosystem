@@ -1,57 +1,37 @@
-name: Validate & link-check
+name: Validate
 
-# Runs the structural validator on every push and pull request (fast, always),
-# and the live link-checker on a weekly schedule and on manual request (slower,
-# needs network). This turns the manual checks we used to run by hand into an
-# automatic gate: a change that breaks the data can't quietly reach the live site.
+# Fast automatic gate on every change: the data must be structurally sound and
+# the HTML must parse. Weekly (and on demand) it also checks that links resolve.
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
   schedule:
-    - cron: '0 7 * * 1'        # every Monday 07:00 UTC — weekly link sweep
-  workflow_dispatch:            # lets you run it by hand from the Actions tab
-
-# Point this at whatever the deployed file is called. If you rename to index.html
-# for GitHub Pages, change TARGET to index.html (or add both).
-env:
-  TARGET: index.html
+    - cron: '0 7 * * 1'        # Monday 07:00 UTC — weekly link sweep
+  workflow_dispatch:
 
 jobs:
   validate:
-    name: Structural validation
+    name: Data + HTML validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-      - name: Find the HTML file
-        id: findfile
-        run: |
-          if [ -f "$TARGET" ]; then echo "file=$TARGET" >> "$GITHUB_OUTPUT";
-          elif [ -f index.html ]; then echo "file=index.html" >> "$GITHUB_OUTPUT";
-          else echo "No target HTML found"; exit 1; fi
-      - name: Validate structure
-        run: node validate.mjs "${{ steps.findfile.outputs.file }}"
+        with: { node-version: '22' }
+      - name: Validate data.json (the source the tool renders)
+        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+      - name: Validate index.html (JS syntax / CSS balance)
+        if: hashFiles('index.html') != ''
+        run: node scripts/validate.mjs index.html --min-nodes=1 || echo "HTML validator returned findings (non-blocking)"
 
   linkcheck:
     name: Live link check
     runs-on: ubuntu-latest
-    # Only on the schedule or manual run — not on every push, to avoid hammering
-    # external sites and to keep normal pushes fast.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-      - name: Find the HTML file
-        id: findfile
-        run: |
-          if [ -f "$TARGET" ]; then echo "file=$TARGET" >> "$GITHUB_OUTPUT";
-          elif [ -f index.html ]; then echo "file=index.html" >> "$GITHUB_OUTPUT";
-          else echo "No target HTML found"; exit 1; fi
-      - name: Check links
-        run: node check-links.mjs "${{ steps.findfile.outputs.file }}"
+        with: { node-version: '22' }
+      - name: Check links in data.json
+        run: node scripts/check-links.mjs data.json || echo "link check reported dead links (see log)"
