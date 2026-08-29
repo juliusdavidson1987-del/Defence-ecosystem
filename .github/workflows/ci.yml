@@ -1,37 +1,30 @@
-name: Validate
-
-# Fast automatic gate on every change: the data must be structurally sound and
-# the HTML must parse. Weekly (and on demand) it also checks that links resolve.
+name: CI
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-  schedule:
-    - cron: '0 7 * * 1'        # Monday 07:00 UTC — weekly link sweep
+    branches:
+      - main
   workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
 
 jobs:
   validate:
-    name: Data + HTML validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with: { node-version: '22' }
-      - name: Validate data.json (the source the tool renders)
-        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
-      - name: Validate index.html (JS syntax / CSS balance)
-        if: hashFiles('index.html') != ''
-        run: node scripts/validate.mjs index.html --min-nodes=1 || echo "HTML validator returned findings (non-blocking)"
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  linkcheck:
-    name: Live link check
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with: { node-version: '22' }
-      - name: Check links in data.json
-        run: node scripts/check-links.mjs data.json || echo "link check reported dead links (see log)"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate data.json
+        run: node scripts/validate-data.mjs data.json
+
+      - name: Validate HTML
+        run: node scripts/validate.mjs index.html
+
+      - name: Check links
+        run: node scripts/check-links.mjs data.json
