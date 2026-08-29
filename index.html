@@ -5959,7 +5959,7 @@ function renderLvTable(){
   const ids=lvRows();
   if(typeof updateLvFilterCount==='function') updateLvFilterCount();
   const th=(c,label)=>`<th data-c="${c}" tabindex="0" role="button" aria-label="Sort by ${label}">${label}${lvSort.col===c?(lvSort.dir>0?' ▲':' ▼'):''}</th>`;
-  let h=`<thead><tr><th aria-label="Favourite"></th>${th('name','Organisation')}<th>Type</th>${th('area','Area')}${th('access','Access')}${th('trl','TRL')}<th>Domains</th><th>Contact</th><th aria-label="Compare"></th></tr></thead><tbody>`;
+  let h=`<thead><tr><th aria-label="Favourite"></th>${th('name','Organisation')}<th>Type</th>${th('area','Area')}${th('access','Access')}${th('trl','TRL')}<th>Domains</th><th>Contact</th><th aria-label="Compare"></th></tr><\/thead><tbody>`;
   ids.forEach(id=>{ const t=tagsFor(id); const n=NODE[id]; const ac=ACCESSCOL[accessOf(id)]; const ty=entityType(id); const et=ETYPES[ty];
     h+=`<tr data-id="${id}" tabindex="0" role="button" aria-label="${esc(n.l)}">`+
       `<td><button class="lvstar ${isFav(id)?'on':''}" data-act="fav" aria-label="Favourite">${isFav(id)?'★':'☆'}</button></td>`+
@@ -6019,7 +6019,7 @@ function renderCompare(){
     ['Offers',id=>tagsFor(id).o.map(x=>NEEDLAB[x]||x).join(', ')],
     ['Contact',id=>{const e=NODE[id].entry;return `${firstUrl(e)?`<a class="ilink" href="https://${firstUrl(e).replace(/^https?:\/\//,'')}" target="_blank" rel="noopener">${firstUrl(e)}</a>`:''}${firstEmail(e)?`<br><a class="ilink mail" href="mailto:${firstEmail(e)}">${firstEmail(e)}</a>`:''}`;}],
     ['Your contacts',id=>String(((CRM.contacts||{})[id]||[]).length)]];
-  let h=`<table class="cmptable"><thead><tr><th class="rl"></th>`+compareList.map(id=>`<th>${esc(NODE[id].l)}<button class="cmprm" data-id="${id}">×</button></th>`).join('')+`</tr></thead><tbody>`;
+  let h=`<table class="cmptable"><thead><tr><th class="rl"></th>`+compareList.map(id=>`<th>${esc(NODE[id].l)}<button class="cmprm" data-id="${id}">×</button></th>`).join('')+`</tr><\/thead><tbody>`;
   rowsDef.forEach(rd=>{ h+=`<tr><td class="rl">${rd[0]}</td>`+compareList.map(id=>`<td>${rd[1](id)||'—'}</td>`).join('')+`</tr>`; });
   h+=`</tbody></table>`;
   body.innerHTML=h;
