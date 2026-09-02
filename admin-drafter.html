@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Defence Ecosystem — Node Drafter</title>
+<style>
+:root{--bg:#0A1120;--panel:#0F1A2E;--line:#20304C;--ink:#E7EEF9;--faint:#8CA0BF;--accent:#7fe0c8;--warn:#ffc09e;--bad:#ff8f8f;--good:#7fe0c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;padding:22px;max-width:960px;margin:0 auto}
+h1{font-size:19px;margin:0 0 2px}.sub{color:var(--faint);font-size:12px;margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:14px}
+.step{font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+label{display:block;font-size:11px;color:var(--faint);margin:9px 0 3px}
+input,select,textarea{width:100%;background:#0A1526;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font:inherit}
+textarea{min-height:74px;resize:vertical;font-family:"IBM Plex Mono",monospace;font-size:12px}
+.row{display:flex;gap:10px}.row>div{flex:1}
+button{background:linear-gradient(180deg,#16263F,#0E1A2C);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 13px;font:inherit;cursor:pointer;transition:.13s}
+button:hover{border-color:var(--accent)}button.primary{border-color:var(--accent);color:var(--accent)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:11px;color:var(--faint);margin-top:6px}
+.dupe{border:1px solid #5a3a2a;background:#1c1409;border-radius:8px;padding:9px 11px;margin-top:8px}
+.dupe.hard{border-color:#6a2a2a;background:#1c0c0c}
+.chk{font-size:12px;margin:2px 0}.chk.ok{color:var(--good)}.chk.bad{color:var(--bad)}.chk.warn{color:var(--warn)}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12px}
+.pill{display:inline-block;font-size:10px;border:1px solid var(--line);border-radius:20px;padding:2px 8px;margin:2px 3px 0 0;color:var(--faint)}
+a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
+</style></head><body>
+
+<h1>Node Drafter</h1>
+<div class="sub">Draft a verified, correctly-tagged, dedupe-checked node — then copy the SQL or (if configured) add it in one click. Accuracy over speed: always review before adding.</div>
+
+<div class="card">
+  <div class="step">1 · The organisation</div>
+  <div class="row"><div>
+    <label>Name</label><input id="name" placeholder="e.g. Falcon Autonomy">
+  </div><div>
+    <label>Official website</label><input id="url" placeholder="falconautonomy.ae">
+  </div></div>
+  <div class="row"><div>
+    <label>Nation</label><input id="nation" list="nations" placeholder="UAE">
+    <datalist id="nations"></datalist>
+  </div><div>
+    <label>Type</label><select id="type"></select>
+  </div><div>
+    <label>TRL</label><select id="trl">
+      <option value="1,5">1–5 (early / pre-seed)</option><option value="3,9" selected>3–9 (broad)</option>
+      <option value="6,9">6–9 (fielded / operational)</option><option value="2,7">2–7 (developing)</option></select>
+  </div></div>
+  <label>Notes for the AI (optional — anything you know that helps)</label>
+  <input id="notes" placeholder="e.g. spun out of Khalifa University; counter-UAS focus">
+  <div style="margin-top:11px"><button class="primary" onclick="checkDupes()">Check for duplicates</button></div>
+  <div id="dupeBox"></div>
+</div>
+
+<div class="card">
+  <div class="step">2 · Draft the details with AI</div>
+  <div class="tiny">Two ways — use whichever suits you:</div>
+  <div style="margin:9px 0"><button onclick="genPrompt()">① Copy a prompt for Claude</button>
+    <button id="efBtn" onclick="callEdgeFn()" style="display:none">⚡ Draft via Edge Function</button></div>
+  <label>Prompt (paste into your Claude session)</label><textarea id="prompt" readonly></textarea>
+  <label>Paste Claude's JSON reply here</label><textarea id="reply" placeholder='{"does":"...","type":"startup","domains":["ai","counteruas"],"trl":[5,8],"nation":"UAE"}'></textarea>
+  <div style="margin-top:9px"><button class="primary" onclick="applyReply()">Apply reply → build node</button></div>
+  <div class="hint">The prompt tells Claude the exact taxonomy and house style, and asks for JSON only. It also reminds it: verified facts only, concise, representative not exhaustive.</div>
+</div>
+
+<div class="card">
+  <div class="step">3 · Review &amp; validate</div>
+  <div class="row"><div><label>ID</label><input id="f_id" class="mono"></div><div><label>Parent</label><input id="f_parent" class="mono"></div></div>
+  <label>Label</label><input id="f_label">
+  <label>Description (does)</label><textarea id="f_does" style="min-height:56px"></textarea>
+  <div class="row"><div><label>Website (entry)</label><input id="f_entry"></div><div><label>Tags (jsonb)</label><input id="f_tags" class="mono"></div></div>
+  <div id="valBox" style="margin-top:10px"></div>
+  <div id="parentNote" class="hint"></div>
+</div>
+
+<div class="card">
+  <div class="step">4 · Add it</div>
+  <button class="primary" onclick="buildSQL()">Build SQL</button>
+  <button id="insertBtn" onclick="insertDirect()" style="display:none">⚡ Insert directly</button>
+  <span class="tiny" style="margin-left:8px">After adding, run the nightly sync (or the sync action) so data.json catches up.</span>
+  <label style="margin-top:11px">SQL — paste into Supabase → SQL Editor → Run</label><textarea id="sqlOut" readonly style="min-height:120px"></textarea>
+  <button onclick="copy('sqlOut')" style="margin-top:8px">Copy SQL</button>
+</div>
+
+<div class="card" style="background:none;border-style:dashed">
+  <div class="step">Config</div>
+  <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
+  <label>Edge Function URL (optional — enables one-click AI draft &amp; insert)</label><input id="cfg_ef" class="mono" placeholder="https://<proj>.functions.supabase.co/draft-node">
+  <div class="hint">The anon key only reads. Direct insert and one-click AI drafting go through the Edge Function (which holds the service-role &amp; Anthropic keys server-side). Leave the Edge Function blank to use the copy-paste + SQL flow, which needs no extra setup.</div>
+</div>
+
+<script type="module">
+import * as E from './drafter-engine.mjs';
+const $=id=>document.getElementById(id);
+const DEFAULT_URL='https://igvxlmbndpuegibykygq.supabase.co';
+const DEFAULT_KEY='sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf';
+let NODES=[], IDS=new Set();
+
+// populate selectors
+$('type').innerHTML=Object.keys(E.TYPE_TAGS).map(t=>`<option>${t}</option>`).join('');
+$('nations').innerHTML=[...new Set(Object.keys(E.COUNTRY).map(k=>k.replace(/\b\w/g,c=>c.toUpperCase())))].map(n=>`<option>${n}</option>`).join('');
+$('cfg_url').value=localStorage.getItem('de_url')||DEFAULT_URL;
+$('cfg_key').value=localStorage.getItem('de_key')||DEFAULT_KEY;
+$('cfg_ef').value=localStorage.getItem('de_ef')||'';
+['cfg_url','cfg_key','cfg_ef'].forEach(id=>$(id).addEventListener('change',()=>{localStorage.setItem('de_'+id.slice(4),$(id).value);toggleEF();}));
+function toggleEF(){ const on=!!$('cfg_ef').value.trim(); $('efBtn').style.display=on?'':'none'; $('insertBtn').style.display=on?'':'none'; }
+toggleEF();
+
+async function loadNodes(){
+  if(NODES.length) return;
+  const url=$('cfg_url').value.replace(/\/+$/,''), key=$('cfg_key').value;
+  try{
+    const r=await fetch(url+'/rest/v1/published_nodes?select=id,label,entry,parent&limit=5000',{headers:{apikey:key,Authorization:'Bearer '+key}});
+    if(r.ok){ NODES=await r.json(); }
+  }catch(e){}
+  if(!NODES.length){ try{ const r=await fetch('data.json'); if(r.ok) NODES=(await r.json()).nodes; }catch(e){} }
+  IDS=new Set(NODES.map(n=>n.id));
+}
+window.checkDupes=async()=>{
+  await loadNodes();
+  const box=$('dupeBox'); const hits=E.dedupeCheck($('name').value,$('url').value,NODES);
+  if(!hits.length){ box.innerHTML=`<div class="chk ok" style="margin-top:8px">✓ No likely duplicates in ${NODES.length} nodes — looks new.</div>`; return; }
+  const hard=hits[0].score>=9;
+  box.innerHTML=`<div class="dupe ${hard?'hard':''}"><b>${hard?'⚠ Likely already in the map':'Possible overlap — check before adding'}:</b>`+
+    hits.map(h=>`<div class="chk warn">• ${h.label} <span class="tiny">[${h.id}] — ${h.why.join(', ')}</span></div>`).join('')+
+    `<div class="tiny" style="margin-top:5px">If one of these IS your organisation, edit it instead of adding a duplicate.</div></div>`;
+};
+window.genPrompt=async()=>{
+  await loadNodes();
+  const name=$('name').value.trim(), url=$('url').value.trim(), nation=$('nation').value.trim(), notes=$('notes').value.trim();
+  const p=`You are helping catalogue an organisation for a defence-innovation ecosystem map. Return ONLY minified JSON, no prose, no markdown.
+
+Organisation: ${name}
+Website: ${url}
+Nation: ${nation||'(infer)'}
+${notes?'Notes: '+notes:''}
+
+Return JSON with these keys:
+- "does": one factual sentence (max ~30 words), house style: concise, verified facts only, no marketing. What it actually does and why it matters to defence.
+- "type": ONE of ${Object.keys(E.TYPE_TAGS).join(', ')}
+- "domains": array from ${E.KNOWN_DOMAINS.join(', ')} (1-4 most relevant; use "xcut" if genuinely cross-cutting)
+- "trl": [low,high] integers 1-9 (maturity of what they field)
+- "nation": the country name
+
+Rules: representative not exhaustive; if you are not confident the organisation is real and defence-relevant, set "does" to "UNVERIFIED" and explain nothing. Do not invent facts.`;
+  $('prompt').value=p; copy('prompt'); toast('Prompt copied — paste into Claude');
+};
+window.applyReply=()=>{
+  let raw=$('reply').value.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
+  let j; try{ j=JSON.parse(raw); }catch(e){ return toast('Could not parse JSON — check the reply'); }
+  if((j.does||'').includes('UNVERIFIED')){ return toast('AI flagged this as UNVERIFIED — do not add.'); }
+  const nation=$('nation').value.trim()||j.nation||'';
+  if(j.type) $('type').value=j.type;
+  const node=E.buildNode({name:$('name').value.trim(),url:$('url').value.trim(),nation,type:j.type||$('type').value,domains:j.domains||[],trl:j.trl,does:j.does},IDS);
+  fillForm(node); validate();
+};
+function fillForm(n){ $('f_id').value=n.id;$('f_parent').value=n.parent||'';$('f_label').value=n.label;$('f_does').value=n.does||'';$('f_entry').value=n.entry||'';$('f_tags').value=JSON.stringify(n.tags); $('parentNote').textContent=n._parentNote||''; }
+window.validate=()=>{
+  const box=$('valBox'); const out=[];
+  const id=$('f_id').value.trim();
+  out.push(id?(IDS.has(id)?['warn','ID exists — this will UPDATE that node']:['ok','ID unique']):['bad','ID missing']);
+  out.push($('f_parent').value.trim()?( NODES.some(n=>n.id===$('f_parent').value.trim())||!NODES.length ?['ok','parent set']:['bad','parent not found in map']):['bad','parent missing']);
+  out.push($('f_does').value.trim().length>10?['ok','has description']:['bad','description too short']);
+  out.push($('f_entry').value.trim()?['ok','has link']:['warn','no link']);
+  try{ const t=JSON.parse($('f_tags').value); (t.d||[]).every(x=>E.KNOWN_DOMAINS.includes(x))?out.push(['ok','tags valid']):out.push(['warn','unknown domain in tags']); }catch(e){ out.push(['bad','tags not valid JSON']); }
+  box.innerHTML=out.map(([c,t])=>`<div class="chk ${c}">${c==='ok'?'✓':c==='warn'?'⚠':'✗'} ${t}</div>`).join('');
+  return !out.some(([c])=>c==='bad');
+};
+['f_id','f_parent','f_does','f_entry','f_tags'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id)validate();}));
+function currentNode(){ return {id:$('f_id').value.trim(),label:$('f_label').value.trim(),parent:$('f_parent').value.trim(),kind:'org',does:$('f_does').value.trim(),entry:$('f_entry').value.trim(),tags:JSON.parse($('f_tags').value)}; }
+window.buildSQL=()=>{ if(!validate())return toast('Fix the ✗ items first'); $('sqlOut').value=E.nodeToSQL(currentNode()); toast('SQL built'); };
+window.callEdgeFn=async()=>{
+  const ef=$('cfg_ef').value.trim(); if(!ef)return;
+  toast('Calling Edge Function…');
+  try{ const r=await fetch(ef,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('name').value,url:$('url').value,nation:$('nation').value,notes:$('notes').value})});
+    const j=await r.json(); $('reply').value=JSON.stringify(j); applyReply(); }
+  catch(e){ toast('Edge Function error — see console'); console.error(e); }
+};
+window.insertDirect=async()=>{
+  const ef=$('cfg_ef').value.trim(); if(!ef)return; if(!validate())return toast('Fix the ✗ items first');
+  if(!confirm('Insert this node into Supabase now?'))return;
+  try{ const r=await fetch(ef.replace(/\/draft-node$/,'/insert-node'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(currentNode())});
+    r.ok?toast('✓ Inserted — run the sync to update data.json'):toast('Insert failed: '+r.status); }
+  catch(e){ toast('Insert error — see console'); console.error(e); }
+};
+window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
+function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
+</script>
+</body></html>
