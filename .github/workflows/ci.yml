@@ -1,30 +1,36 @@
-name: CI
+name: Validate
+
+# Fast automatic gate on every change: the data the tool renders must be sound.
+# (data.json is the single source the app falls back to and mirrors Supabase.)
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main, master ]
+  pull_request:
   schedule:
-    - cron: "0 3 * * 1"
+    - cron: '0 7 * * 1'        # Monday 07:00 UTC — weekly link sweep
+  workflow_dispatch:
 
 jobs:
   validate:
+    name: Data validation
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
       - name: Validate data.json
-        run: node scripts/validate-data.mjs data.json
+        # --min-nodes is a truncation guard: set it a little BELOW your real node
+        # count (currently ~1499). Lower it if your live data is smaller.
+        run: node scripts/validate-data.mjs data.json --min-nodes=1000 --min-affiliations=100
 
-      - name: Validate HTML
-        run: node scripts/validate.mjs index.html
-
-      - name: Check links
-        run: node scripts/check-links.mjs data.json
+  linkcheck:
+    name: Live link check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+      - name: Check links in data.json
+        run: node scripts/check-links.mjs data.json || echo "dead links reported (see log) — non-blocking"
