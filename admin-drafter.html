@@ -124,6 +124,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div id="feedbackBox" style="margin-top:8px"></div>
 </div>
 
+<div class="card">
+  <div class="step">Web finds — pending</div>
+  <div class="tiny">Real organisations surfaced by the finder's "Beyond the map" web search (public searches + your own), deduped against the map. <b>Add →</b> loads one into Step 1 to draft &amp; stage; <b>Dismiss</b> drops it.</div>
+  <div style="margin-top:9px"><button onclick="loadWebFinds()">↻ Load web finds</button></div>
+  <div id="webfindsBox" style="margin-top:8px"></div>
+</div>
+
 <div class="card" style="background:none;border-style:dashed">
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
@@ -149,6 +156,7 @@ $('cfg_secret').value=localStorage.getItem('de_secret')||'';
 ['cfg_url','cfg_key','cfg_ef','cfg_secret'].forEach(id=>$(id).addEventListener('change',()=>{localStorage.setItem('de_'+id.slice(4),$(id).value);toggleEF();}));
 function toggleEF(){ const on=!!$('cfg_ef').value.trim(); $('efBtn').style.display=on?'':'none'; $('insertBtn').style.display=on?'':'none'; const sb=$('stageBtn'); if(sb)sb.style.display=on?'':'none'; }
 const esc=s=>String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const escA=s=>String(s||'').replace(/"/g,'&quot;').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 function efBase(){ return $('cfg_ef').value.trim(); }
 function efUrl(name){ return efBase().replace(/\/draft-node$/,'/'+name); }
 function efHeaders(){ return {'Content-Type':'application/json','x-drafter-secret':$('cfg_secret').value.trim()}; }
@@ -293,6 +301,7 @@ window.loadStats=async()=>{
     html+=tile(s.corrections&&s.corrections.total,'Corrections',(s.corrections&&s.corrections.pending!=null)?(s.corrections.pending+' pending'):'');
     html+=tile(s.claims&&s.claims.total,'Claims',(s.claims&&s.claims.pending!=null)?(s.claims.pending+' pending'):'');
     html+=tile(s.feedback&&s.feedback.total,'Feedback',(s.feedback&&s.feedback.pending!=null)?(s.feedback.pending+' pending'):'');
+    html+=tile(s.webfinds&&s.webfinds.total,'Web finds',(s.webfinds&&s.webfinds.pending!=null)?(s.webfinds.pending+' pending'):'');
     html+=tile(s.searches&&s.searches.rankTotal,'AI searches',((s.searches&&s.searches.rankToday)||0)+' today');
     html+=tile(s.searches&&s.searches.webTotal,'Web gap-fills',((s.searches&&s.searches.webToday)||0)+' today');
     html+=tile(s.events&&s.events.total,'Usage events');
@@ -439,6 +448,33 @@ async function setFeedback(id,status){
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'feedback-set',id,status})});
     if(r.ok){ toast(status==='resolved'?'Feedback resolved':'Feedback dismissed'); loadFeedback(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
+}
+window.loadWebFinds=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  const box=$('webfindsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'webfinds-list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json();
+    if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
+    const fs=j.webfinds||[];
+    if(!fs.length){ box.innerHTML='<div class="tiny">No pending web finds.</div>'; return; }
+    box.innerHTML=fs.map((f,i)=>`<div class="chk" style="display:block"><b>${esc(f.name||'')}</b> <span class="tiny">#${esc(f.id)} · <a href="${escA(f.url)}" target="_blank" rel="noopener noreferrer">${esc((f.url||'').replace(/^https?:\/\//,''))}</a></span><br><span class="tiny">${esc((f.why||'').slice(0,220))}${f.query?(' · query: “'+esc((f.query||'').slice(0,80))+'”'):''}</span><div style="margin-top:6px;white-space:nowrap"><button class="addwf primary" data-idx="${i}">Add →</button> <button class="diswf" data-idx="${i}">Dismiss</button></div></div>`).join('');
+    box.querySelectorAll('.addwf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; addWebFind(f.id,f.name,f.url); });
+    box.querySelectorAll('.diswf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; setWebFind(f.id,'dismissed'); });
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach web finds.</div>'; console.error(e); }
+};
+async function addWebFind(id,name,url){
+  $('name').value=name||''; $('url').value=url||''; window.scrollTo(0,0);
+  toast('Loaded into Step 1 — draft it (⚡), then Stage for review');
+  checkDupes();
+  setWebFind(id,'added',true);
+}
+async function setWebFind(id,status,silent){
+  if(status==='dismissed'&&!confirm('Dismiss web find #'+id+'?'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'webfind-set',id,status})});
+    if(r.ok){ if(!silent)toast(status==='dismissed'?'Dismissed':'Marked added'); loadWebFinds(); } else if(!silent) toast('Failed: '+r.status); }
+  catch(e){ if(!silent){ toast('error — see console'); console.error(e); } }
 }
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
 function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }

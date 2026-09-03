@@ -906,6 +906,7 @@
   <div class="sect" id="s-funding"><div class="lab">Potential funding availability</div><div id="pfunding"></div></div>
   <div class="sect" id="s-kids"><div class="lab">Contains / connects to</div><div class="kids" id="pkids"></div></div>
   <div class="sect" id="s-related"><div class="lab">Related organisations</div><div class="kids" id="prelated"></div></div>
+  <div class="sect" id="s-web"><div class="lab">Check for updates</div><button class="plink" id="pwebBtn">🌐 Search the web for this area</button><div id="pwebfinds" style="margin-top:8px"></div></div>
   <div class="sect" id="s-crm"><div id="pcrm"></div></div>
   <button class="plink" id="paddsub">＋ Add a sub-part / department here</button>
 </section>
@@ -990,7 +991,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.4.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.4.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5091,7 +5092,7 @@ function finderCandidates(sel,desc){
 }
 function finderEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
 function finderEscAttr(s){return String(s||'').replace(/"/g,'&quot;').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
-function finderAiStyle(){ if(document.getElementById('aiDoorsStyle'))return; const s=document.createElement('style'); s.id='aiDoorsStyle'; s.textContent='@keyframes aiSpin{to{transform:rotate(360deg)}}#finderResults .aiload{display:flex;align-items:center;gap:10px;margin-top:3px}#finderResults .aispin{width:15px;height:15px;border:2px solid rgba(127,224,200,.25);border-top-color:#7fe0c8;border-radius:50%;animation:aiSpin .8s linear infinite;flex:0 0 auto}#finderResults .aidots::after{display:inline-block;width:1.1em;text-align:left;content:"";animation:aiDots 1.4s steps(4,end) infinite}@keyframes aiDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}#finderResults .rcard-web .rname{color:#e9deff}'; document.head.appendChild(s); }
+function finderAiStyle(){ if(document.getElementById('aiDoorsStyle'))return; const s=document.createElement('style'); s.id='aiDoorsStyle'; s.textContent='@keyframes aiSpin{to{transform:rotate(360deg)}}.aiload{display:flex;align-items:center;gap:10px;margin-top:3px}.aispin{width:15px;height:15px;border:2px solid rgba(127,224,200,.25);border-top-color:#7fe0c8;border-radius:50%;animation:aiSpin .8s linear infinite;flex:0 0 auto}.aidots::after{display:inline-block;width:1.1em;text-align:left;content:"";animation:aiDots 1.4s steps(4,end) infinite}@keyframes aiDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}.rcard-web .rname{color:#e9deff}'; document.head.appendChild(s); }
 function finderDomOf(u){ try{return new URL(u).hostname.replace(/^www\./,'').toLowerCase();}catch(_){const m=(u||'').toLowerCase().match(/([a-z0-9-]+\.)+[a-z]{2,}/);return m?m[0].replace(/^www\./,''):'';} }
 let _finderMappedDomains=null;
 function finderMappedDomains(){ if(_finderMappedDomains)return _finderMappedDomains; const set=new Set(); Object.values(NODE).forEach(n=>{const m=((n.entry||'')+'').toLowerCase().match(/([a-z0-9-]+\.)+[a-z]{2,}/); if(m)set.add(m[0].replace(/^www\./,''));}); _finderMappedDomains=set; return set; }
@@ -5109,6 +5110,8 @@ async function finderWebSearch(desc,exclude,anchorEl){
     const mapped=finderMappedDomains();
     const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
     if(!finds.length){ w.innerHTML=`<div class="fnone">No solid new organisations turned up on the web — the map may already cover this.</div>`; return; }
+    // Capture these genuinely-new finds (post map-dedupe) so the maintainer can evaluate & add them. Fire-and-forget.
+    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:(desc||'').slice(0,400),source:'public',status:'pending'})))}).catch(()=>{}); } }catch(_){}
     let html=`<div class="rtier"><div class="rcount">🌐 Beyond the map <span class="rtn">${finds.length}</span></div><div class="rtsub">Found via live web search — <b>not yet in the map, unverified</b>. Suggestions to check, not endorsements.</div>`;
     finds.forEach(x=>{ const host=finderDomOf(x.url);
       html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
@@ -5776,7 +5779,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.4.0 (native feedback → straight into the maintainer review queue, no third-party form · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.4.1 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5889,6 +5892,31 @@ function deriveSourceFromEntry(id){
   let host=m[0].replace(/[.,;]+$/,'');
   return 'https://'+host;
 }
+async function nodeWebSearch(id){
+  const n=NODE[id]; const box=document.getElementById('pwebfinds'); if(!n||!box)return;
+  finderAiStyle();
+  box.innerHTML=`<div class="rtier"><div class="rcount">🌐 Checking the web for this area<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">Looking for organisations the map may be missing — up to a minute. Please don’t refresh.</span></div></div>`;
+  const par=PARENT[id]?NODE[PARENT[id]]:null;
+  const nat=(typeof nationCodeFor==='function')?nationCodeFor(id):'';
+  const natName={uk:'the UK',us:'the US',nato:'NATO',eu:'Europe',eu_inst:'the EU',fr:'France',de:'Germany',it:'Italy',nl:'the Netherlands',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'the UAE',sa:'Saudi Arabia',ua:'Ukraine'}[nat]||'';
+  const desc=`Find real, currently-operating defence innovation or procurement organisations that belong in this area of a UK/allied defence map: "${n.l}"${par?(' — part of '+par.l):''}${natName?(', '+natName):''}. Surface bodies the map may be missing, especially recent or newly-relevant ones.`;
+  const ex=[]; (n.children||[]).forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
+  if(par&&par.children) par.children.forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
+  try{
+    const r=await fetch(FINDDOOR_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({web:true,description:desc,exclude:[...new Set(ex)].slice(0,80)})});
+    if(r.status===429){ box.innerHTML=`<div class="fnone">The web search is busy right now — please try again shortly.</div>`; return; }
+    const j=await r.json();
+    const mapped=finderMappedDomains();
+    const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
+    if(!finds.length){ box.innerHTML=`<div class="fnone">Nothing new turned up on the web for this area — the map may already cover it.</div>`; return; }
+    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:('area: '+n.l).slice(0,400),source:'node',status:'pending'})))}).catch(()=>{}); } }catch(_){}
+    let html=`<div class="rtier"><div class="rcount">🌐 Found on the web <span class="rtn">${finds.length}</span></div><div class="rtsub">Not yet in the map, unverified — suggestions the maintainer can review and add.</div>`;
+    finds.forEach(x=>{ const host=finderDomOf(x.url);
+      html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
+    });
+    html+=`</div>`; box.innerHTML=html;
+  }catch(e){ box.innerHTML=`<div class="fnone">Couldn't reach the web search just now.</div>`; }
+}
 function renderPanelExtras(id){
   let src=(CRM.usersources||{})[id]||SOURCES[id];
   let srcHtml='';
@@ -5900,6 +5928,8 @@ function renderPanelExtras(id){
   const ff=freshnessFlag(id);
   const pflag=document.getElementById('pfreshness');
   if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }
+  { const wb=document.getElementById('pwebBtn'), wf=document.getElementById('pwebfinds');
+    if(wf) wf.innerHTML=''; if(wb) wb.onclick=()=>nodeWebSearch(id); }
   const a=document.getElementById('pactions');
   const _vDate=(CRM.verified||{})[id];
   a.innerHTML =

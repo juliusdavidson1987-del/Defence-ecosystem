@@ -262,3 +262,12 @@ browser-only config field, never committed.
   `admin-drafter.html` "Feedback — pending" via `review-node` `feedback-list`/`feedback-set`, and
   counted in analytics. `openSuggestForm()` was rewritten to open a native in-app modal; the
   `SUGGEST_FORM` Google-Form constant is removed. Anon inserts, service-role reads.
+- ✅ **Web-finds capture (2026-09-04, v4.4.1):** the finder's "Beyond the map" web suggestions
+  (previously ephemeral) are saved to a Supabase `web_finds` table (public inserts, `url` unique so
+  no dupes). Reviewed in `admin-drafter.html` "Web finds — pending" via `review-node`
+  `webfinds-list`/`webfind-set` — **Add →** loads a find into Step 1 to draft & stage, **Dismiss**
+  drops it; counted in analytics. Note the "Web gap-fills" analytics tile is a *run* meter
+  (`rate_limits`), while "Web finds" counts *captured* orgs. The web search can also be launched
+  from **any node panel** ("🌐 Search the web for this area", `nodeWebSearch()`) — useful at an
+  unfilled branch / dead end to check for orgs the map is missing; captures the same way
+  (`source='node'`).
