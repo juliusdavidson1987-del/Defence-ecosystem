@@ -166,8 +166,9 @@ Deterministic build scripts (Node, no deps, Node 18+):
   AI enrichment; without it, it drafts deterministically from the form.
 
 **Security:** anon key reads only. The Anthropic key and Supabase service-role key live *only*
-inside Edge Functions (server-side secrets), never in the client. Add a shared-secret gate to
-`insert-node` before exposing it.
+inside Edge Functions (server-side secrets), never in the client. The `insert-node` shared-secret
+gate (`x-drafter-secret`) is implemented and deployed (2026-09-03) — the client sends it from a
+browser-only config field, never committed.
 
 ---
 
@@ -203,6 +204,10 @@ inside Edge Functions (server-side secrets), never in the client. Add a shared-s
 - ✅ **Confirmed live (2026-09-03):** the deployed site runs the current build — About reads
   **v4.1.1**, the graded finder returns EXACT/CLOSE/POTENTIAL tiers, and `affiliationLine()`
   renders `◇` lines from live data (e.g. EDGE Group family). The old About-version bug is fixed.
-- Optional Stage 2 "Mode B" (Edge Functions for one-click) — needs an Anthropic key + Supabase CLI.
+- ✅ **Stage 2 "Mode B" deployed & verified (2026-09-03):** `draft-node` + `insert-node`
+  Edge Functions live at `…functions.supabase.co`, gated by an `x-drafter-secret` shared
+  secret (fail-closed; verified 401 without it). `draft-node` uses `claude-opus-5`. Secrets
+  `ANTHROPIC_API_KEY` + `DRAFTER_SHARED_SECRET` set in Supabase; service-role key auto-injected.
+  Client sends the secret from a browser-only config field. See `supabase/functions/README.md`.
 - Angels could get their own sub-group under Funding if desired (currently under `f_vc`).
 - Ploughshare/Serapis/DAIC could move under NADG NA-Innovation if confirmed internally.
