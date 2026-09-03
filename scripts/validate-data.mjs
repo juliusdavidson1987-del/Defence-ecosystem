@@ -17,6 +17,7 @@
  *   8.  tags shape { w,o,t,d,a,g } where present; domains on the known list (warn)
  *   9.  affiliation shape { net, role, note } where present
  *   10. Affiliation count floor (catches an accidental affiliation wipe)
+ *   11. Org nodes carry a geo tag (tags.g) — tagless orgs default to UK nationality (warn)
  *
  * USAGE:
  *   node validate-data.mjs data.json
@@ -86,6 +87,13 @@ nodes.forEach(n => { const t = n.tags; if (!t) return;
 });
 tagIssues.length ? fail('Tags shape', `${tagIssues.length} malformed: ${tagIssues.slice(0,8).join(', ')}`) : pass('Tags shape');
 domIssues.size ? warn('Known domains', `unknown domain tag(s) (will fall to cross-cutting): ${[...domIssues].join(', ')}`) : pass('Known domains');
+
+/* 8b. org nodes should carry a geo tag (tags.g). A tagless org — or one missing g —
+   falls through nationCodeFor() to the tags default {g:'uk'}, so it is silently
+   treated as UK and shown UK procurement/opportunities. This is the class of bug
+   that made per-nation gateways default to the UK (fixed in the app v4.3.1). */
+const noGeo = nodes.filter(n => n.kind === 'org' && (!n.tags || !n.tags.g));
+noGeo.length ? warn('Org geo tag', `${noGeo.length} org node(s) missing tags.g — will default to UK nationality/opportunities (e.g. ${noGeo.slice(0,6).map(n=>n.id).join(', ')})`) : pass('Org geo tag');
 
 /* 9. affiliation shape */
 const affNodes = nodes.filter(n => n.affiliation);

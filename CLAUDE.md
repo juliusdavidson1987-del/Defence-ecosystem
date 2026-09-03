@@ -183,7 +183,8 @@ browser-only config field, never committed.
 - **Before running any build script, verify the base data isn't stale** — check node and
   affiliation counts before *and* after. A stale `data.json` base once nearly wiped 105 affiliations.
 - **Validate after data changes:** `node scripts/validate-data.mjs data.json` (unique ids, no
-  orphaned parents, valid tags/affiliations, count floors).
+  orphaned parents, valid tags/affiliations, count floors, **org geo-tag check** — warns on org
+  nodes missing `tags.g`, which the app would treat as UK; catches the v4.3.1 bug class in data).
 - **Test HTML changes:** extract the app `<script>` and `node --check` it; grep for critical
   features (`rtier-exact`, `affiliationLine`, `published_nodes`, `two-finger pinch-zoom`); then
   a Playwright smoke test (dismiss the `#welcome` overlay before interacting).
