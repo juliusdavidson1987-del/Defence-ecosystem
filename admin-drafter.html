@@ -103,6 +103,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div id="pendingBox" style="margin-top:8px"></div>
 </div>
 
+<div class="card">
+  <div class="step">Corrections — pending</div>
+  <div class="tiny">Submitted corrections. <b>Load node to edit</b> applies a valid fix (edit the field, then ⚡ Insert directly rewrites the node), then <b>Resolve</b> — or <b>Dismiss</b> to drop it.</div>
+  <div style="margin-top:9px"><button onclick="loadEdits()">↻ Load corrections</button></div>
+  <div id="editsBox" style="margin-top:8px"></div>
+</div>
+
 <div class="card" style="background:none;border-style:dashed">
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
@@ -283,6 +290,43 @@ window.loadStats=async()=>{
     box.innerHTML=html;
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach analytics.</div>'; console.error(e); }
 };
+window.loadEdits=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  const box=$('editsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  const lbl=id=>{ const n=NODES.find(x=>x.id===id); return n?n.label:id; };
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'edits-list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json();
+    if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
+    const eds=j.edits||[];
+    if(!eds.length){ box.innerHTML='<div class="tiny">No pending corrections.</div>'; return; }
+    box.innerHTML=eds.map(e=>`<div class="chk" style="display:block"><b>${esc(lbl(e.node_id))}</b> <span class="tiny">[${esc(e.field||'')}] · #${esc(e.id)}${e.submitted_by?(' · '+esc(e.submitted_by)):''}</span><br><span class="tiny">“${esc((e.suggestion||'').slice(0,240))}”</span><div style="margin-top:6px;white-space:nowrap"><button class="ldedit primary" data-node="${esc(e.node_id)}">Load node to edit →</button> <button class="resedit" data-eid="${esc(e.id)}">Resolve</button> <button class="disedit" data-eid="${esc(e.id)}">Dismiss</button></div></div>`).join('');
+    box.querySelectorAll('.ldedit').forEach(b=>b.onclick=()=>loadNodeToEdit(b.dataset.node));
+    box.querySelectorAll('.resedit').forEach(b=>b.onclick=()=>setEdit(b.dataset.eid,'resolved'));
+    box.querySelectorAll('.disedit').forEach(b=>b.onclick=()=>setEdit(b.dataset.eid,'dismissed'));
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach corrections.</div>'; console.error(e); }
+};
+async function loadNodeToEdit(nodeId){
+  try{
+    const url=$('cfg_url').value.replace(/\/+$/,''), key=$('cfg_key').value;
+    const r=await fetch(url+'/rest/v1/published_nodes?select=*&id=eq.'+encodeURIComponent(nodeId),{headers:{apikey:key,Authorization:'Bearer '+key}});
+    const rows=await r.json(); const n=rows&&rows[0];
+    if(!n){ toast('Could not load that node (is it published?)'); return; }
+    $('f_id').value=n.id; $('f_parent').value=n.parent||''; $('f_label').value=n.label||''; $('f_does').value=n.does||''; $('f_entry').value=n.entry||''; $('f_tags').value=JSON.stringify(n.tags||{});
+    if(typeof validate==='function') validate();
+    window.scrollTo(0,0);
+    toast('Loaded '+nodeId+' into Step 3 — apply the fix, ⚡ Insert directly (rewrites it), then Resolve the correction');
+  }catch(e){ toast('Load failed — see console'); console.error(e); }
+}
+async function setEdit(id,status){
+  if(status==='dismissed'&&!confirm('Dismiss (drop) correction #'+id+'?'))return;
+  if(status==='resolved'&&!confirm('Mark correction #'+id+' resolved? Do this after you have applied & inserted the fix.'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'edit-set',id,status})});
+    if(r.ok){ toast(status==='dismissed'?'Dropped correction':'Correction resolved'); loadEdits(); } else toast('Failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
+}
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
 function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
 </script>

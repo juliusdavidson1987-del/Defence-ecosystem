@@ -230,3 +230,8 @@ browser-only config field, never committed.
   (`edits`), `claims`, usage `events`, and find-door search usage (from `rate_limits`), plus recent
   corrections/claims. The public tool already writes `edits`/`claims`/`events`/pending `nodes` via
   the anon key; counts show "—" for any table not present.
+- ✅ **Corrections review (2026-09-03):** `admin-drafter.html` "Corrections — pending" queue via
+  `review-node` `edits-list` / `edit-set`. Each correction: **Load node to edit** (fetches the live
+  node into Step 3 → fix the field → ⚡ Insert directly upserts = rewrite), **Resolve** (applied) or
+  **Dismiss** (dropped). `edit-set` marks the `edits` row `resolved`/`dismissed` (kept for history,
+  leaves the pending bucket).
