@@ -309,7 +309,8 @@ window.loadEdits=async()=>{
     if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
     const eds=j.edits||[];
     if(!eds.length){ box.innerHTML='<div class="tiny">No pending corrections.</div>'; return; }
-    box.innerHTML=eds.map(e=>`<div class="chk" style="display:block"><b>${esc(lbl(e.node_id))}</b> <span class="tiny">[${esc(e.field||'')}] · #${esc(e.id)}${e.submitted_by?(' · '+esc(e.submitted_by)):''}</span><br><span class="tiny">“${esc((e.suggestion||'').slice(0,240))}”</span><div style="margin-top:6px;white-space:nowrap"><button class="ldedit primary" data-node="${esc(e.node_id)}">Load node to edit →</button> <button class="resedit" data-eid="${esc(e.id)}">Resolve</button> <button class="disedit" data-eid="${esc(e.id)}">Dismiss</button></div></div>`).join('');
+    box.innerHTML=eds.map((e,i)=>`<div class="chk" style="display:block"><b>${esc(lbl(e.node_id))}</b> <span class="tiny">[${esc(e.field||'')}] · #${esc(e.id)}${e.submitted_by?(' · '+esc(e.submitted_by)):''}</span><br><span class="tiny">“${esc((e.suggestion||'').slice(0,240))}”</span><div style="margin-top:6px;white-space:nowrap"><button class="rpedit primary" data-idx="${i}">🔧 Repair with AI</button> <button class="ldedit" data-node="${esc(e.node_id)}">Load to edit</button> <button class="resedit" data-eid="${esc(e.id)}">Resolve</button> <button class="disedit" data-eid="${esc(e.id)}">Dismiss</button></div></div>`).join('');
+    box.querySelectorAll('.rpedit').forEach(b=>b.onclick=()=>repairCorrection(eds[+b.dataset.idx]));
     box.querySelectorAll('.ldedit').forEach(b=>b.onclick=()=>loadNodeToEdit(b.dataset.node));
     box.querySelectorAll('.resedit').forEach(b=>b.onclick=()=>setEdit(b.dataset.eid,'resolved'));
     box.querySelectorAll('.disedit').forEach(b=>b.onclick=()=>setEdit(b.dataset.eid,'dismissed'));
@@ -333,6 +334,37 @@ async function setEdit(id,status){
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'edit-set',id,status})});
     if(r.ok){ toast(status==='dismissed'?'Dropped correction':'Correction resolved'); loadEdits(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
+}
+async function repairCorrection(edit){
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  if(!edit||!edit.node_id)return;
+  const url=$('cfg_url').value.replace(/\/+$/,''), key=$('cfg_key').value, h={apikey:key,Authorization:'Bearer '+key};
+  toast('🔧 Repairing “'+edit.node_id+'” with AI — verifying on the web, up to a minute…');
+  try{
+    const [nr,pr]=await Promise.all([
+      fetch(url+'/rest/v1/published_nodes?select=*&id=eq.'+encodeURIComponent(edit.node_id),{headers:h}),
+      fetch(url+'/rest/v1/published_nodes?select=id,label&kind=eq.branch&limit=300',{headers:h})
+    ]);
+    const node=(await nr.json())[0]; const parents=await pr.json();
+    if(!node){ toast('Could not load node '+edit.node_id); return; }
+    const r=await fetch(efUrl('repair-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({
+      node:{id:node.id,label:node.label,parent:node.parent,does:node.does,entry:node.entry,tags:node.tags},
+      correction:{field:edit.field,suggestion:edit.suggestion}, parents
+    })});
+    if(r.status===401){ toast('Unauthorised — check the shared secret'); return; }
+    const j=await r.json(); const rep=j.repair;
+    if(!rep){ toast('Repair failed: '+(j.error||r.status)); return; }
+    $('f_id').value=node.id;
+    $('f_parent').value=rep.parent||node.parent||'';
+    $('f_label').value=rep.label||node.label||'';
+    $('f_does').value=rep.does||node.does||'';
+    $('f_entry').value=rep.entry||node.entry||'';
+    $('f_tags').value=JSON.stringify(rep.tags||node.tags||{});
+    $('parentNote').textContent='🔧 AI repair: '+(rep.note||'(review the fields)')+' — check it, ⚡ Insert directly to apply, then Resolve the correction.';
+    if(typeof validate==='function') validate();
+    window.scrollTo(0,0);
+    toast('🔧 Repair proposed — review Step 3, then Insert directly to apply');
+  }catch(e){ toast('Repair error — see console'); console.error(e); }
 }
 window.loadClaims=async()=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');

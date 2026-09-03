@@ -235,6 +235,11 @@ browser-only config field, never committed.
   node into Step 3 → fix the field → ⚡ Insert directly upserts = rewrite), **Resolve** (applied) or
   **Dismiss** (dropped). `edit-set` marks the `edits` row `resolved`/`dismissed` (kept for history,
   leaves the pending bucket).
+- ✅ **AI repair (2026-09-03):** each correction has a "🔧 Repair with AI" button → gated
+  `repair-node` function (`claude-opus-5` + `web_search`) that verifies the correction (renames,
+  mergers, defunct bodies, reference URLs) and proposes a fully-rewritten node
+  (label/parent/does/entry/tags + a note), loaded into Step 3 for review → ⚡ Insert directly applies
+  → Resolve. Built for complex corrections (wrong parent, rename, defunct/merged, country confusion).
 - ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
   `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
   email-domain-vs-website match check to flag legit vs spam. Row kept for history.
