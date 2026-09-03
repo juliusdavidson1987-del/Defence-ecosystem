@@ -84,7 +84,8 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
   <label>Edge Function URL (optional — enables one-click AI draft &amp; insert)</label><input id="cfg_ef" class="mono" placeholder="https://<proj>.functions.supabase.co/draft-node">
-  <div class="hint">The anon key only reads. Direct insert and one-click AI drafting go through the Edge Function (which holds the service-role &amp; Anthropic keys server-side). Leave the Edge Function blank to use the copy-paste + SQL flow, which needs no extra setup.</div>
+  <label>Edge Function shared secret (sent as x-drafter-secret; stored only in this browser)</label><input id="cfg_secret" class="mono" type="password" placeholder="the DRAFTER_SHARED_SECRET you set on the functions">
+  <div class="hint">The anon key only reads. Direct insert and one-click AI drafting go through the Edge Function (which holds the service-role &amp; Anthropic keys server-side). The shared secret authorises the browser to those functions and is kept only in this browser (never committed). Leave the Edge Function blank to use the copy-paste + SQL flow, which needs no extra setup.</div>
 </div>
 
 <script type="module">
@@ -100,7 +101,8 @@ $('nations').innerHTML=[...new Set(Object.keys(E.COUNTRY).map(k=>k.replace(/\b\w
 $('cfg_url').value=localStorage.getItem('de_url')||DEFAULT_URL;
 $('cfg_key').value=localStorage.getItem('de_key')||DEFAULT_KEY;
 $('cfg_ef').value=localStorage.getItem('de_ef')||'';
-['cfg_url','cfg_key','cfg_ef'].forEach(id=>$(id).addEventListener('change',()=>{localStorage.setItem('de_'+id.slice(4),$(id).value);toggleEF();}));
+$('cfg_secret').value=localStorage.getItem('de_secret')||'';
+['cfg_url','cfg_key','cfg_ef','cfg_secret'].forEach(id=>$(id).addEventListener('change',()=>{localStorage.setItem('de_'+id.slice(4),$(id).value);toggleEF();}));
 function toggleEF(){ const on=!!$('cfg_ef').value.trim(); $('efBtn').style.display=on?'':'none'; $('insertBtn').style.display=on?'':'none'; }
 toggleEF();
 
@@ -170,14 +172,14 @@ window.buildSQL=()=>{ if(!validate())return toast('Fix the ✗ items first'); $(
 window.callEdgeFn=async()=>{
   const ef=$('cfg_ef').value.trim(); if(!ef)return;
   toast('Calling Edge Function…');
-  try{ const r=await fetch(ef,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('name').value,url:$('url').value,nation:$('nation').value,notes:$('notes').value})});
+  try{ const r=await fetch(ef,{method:'POST',headers:{'Content-Type':'application/json','x-drafter-secret':$('cfg_secret').value.trim()},body:JSON.stringify({name:$('name').value,url:$('url').value,nation:$('nation').value,notes:$('notes').value})});
     const j=await r.json(); $('reply').value=JSON.stringify(j); applyReply(); }
   catch(e){ toast('Edge Function error — see console'); console.error(e); }
 };
 window.insertDirect=async()=>{
   const ef=$('cfg_ef').value.trim(); if(!ef)return; if(!validate())return toast('Fix the ✗ items first');
   if(!confirm('Insert this node into Supabase now?'))return;
-  try{ const r=await fetch(ef.replace(/\/draft-node$/,'/insert-node'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(currentNode())});
+  try{ const r=await fetch(ef.replace(/\/draft-node$/,'/insert-node'),{method:'POST',headers:{'Content-Type':'application/json','x-drafter-secret':$('cfg_secret').value.trim()},body:JSON.stringify(currentNode())});
     r.ok?toast('✓ Inserted — run the sync to update data.json'):toast('Insert failed: '+r.status); }
   catch(e){ toast('Insert error — see console'); console.error(e); }
 };

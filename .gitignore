@@ -1,0 +1,10 @@
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Node
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
