@@ -249,6 +249,11 @@ browser-only config field, never committed.
   tagless nodes, and `nationCodeFor` trusted that `g` (the `^([a-z]{2})_` prefix regex doesn't match
   `nat_…`). `nationCodeFor` now resolves `nat_<code>` → code *before* the tags fallback, so each
   nation's gateway shows its own procurement text (e.g. Ukraine → Prozorro/Brave1).
+  **v4.3.2** extends the resolver to multi-part region codes the 2-letter map missed
+  (`us`, `nato`, `eu_inst`, `multi`, via a longest-prefix match), so the US gateway shows
+  SAM.gov/DIU and the NATO gateway shows NSPA/NCIA instead of UK. NB: the bug was only in the
+  synthetic `nat_*` branches — real org nodes resolve nationality via `ORG_NATION`/id-prefix, so
+  the validator's tagless-`g` warning is finder-geo completeness, not a nationality error.
 - ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
   `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
   email-domain-vs-website match check to flag legit vs spam. Row kept for history.

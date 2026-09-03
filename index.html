@@ -990,7 +990,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.3.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.3.2 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -2947,9 +2947,14 @@ let NAT_OPPS = {
 function nationCodeFor(id){
   if(ORG_NATION[id]) return ORG_NATION[id];
   const m=id.match(/^([a-z]{2})_/); const P={fr:'fr',de:'de',it:'it',nl:'nl',be:'be',se:'se',no:'no',fi:'fi',dk:'dk',ee:'ee',lv:'lv',lt:'lt',pl:'pl',cz:'cz',sk:'sk',hu:'hu',es:'es',pt:'pt',gr:'gr',ro:'ro',bg:'bg',hr:'hr',si:'si',al:'al',mk:'mk',me:'me',lu:'lu',is:'is',tr:'tr',ua:'ua',ca:'ca',au:'au',nz:'nz',kr:'kr',jp:'jp',il:'il'};
-  // Synthetic per-nation branches (nat_ua, nat_fr, nat_ua_procurement, …) — resolve the
-  // nation code from the id BEFORE the tags fallback, which defaults g:'uk' for tagless nodes.
-  const nm=id.match(/^nat_([a-z]{2,})(?:_|$)/); if(nm&&P[nm[1]]) return P[nm[1]];
+  // Synthetic per-nation branches (nat_ua, nat_us, nat_nato, nat_eu_inst, nat_us_procurement, …)
+  // — resolve the nation code from the id BEFORE the tags fallback (which defaults g:'uk' for
+  // tagless nodes). Longest-prefix match so multi-part codes (us, nato, eu_inst, multi) work too.
+  if(/^nat_/.test(id)){
+    const NAT_CODES=Object.assign({uk:'uk',us:'us',nato:'nato',eu_inst:'eu_inst',eu:'eu',multi:'unknown'}, P);
+    const parts=id.slice(4).split('_');
+    for(let take=parts.length; take>=1; take--){ const c=parts.slice(0,take).join('_'); if(NAT_CODES[c]) return NAT_CODES[c]; }
+  }
   if(m&&P[m[1]]) return P[m[1]];
   if(id==='eda'||id==='defis'||id==='edf'||id==='eudis'||id==='edip'||id==='asap_eu'||id==='occar'||id==='pesco'||id==='satcen'||id==='asd') return 'eu_inst';
   const t=tagsFor(id);
@@ -5759,7 +5764,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.3.1 (AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · fix: per-nation gateways no longer default to UK opportunities · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.3.2 (AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · fix: per-nation gateways — incl. US, NATO & EU — no longer default to UK opportunities · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
