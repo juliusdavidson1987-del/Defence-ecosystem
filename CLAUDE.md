@@ -242,8 +242,12 @@ browser-only config field, never committed.
   → Resolve. Built for complex corrections (wrong parent, rename, defunct/merged, country confusion).
   Corrections targeting a synthetic per-nation id (`nat_<code>` — a runtime branch, **not** a DB
   node) can't be node-repaired; the drafter detects the absent node and shows the live `reference`
-  values (`nations_procurement`/`gateways`) so you fix the reference layer instead. (Gotcha: unset
-  `gateways.<code>` makes the app show a generic fallback — the source of the Ukraine UK-leak.)
+  values (`nations_procurement`/`gateways`) so you fix the reference layer instead.
+- ✅ **Fix (v4.3.1, 2026-09-03):** synthetic per-nation gateway branches (`nat_<code>`) were showing
+  **UK** opportunities for every nation. Root cause: `tagsFor()` returns a default `{g:'uk'}` for
+  tagless nodes, and `nationCodeFor` trusted that `g` (the `^([a-z]{2})_` prefix regex doesn't match
+  `nat_…`). `nationCodeFor` now resolves `nat_<code>` → code *before* the tags fallback, so each
+  nation's gateway shows its own procurement text (e.g. Ukraine → Prozorro/Brave1).
 - ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
   `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
   email-domain-vs-website match check to flag legit vs spam. Row kept for history.
