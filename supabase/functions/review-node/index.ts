@@ -73,6 +73,23 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true });
   }
 
+  if (op === "claims-list") {
+    // Pending organisation claims (claims table).
+    let res = await sb.from("claims").select("id,node_id,claimant,email,role,note,status").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    if (res.error) res = await sb.from("claims").select("id,node_id,claimant,email,role,note,status").eq("status", "pending").limit(50);
+    if (res.error) return json({ error: res.error.message, claims: [] }, 502);
+    return json({ claims: res.data ?? [] });
+  }
+
+  if (op === "claim-set") {
+    // Approve (verified contact) or dismiss a claim. Row kept for history.
+    if (!body.id) return json({ error: "id required" }, 400);
+    const status = body.status === "dismissed" ? "dismissed" : "approved";
+    const { error } = await sb.from("claims").update({ status }).eq("id", body.id);
+    if (error) return json({ error: error.message }, 502);
+    return json({ ok: true });
+  }
+
   if (op === "stats") {
     // Count helper — returns null (not 0) if the table is missing/unreadable,
     // so the dashboard can show "—" for anything not yet set up.
@@ -128,5 +145,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set | claims-list | claim-set)" }, 400);
 });
