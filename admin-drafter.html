@@ -82,6 +82,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
 </div>
 
 <div class="card">
+  <div class="step">Analytics &amp; submissions</div>
+  <div class="tiny">Live counts from Supabase — submissions (pending nodes), corrections, claims, usage events, and AI-finder searches.</div>
+  <div style="margin-top:9px"><button onclick="loadStats()">↻ Load analytics</button></div>
+  <div id="statsBox" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
   <div class="step">Find gaps on the web</div>
   <div class="tiny">Describe a need — Claude searches the web for real organisations not yet in the map. Click one to load it into Step 1, then draft &amp; stage it.</div>
   <input id="gapDesc" placeholder="e.g. AI predictive maintenance for military ground-vehicle fleets" style="margin-top:8px">
@@ -247,6 +254,34 @@ window.rejectPending=async(id)=>{
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'reject',id})});
     if(r.ok){ toast('Rejected '+id); loadPending(); } else toast('Reject failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
+};
+window.loadStats=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  const box=$('statsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  const lbl=id=>{ const n=NODES.find(x=>x.id===id); return n?n.label:id; };
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'stats'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret in Config.</div>'; return; }
+    const j=await r.json(); const s=j.stats||{};
+    const f=v=>(v==null?'—':v);
+    const tile=(val,label,sub)=>`<div style="flex:1 1 120px;background:#101f33;border:1px solid #24344d;border-radius:10px;padding:10px 12px"><div style="font-size:22px;font-weight:700;font-family:'Space Grotesk',sans-serif">${f(val)}</div><div class="tiny">${label}${sub?(' · '+sub):''}</div></div>`;
+    let html='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    html+=tile(s.nodes&&s.nodes.published,'Published orgs');
+    html+=tile(s.nodes&&s.nodes.pending,'Pending submissions');
+    html+=tile(s.corrections&&s.corrections.total,'Corrections',(s.corrections&&s.corrections.pending!=null)?(s.corrections.pending+' pending'):'');
+    html+=tile(s.claims&&s.claims.total,'Claims',(s.claims&&s.claims.pending!=null)?(s.claims.pending+' pending'):'');
+    html+=tile(s.searches&&s.searches.rankTotal,'AI searches',((s.searches&&s.searches.rankToday)||0)+' today');
+    html+=tile(s.searches&&s.searches.webTotal,'Web gap-fills',((s.searches&&s.searches.webToday)||0)+' today');
+    html+=tile(s.events&&s.events.total,'Usage events');
+    html+='</div>';
+    const rc=j.recentCorrections||[];
+    if(rc.length){ html+='<div class="step" style="margin-top:14px">Recent corrections</div>'+rc.map(c=>`<div class="chk">• <b>${esc(lbl(c.node_id))}</b> <span class="tiny">[${esc(c.field||'')}]${c.status==='pending'?' · pending':''}</span><br><span class="tiny">${esc((c.suggestion||'').slice(0,180))}${c.submitted_by?(' — '+esc(c.submitted_by)):''}</span></div>`).join(''); }
+    const rl=j.recentClaims||[];
+    if(rl.length){ html+='<div class="step" style="margin-top:14px">Recent claims</div>'+rl.map(c=>`<div class="chk">• <b>${esc(lbl(c.node_id))}</b> <span class="tiny">${c.status==='pending'?'· pending':''}</span><br><span class="tiny">${esc(c.claimant||'')} · ${esc(c.email||'')}${c.role?(' · '+esc(c.role)):''}</span></div>`).join(''); }
+    if(!rc.length&&!rl.length&&s.corrections&&s.corrections.total==null){ html+='<div class="tiny" style="margin-top:10px">Corrections/claims/events tables may not exist yet (counts show “—”). Ask me for the SQL to create them.</div>'; }
+    box.innerHTML=html;
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach analytics.</div>'; console.error(e); }
 };
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
 function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }

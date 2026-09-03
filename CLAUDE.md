@@ -225,3 +225,8 @@ browser-only config field, never committed.
   `status='pending'`; invisible on the live map / `published_nodes`), and a "Review queue — pending"
   list with Publish/Reject via the new gated `review-node` function. The public path still writes
   nothing; ingestion is fully maintainer-gated. `reject` only ever deletes still-`pending` rows.
+- ✅ **Admin analytics (2026-09-03):** `admin-drafter.html` "Analytics & submissions" dashboard reads
+  counts via `review-node` `op:"stats"` (service-role) — published/pending `nodes`, corrections
+  (`edits`), `claims`, usage `events`, and find-door search usage (from `rate_limits`), plus recent
+  corrections/claims. The public tool already writes `edits`/`claims`/`events`/pending `nodes` via
+  the anon key; counts show "—" for any table not present.
