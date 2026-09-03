@@ -191,7 +191,7 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.3.0, Sep 2026)
+## Current state (v4.4.2, Sep 2026)
 
 - ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
