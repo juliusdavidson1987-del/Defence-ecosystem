@@ -55,5 +55,60 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject)" }, 400);
+  if (op === "stats") {
+    // Count helper — returns null (not 0) if the table is missing/unreadable,
+    // so the dashboard can show "—" for anything not yet set up.
+    async function cnt(table: string, eq?: [string, string]): Promise<number | null> {
+      try {
+        let q = sb.from(table).select("*", { count: "exact", head: true });
+        if (eq) q = q.eq(eq[0], eq[1]);
+        const { count, error } = await q;
+        return error ? null : (count ?? 0);
+      } catch { return null; }
+    }
+    async function recent(table: string, cols: string): Promise<unknown[]> {
+      try {
+        let res = await sb.from(table).select(cols).order("created_at", { ascending: false }).limit(12);
+        if (res.error) res = await sb.from(table).select(cols).limit(12);
+        return res.data ?? [];
+      } catch { return []; }
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const [nPub, nPend, edT, edP, clT, clP, evT] = await Promise.all([
+      cnt("nodes", ["status", "published"]),
+      cnt("nodes", ["status", "pending"]),
+      cnt("edits"), cnt("edits", ["status", "pending"]),
+      cnt("claims"), cnt("claims", ["status", "pending"]),
+      cnt("events"),
+    ]);
+
+    let rankTotal = 0, webTotal = 0, rankToday = 0, webToday = 0;
+    try {
+      const { data: rl } = await sb.from("rate_limits").select("key,count").or("key.like.rank:global:%,key.like.web:global:%");
+      (rl ?? []).forEach((r: { key: string; count: number }) => {
+        if (r.key.startsWith("rank:global:")) { rankTotal += r.count; if (r.key.endsWith(today)) rankToday = r.count; }
+        else if (r.key.startsWith("web:global:")) { webTotal += r.count; if (r.key.endsWith(today)) webToday = r.count; }
+      });
+    } catch { /* ignore */ }
+
+    const [recentCorrections, recentClaims] = await Promise.all([
+      recent("edits", "node_id,field,suggestion,submitted_by,status"),
+      recent("claims", "node_id,claimant,email,role,status"),
+    ]);
+
+    return json({
+      stats: {
+        nodes: { published: nPub, pending: nPend },
+        corrections: { total: edT, pending: edP },
+        claims: { total: clT, pending: clP },
+        events: { total: evT },
+        searches: { rankTotal, webTotal, rankToday, webToday },
+      },
+      recentCorrections,
+      recentClaims,
+    });
+  }
+
+  return json({ error: "unknown op (expected list | publish | reject | stats)" }, 400);
 });
