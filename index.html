@@ -992,7 +992,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.4.2 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.4.3 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5098,26 +5098,29 @@ function finderDomOf(u){ try{return new URL(u).hostname.replace(/^www\./,'').toL
 let _finderMappedDomains=null;
 function finderMappedDomains(){ if(_finderMappedDomains)return _finderMappedDomains; const set=new Set(); Object.values(NODE).forEach(n=>{const m=((n.entry||'')+'').toLowerCase().match(/([a-z0-9-]+\.)+[a-z]{2,}/); if(m)set.add(m[0].replace(/^www\./,''));}); _finderMappedDomains=set; return set; }
 function finderWebAffordance(desc,exclude,aiEl){ if(document.getElementById('aiWebBtn'))return; const b=document.createElement('button'); b.id='aiWebBtn'; b.className='rbtn'; b.textContent='🌐 Search the wider web'; b.style.marginTop='8px'; b.onclick=()=>finderWebSearch(desc,exclude,aiEl); aiEl.appendChild(b); }
-async function finderWebSearch(desc,exclude,anchorEl){
+async function finderWebSearch(desc,exclude,anchorEl,refine){
   finderAiStyle();
   const box=document.getElementById('finderResults'); if(!box)return;
   let w=document.getElementById('aiWeb');
   if(!w){ w=document.createElement('div'); w.id='aiWeb'; if(anchorEl&&anchorEl.parentNode)anchorEl.parentNode.insertBefore(w,anchorEl.nextSibling); else box.insertBefore(w,box.firstChild); }
+  const effDesc = desc + (refine&&refine.trim()?(' Focus especially on: '+refine.trim()+'.'):'');
+  const refineBar=`<div class="rtsub" style="margin-top:10px">Not quite what you wanted? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on space / a specific country / early-stage" style="flex:1;min-width:0;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn rbtn" style="white-space:nowrap">↻ Again</button></div>`;
+  const wire=()=>{ const b=w.querySelector('.webRefineBtn'); if(b) b.onclick=()=>finderWebSearch(desc,exclude,anchorEl,(w.querySelector('.webRefineIn')||{}).value||''); };
   w.innerHTML=`<div class="rtier"><div class="rcount">🌐 Searching the wider web with Claude<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">Looking beyond the map — this can take up to a minute. Please don’t refresh.</span></div></div>`;
   try{
-    const r=await fetch(FINDDOOR_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({web:true,description:desc,exclude:(exclude||[]).slice(0,80)})});
+    const r=await fetch(FINDDOOR_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({web:true,description:effDesc,exclude:(exclude||[]).slice(0,80)})});
     if(r.status===429){ w.innerHTML=`<div class="fnone">The wider-web search is busy right now — please try again shortly.</div>`; return; }
     const j=await r.json();
     const mapped=finderMappedDomains();
     const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
-    if(!finds.length){ w.innerHTML=`<div class="fnone">No solid new organisations turned up on the web — the map may already cover this.</div>`; return; }
+    if(!finds.length){ w.innerHTML=`<div class="fnone">No new organisations turned up${refine?' for that refinement':''} — try adding detail below and searching again.</div>`+refineBar; wire(); return; }
     // Capture these genuinely-new finds (post map-dedupe) so the maintainer can evaluate & add them. Fire-and-forget.
-    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:(desc||'').slice(0,400),source:'public',status:'pending'})))}).catch(()=>{}); } }catch(_){}
+    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:(effDesc||'').slice(0,400),source:'public',status:'pending'})))}).catch(()=>{}); } }catch(_){}
     let html=`<div class="rtier"><div class="rcount">🌐 Beyond the map <span class="rtn">${finds.length}</span></div><div class="rtsub">Found via live web search — <b>not yet in the map, unverified</b>. Suggestions to check, not endorsements.</div>`;
     finds.forEach(x=>{ const host=finderDomOf(x.url);
       html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
     });
-    html+=`</div>`; w.innerHTML=html;
+    html+=`</div>`+refineBar; w.innerHTML=html; wire();
   }catch(e){ w.innerHTML=`<div class="fnone">Couldn't reach the wider-web search just now.</div>`; }
 }
 async function enhanceFinderWithAI(sel,desc){
@@ -5780,7 +5783,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.4.2 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.4.3 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5893,14 +5896,19 @@ function deriveSourceFromEntry(id){
   let host=m[0].replace(/[.,;]+$/,'');
   return 'https://'+host;
 }
-async function nodeWebSearch(id){
+async function nodeWebSearch(id, refine){
   const n=NODE[id]; const box=document.getElementById('pwebfinds'); if(!n||!box)return;
   finderAiStyle();
   box.innerHTML=`<div class="rtier"><div class="rcount">🌐 Checking the web for this area<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">Looking for organisations the map may be missing — up to a minute. Please don’t refresh.</span></div></div>`;
   const par=PARENT[id]?NODE[PARENT[id]]:null;
   const nat=(typeof nationCodeFor==='function')?nationCodeFor(id):'';
   const natName={uk:'the UK',us:'the US',nato:'NATO',eu:'Europe',eu_inst:'the EU',fr:'France',de:'Germany',it:'Italy',nl:'the Netherlands',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'the UAE',sa:'Saudi Arabia',ua:'Ukraine'}[nat]||'';
-  const desc=`Find real, currently-operating defence innovation or procurement organisations that belong in this area of a UK/allied defence map: "${n.l}"${par?(' — part of '+par.l):''}${natName?(', '+natName):''}. Surface bodies the map may be missing, especially recent or newly-relevant ones.`;
+  const isCat=/^(nat_|b_|f_|na_|eu_|pt_|ca_grp|au_grp|nz_grp)/.test(id) || !!(n.children&&n.children.length);
+  const subj = isCat ? ('defence or dual-use '+n.l.toLowerCase()+(natName?(' in '+natName):'')) : ('real organisations working in the same space as, or alongside, "'+n.l+'"'+(natName?(' in '+natName):''));
+  let desc=`Find ${subj} — real institutes, agencies, companies, universities, labs, programmes or funds with official websites. Include well-known and newer/emerging ones. Be generous with plausible real candidates (a maintainer verifies before anything is added).`;
+  if(refine&&refine.trim()) desc+=` Focus especially on: ${refine.trim()}.`;
+  const refineBar=`<div class="rtsub" style="margin-top:10px">Not what you were looking for? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on drone R&D / naval / a specific city" style="flex:1;min-width:0;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn plink" style="white-space:nowrap">↻ Again</button></div>`;
+  const wire=()=>{ const b=box.querySelector('.webRefineBtn'); if(b) b.onclick=()=>nodeWebSearch(id,(box.querySelector('.webRefineIn')||{}).value||''); };
   const ex=[]; (n.children||[]).forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
   if(par&&par.children) par.children.forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
   try{
@@ -5909,13 +5917,13 @@ async function nodeWebSearch(id){
     const j=await r.json();
     const mapped=finderMappedDomains();
     const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
-    if(!finds.length){ box.innerHTML=`<div class="fnone">Nothing new turned up on the web for this area — the map may already cover it.</div>`; return; }
+    if(!finds.length){ box.innerHTML=`<div class="fnone">Nothing new turned up for this${refine?' refinement':' area'} — try adding detail below and searching again.</div>`+refineBar; wire(); return; }
     try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:('area: '+n.l).slice(0,400),source:'node',status:'pending'})))}).catch(()=>{}); } }catch(_){}
     let html=`<div class="rtier"><div class="rcount">🌐 Found on the web <span class="rtn">${finds.length}</span></div><div class="rtsub">Not yet in the map, unverified — suggestions the maintainer can review and add.</div>`;
     finds.forEach(x=>{ const host=finderDomOf(x.url);
       html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
     });
-    html+=`</div>`; box.innerHTML=html;
+    html+=`</div>`+refineBar; box.innerHTML=html; wire();
   }catch(e){ box.innerHTML=`<div class="fnone">Couldn't reach the web search just now.</div>`; }
 }
 function renderPanelExtras(id){
