@@ -321,7 +321,7 @@ async function loadNodeToEdit(nodeId){
     const url=$('cfg_url').value.replace(/\/+$/,''), key=$('cfg_key').value;
     const r=await fetch(url+'/rest/v1/published_nodes?select=*&id=eq.'+encodeURIComponent(nodeId),{headers:{apikey:key,Authorization:'Bearer '+key}});
     const rows=await r.json(); const n=rows&&rows[0];
-    if(!n){ toast('Could not load that node (is it published?)'); return; }
+    if(!n){ $('parentNote').textContent=await referenceGuidance(nodeId); window.scrollTo(0,0); toast('Not an editable node — see the note under Step 3, then Dismiss'); return; }
     $('f_id').value=n.id; $('f_parent').value=n.parent||''; $('f_label').value=n.label||''; $('f_does').value=n.does||''; $('f_entry').value=n.entry||''; $('f_tags').value=JSON.stringify(n.tags||{});
     if(typeof validate==='function') validate();
     window.scrollTo(0,0);
@@ -335,6 +335,22 @@ async function setEdit(id,status){
     if(r.ok){ toast(status==='dismissed'?'Dropped correction':'Correction resolved'); loadEdits(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
 }
+async function referenceGuidance(nodeId){
+  // For synthetic per-nation ids (nat_<code>) or any id absent from the nodes table.
+  const m=String(nodeId).match(/^nat_([a-z]{2,})(?:_[a-z]+)?$/); const code=m?m[1]:null;
+  let msg='⚠ “'+nodeId+'” is not an editable node — it is a synthetic/derived entry the app builds at runtime, so AI Repair and Load-to-edit cannot act on it.';
+  try{
+    const url=$('cfg_url').value.replace(/\/+$/,''), key=$('cfg_key').value;
+    const r=await fetch(url+'/rest/v1/reference?select=key,value',{headers:{apikey:key,Authorization:'Bearer '+key}});
+    const rows=await r.json(); const ref={}; (rows||[]).forEach(x=>ref[x.key]=x.value);
+    if(code){
+      const np=(ref.nations_procurement||{})[code], gw=(ref.gateways||{})[code];
+      msg+=' It is the national procurement gateway for “'+code+'”. Fix it in the Supabase `reference` table (SQL editor): '
+        +'nations_procurement.'+code+' = '+(np?('“'+np+'”'):'(not set)')+' · gateways.'+code+' = '+(gw?('“'+gw+'”'):'(NOT SET → the app shows a generic fallback, which is likely where the UK confusion leaks in)')+'.';
+    } else { msg+=' If it should be a real organisation, add it via Step 1 instead.'; }
+  }catch(_){}
+  return msg;
+}
 async function repairCorrection(edit){
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
   if(!edit||!edit.node_id)return;
@@ -346,7 +362,7 @@ async function repairCorrection(edit){
       fetch(url+'/rest/v1/published_nodes?select=id,label&kind=eq.branch&limit=300',{headers:h})
     ]);
     const node=(await nr.json())[0]; const parents=await pr.json();
-    if(!node){ toast('Could not load node '+edit.node_id); return; }
+    if(!node){ $('parentNote').textContent=await referenceGuidance(edit.node_id); window.scrollTo(0,0); toast('Not an editable node — see the note under Step 3, then Dismiss'); return; }
     const r=await fetch(efUrl('repair-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({
       node:{id:node.id,label:node.label,parent:node.parent,does:node.does,entry:node.entry,tags:node.tags},
       correction:{field:edit.field,suggestion:edit.suggestion}, parents

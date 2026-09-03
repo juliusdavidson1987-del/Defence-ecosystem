@@ -240,6 +240,10 @@ browser-only config field, never committed.
   mergers, defunct bodies, reference URLs) and proposes a fully-rewritten node
   (label/parent/does/entry/tags + a note), loaded into Step 3 for review → ⚡ Insert directly applies
   → Resolve. Built for complex corrections (wrong parent, rename, defunct/merged, country confusion).
+  Corrections targeting a synthetic per-nation id (`nat_<code>` — a runtime branch, **not** a DB
+  node) can't be node-repaired; the drafter detects the absent node and shows the live `reference`
+  values (`nations_procurement`/`gateways`) so you fix the reference layer instead. (Gotcha: unset
+  `gateways.<code>` makes the app show a generic fallback — the source of the Ukraine UK-leak.)
 - ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
   `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
   email-domain-vs-website match check to flag legit vs spam. Row kept for history.
