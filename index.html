@@ -990,7 +990,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.3.2 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.4.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1102,7 +1102,7 @@
   <button class="aclose" id="corClose" aria-label="Close">×</button>
   <div class="ak">✎ Suggest a correction</div>
   <h2 id="corTitle">Suggest a correction</h2>
-  <p class="pintro">Spotted something out of date or wrong? Send it straight to the maintainer via the suggestions form — it opens pre-filled with this organisation and your note. (You can also download a local copy.)</p>
+  <p class="pintro">Spotted something out of date or wrong? Send it straight to the maintainer — it goes into the review queue. (You can also download a local copy.)</p>
   <label class="anlab">What needs fixing</label>
   <select class="finput" id="cor_field"><option value="Contact / email">Contact / email</option><option value="Website">Website</option><option value="What they do">What they do</option><option value="Live opportunity">Live opportunity</option><option value="Routing / tags">Routing / tags</option><option value="Entity type (gov/research/industry…)">Entity type (gov/research/industry…)</option><option value="Other">Other</option></select>
   <label class="anlab">The correction</label>
@@ -1110,6 +1110,18 @@
   <label class="anlab">Your name (optional)</label><input class="finput" id="cor_name" placeholder="So the maintainer can follow up">
   <div class="frow"><button class="fgo" id="cor_send">✎ Send for review</button><button class="freset" id="cor_save">Download copy</button><button class="freset" id="cor_cancel">Cancel</button></div>
   <p class="corlic">Corrections are accepted under the project licence (data CC BY 4.0 · code MIT). Please submit only your own words, not text copied from a website.</p>
+</div></div>
+
+<div id="feedback" role="dialog" aria-modal="true" aria-label="Send feedback"><div class="acard">
+  <button class="aclose" id="fbClose" aria-label="Close">×</button>
+  <div class="ak">✉ Send feedback</div>
+  <h2 id="fbTitle">Send feedback</h2>
+  <p class="pintro" id="fbIntro">Tell the maintainer anything — a missing organisation, a broken link, a feature idea, or a fix. It goes straight into the review queue.</p>
+  <label class="anlab">Your feedback</label>
+  <textarea class="finput" id="fb_text" rows="4" placeholder="What's on your mind…"></textarea>
+  <label class="anlab">Your name (optional)</label><input class="finput" id="fb_name" placeholder="So the maintainer can follow up">
+  <div class="frow"><button class="fgo" id="fb_send">✉ Send for review</button><button class="freset" id="fb_cancel">Cancel</button></div>
+  <p class="corlic">Submitted under the project licence (data CC BY 4.0 · code MIT). Please share your own words.</p>
 </div></div>
 
 <script>
@@ -5764,7 +5776,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.3.2 (AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · fix: per-nation gateways — incl. US, NATO & EU — no longer default to UK opportunities · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.4.0 (native feedback → straight into the maintainer review queue, no third-party form · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5914,15 +5926,38 @@ function renderPanelExtras(id){
 /* ---- suggestions / corrections form (Google Form the maintainer owns) ----
    To change the form, update these: the base viewform URL and the three entry.* field ids
    from the form's "Get pre-filled link". org -> Organisation, field -> what's wrong, details -> the note. */
-const SUGGEST_FORM={
-  url:'https://docs.google.com/forms/d/e/1FAIpQLSfHpqajf49uSDReCKah1yjpmyYaUIA1C6yFVc997nMLGLW9ng/viewform',
-  org:'entry.84360262', field:'entry.1675098639', details:'entry.631886959'
-};
+/* Native feedback — posts to the Supabase `feedback` table (replaces the old Google Form).
+   Every legacy caller (feedback button, gateway suggestion, add-org, correction fallback)
+   still calls openSuggestForm(org, field, details); it now opens the in-app feedback modal. */
+let _fbCtx={kind:'',org:'',node_id:''};
 function openSuggestForm(org, field, details){
-  const p=new URLSearchParams({usp:'pp_url'});
-  p.set(SUGGEST_FORM.org, org||''); p.set(SUGGEST_FORM.field, field||''); p.set(SUGGEST_FORM.details, details||'');
-  window.open(SUGGEST_FORM.url+'?'+p.toString(), '_blank', 'noopener');
+  const idm=String(details||'').match(/entry id:\s*([a-z0-9_]+)/i);
+  _fbCtx={ kind:field||'General feedback', org:org||'', node_id:idm?idm[1]:'' };
+  const t=document.getElementById('fbTitle'); if(t) t.textContent = field || 'Send feedback';
+  const ta=document.getElementById('fb_text'); if(ta){ ta.value=''; ta.placeholder=(details&&details.trim())?details.trim():"What's on your mind…"; }
+  const nm=document.getElementById('fb_name'); if(nm) nm.value='';
+  const modal=document.getElementById('feedback'); if(modal) modal.classList.add('open');
+  setTimeout(()=>{ if(ta) ta.focus(); },50);
 }
+async function fbSend(){
+  const msg=(document.getElementById('fb_text').value||'').trim();
+  if(!msg){ showToast('Add your feedback first'); return; }
+  const name=(document.getElementById('fb_name').value||'').trim();
+  const row={ kind:_fbCtx.kind, org:_fbCtx.org, node_id:_fbCtx.node_id||null, message:msg, submitted_by:name||null, status:'pending' };
+  try{
+    const res=await fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/feedback',{
+      method:'POST', headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body: JSON.stringify(row)
+    });
+    if(res.ok){ document.getElementById('feedback').classList.remove('open'); showToast('Thanks — sent to the maintainer for review.'); }
+    else showToast("Couldn't send just now — please try again.");
+  }catch(_){ showToast("Couldn't send just now — please try again."); }
+}
+{ const s=document.getElementById('fb_send'); if(s) s.onclick=fbSend;
+  const c=document.getElementById('fb_cancel'), x=document.getElementById('fbClose'), m=document.getElementById('feedback');
+  const close=()=>{ if(m) m.classList.remove('open'); };
+  if(c) c.onclick=close; if(x) x.onclick=close;
+  if(m) m.addEventListener('click',e=>{ if(e.target.id==='feedback') close(); }); }
 /* ---- suggest a correction ---- */
 let correctId=null;
 function openCorrect(id){ correctId=id; document.getElementById('corTitle').textContent='Correction — '+(NODE[id]?NODE[id].l:id)+(serialOf(id)?('  ['+serialOf(id)+']'):'');
@@ -5973,8 +6008,7 @@ document.getElementById('cor_send').onclick=async()=>{
       if(res.ok){ closeCorrect(); showToast('Thanks — correction sent for review.'); return; }
     }catch(_){}
   }
-  openSuggestForm(org, field, details);
-  closeCorrect(); showToast('Opening the suggestions form — please press Submit there to send');
+  closeCorrect(); openSuggestForm(org, field, details);
 };
 
 /* ---- explore / list view with facet filters ---- */

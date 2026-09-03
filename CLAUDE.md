@@ -257,3 +257,8 @@ browser-only config field, never committed.
 - ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
   `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
   email-domain-vs-website match check to flag legit vs spam. Row kept for history.
+- ✅ **Native feedback (2026-09-03, v4.4.0):** the in-app "Send feedback" (and gateway / other
+  suggestions) now post to a Supabase `feedback` table instead of the Google Form. Reviewed in
+  `admin-drafter.html` "Feedback — pending" via `review-node` `feedback-list`/`feedback-set`, and
+  counted in analytics. `openSuggestForm()` was rewritten to open a native in-app modal; the
+  `SUGGEST_FORM` Google-Form constant is removed. Anon inserts, service-role reads.

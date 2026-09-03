@@ -117,6 +117,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div id="claimsBox" style="margin-top:8px"></div>
 </div>
 
+<div class="card">
+  <div class="step">Feedback — pending</div>
+  <div class="tiny">Messages from the in-app "Send feedback" (plus gateway / other suggestions) — now native instead of the Google Form. Resolve when handled, or Dismiss.</div>
+  <div style="margin-top:9px"><button onclick="loadFeedback()">↻ Load feedback</button></div>
+  <div id="feedbackBox" style="margin-top:8px"></div>
+</div>
+
 <div class="card" style="background:none;border-style:dashed">
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
@@ -285,6 +292,7 @@ window.loadStats=async()=>{
     html+=tile(s.nodes&&s.nodes.pending,'Pending submissions');
     html+=tile(s.corrections&&s.corrections.total,'Corrections',(s.corrections&&s.corrections.pending!=null)?(s.corrections.pending+' pending'):'');
     html+=tile(s.claims&&s.claims.total,'Claims',(s.claims&&s.claims.pending!=null)?(s.claims.pending+' pending'):'');
+    html+=tile(s.feedback&&s.feedback.total,'Feedback',(s.feedback&&s.feedback.pending!=null)?(s.feedback.pending+' pending'):'');
     html+=tile(s.searches&&s.searches.rankTotal,'AI searches',((s.searches&&s.searches.rankToday)||0)+' today');
     html+=tile(s.searches&&s.searches.webTotal,'Web gap-fills',((s.searches&&s.searches.webToday)||0)+' today');
     html+=tile(s.events&&s.events.total,'Usage events');
@@ -407,6 +415,29 @@ async function setClaim(id,status){
   if(!confirm((status==='approved'?'Approve':'Dismiss')+' claim #'+id+'?'))return;
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'claim-set',id,status})});
     if(r.ok){ toast(status==='approved'?'Claim approved':'Claim dismissed'); loadClaims(); } else toast('Failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
+}
+window.loadFeedback=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  const box=$('feedbackBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  const lbl=id=>{ const n=NODES.find(x=>x.id===id); return n?n.label:id; };
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'feedback-list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json();
+    if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
+    const fs=j.feedback||[];
+    if(!fs.length){ box.innerHTML='<div class="tiny">No pending feedback.</div>'; return; }
+    box.innerHTML=fs.map(f=>`<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span><div style="margin-top:6px;white-space:nowrap"><button class="resfb primary" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`).join('');
+    box.querySelectorAll('.resfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'resolved'));
+    box.querySelectorAll('.disfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'dismissed'));
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach feedback.</div>'; console.error(e); }
+};
+async function setFeedback(id,status){
+  if(!confirm((status==='resolved'?'Resolve':'Dismiss')+' feedback #'+id+'?'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'feedback-set',id,status})});
+    if(r.ok){ toast(status==='resolved'?'Feedback resolved':'Feedback dismissed'); loadFeedback(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
 }
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
