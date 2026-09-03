@@ -21,7 +21,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
   if (!secretOk(req)) return json({ error: "unauthorized" }, 401);
 
-  let body: { op?: string; id?: string };
+  let body: { op?: string; id?: string; status?: string };
   try { body = await req.json(); } catch { return json({ error: "invalid JSON body" }, 400); }
   const op = String(body?.op ?? "");
 
@@ -51,6 +51,24 @@ Deno.serve(async (req: Request) => {
     if (!body.id) return json({ error: "id required" }, 400);
     // Safety: only ever delete a node that is still pending.
     const { error } = await sb.from("nodes").delete().eq("id", body.id).eq("status", "pending");
+    if (error) return json({ error: error.message }, 502);
+    return json({ ok: true });
+  }
+
+  if (op === "edits-list") {
+    // Pending corrections from the "Suggest a correction" form (edits table).
+    let res = await sb.from("edits").select("id,node_id,field,suggestion,submitted_by,status").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    if (res.error) res = await sb.from("edits").select("id,node_id,field,suggestion,submitted_by,status").eq("status", "pending").limit(50);
+    if (res.error) return json({ error: res.error.message, edits: [] }, 502);
+    return json({ edits: res.data ?? [] });
+  }
+
+  if (op === "edit-set") {
+    // Mark a correction resolved (applied) or dismissed (dropped). Keeps the row
+    // for analytics history; it just leaves the "pending" bucket.
+    if (!body.id) return json({ error: "id required" }, 400);
+    const status = body.status === "dismissed" ? "dismissed" : "resolved";
+    const { error } = await sb.from("edits").update({ status }).eq("id", body.id);
     if (error) return json({ error: error.message }, 502);
     return json({ ok: true });
   }
@@ -110,5 +128,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set)" }, 400);
 });
