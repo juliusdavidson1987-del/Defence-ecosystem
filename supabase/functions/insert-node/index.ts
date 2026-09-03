@@ -22,6 +22,14 @@ type NodeIn = {
   does?: string; entry?: string; tags?: unknown; status?: string;
 };
 
+// A tags object is only valid if it's a plain object with a `d` array. Anything
+// else (an empty {} from a repair on a previously-tagless node, a string, etc.)
+// is stored as null — a malformed tags object fails the data validator.
+function normTags(t: unknown): unknown {
+  if (t && typeof t === "object" && !Array.isArray(t) && Array.isArray((t as { d?: unknown }).d)) return t;
+  return null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
@@ -45,7 +53,7 @@ Deno.serve(async (req: Request) => {
     kind: node.kind || "org",
     does: node.does || "",
     entry: node.entry || "",
-    tags: node.tags ?? null,
+    tags: normTags(node.tags),
     // "pending" stages a node for review (invisible on the live map, which only
     // shows published_nodes); anything else publishes immediately.
     status: node.status === "pending" ? "pending" : "published",

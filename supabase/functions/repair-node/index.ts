@@ -99,7 +99,7 @@ ${parents.map((p) => `${p.id} — ${p.label}`).join("\n")}`;
       parent: r.parent ?? node.parent ?? "",
       does: r.does ?? node.does ?? "",
       entry: r.entry ?? node.entry ?? "",
-      tags: r.tags ?? node.tags ?? null,
+      tags: (r.tags && typeof r.tags === "object" && Array.isArray((r.tags as { d?: unknown }).d)) ? r.tags : (node.tags ?? null),
       note: r.note ?? "",
     };
     return json({ repair });
