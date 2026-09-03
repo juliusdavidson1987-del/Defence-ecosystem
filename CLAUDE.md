@@ -190,15 +190,16 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.2.0, Sep 2026)
+## Current state (v4.3.0, Sep 2026)
 
 - ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
 - NAD Group as 9 National Armaments areas.
 - Graded "Find your door" (Exact / Close / Potential collaboration) + partner-nation region chips,
-  **now with an AI free-text mode** (v4.2.0): describe your situation → the public `find-door`
-  Edge Function has `claude-opus-5` rank the best doors *from the map* with reasoning (read-only,
-  rate-limited, no dataset writes). Phase 1 of the AI-finder plan.
+  **now with an AI free-text mode** (v4.2.0–v4.3.0): describe your situation → the public `find-door`
+  Edge Function has `claude-opus-5` rank the best doors *from the map* with reasoning, and (v4.3.0)
+  **search the wider web** when the map is thin, returning real external orgs as "not yet in the map"
+  suggestions (read-only, rate-limited, no dataset writes). Phases 1–2 of the AI-finder plan.
 - Stages 1–3 automation available; Stage 1 deployed and live.
 - Funding branch includes NSSIF (fixed to `nssif.gov.uk`) + its 19 fund-of-funds partners +
   Ante-Bellum Angels.
@@ -215,7 +216,9 @@ browser-only config field, never committed.
 - ✅ **Done (2026-09-03):** Angels now have their own Funding sub-branch `f_angels` (Ante-Bellum
   moved out of `f_vc`); Ploughshare/Serapis/DAIC re-parented under NADG `na_innov`; Comand AI
   added via Mode B. Node count → ~1,501.
-- **Next — AI finder Phase 2:** external web-search gap-fill when the map is thin (Claude finds
-  real orgs with verified URLs, shown as "not in the map yet — suggested"; still no dataset writes).
+- ✅ **AI finder Phase 2 shipped (2026-09-03, v4.3.0):** `find-door` web mode uses the `web_search`
+  tool to surface real external orgs (verified URLs) when the map is thin; client dedupes
+  already-mapped domains and labels them "unverified suggestion". Still no dataset writes. Web mode
+  runs ~40s; own tighter rate caps (`FINDDOORWEB_*`).
 - **Next — AI finder Phase 3:** a `review_queue` + gated review view so you one-click stage finds
   as `status='pending'` then publish. Access model decided: **public search is read-only, no writes.**
