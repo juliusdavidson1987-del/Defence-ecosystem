@@ -94,11 +94,11 @@ async function handleWeb(client: Anthropic, description: string, exclude: string
 
 Use web search to find genuinely real, currently-operating, relevant organisations.
 
-STRICT RULES:
-- Only return organisations you actually found via search, each with its real official homepage URL (the org's OWN domain — not a directory, news article, LinkedIn, or aggregator). NEVER invent an organisation or a URL.
-- Defence-relevant (incl. dual-use) only. Prefer bodies that are a genuine "way in" for the user's situation.
+RULES:
+- Return REAL organisations found via search, each with an official website URL (the org's own site — give the best official URL you can find; avoid directories/news/LinkedIn where possible). NEVER invent an organisation that does not exist — but you do NOT need to be certain of every detail: these are suggestions a maintainer verifies before anything is added, so err toward including a plausible real organisation rather than omitting it.
+- Defence or dual-use relevant.
 - Do NOT return anything already in the map. Already mapped (exclude these): ${exclude.join("; ") || "(none provided)"}
-- 3–6 results maximum, most relevant first. If you cannot verify something is real and relevant, omit it — a short honest list beats a padded one.
+- Return up to 6, most relevant first, ranked by fit. Strongly prefer surfacing useful candidates over an empty list — only return an empty list if you genuinely cannot find ANY relevant real organisation after searching.
 
 Return ONLY minified JSON as your final message: {"external":[{"name":"...","url":"https://...","why":"one sentence addressed to the user"}]}`;
 
