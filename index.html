@@ -5074,7 +5074,8 @@ async function enhanceFinderWithAI(sel,desc){
   const box=document.getElementById('finderResults');
   let ai=document.getElementById('aiDoors');
   if(!ai){ ai=document.createElement('div'); ai.id='aiDoors'; box.insertBefore(ai,box.firstChild); }
-  ai.innerHTML=`<div class="rtier rtier-exact"><div class="rcount">✨ Reading your description…</div></div>`;
+  if(!document.getElementById('aiDoorsStyle')){ const s=document.createElement('style'); s.id='aiDoorsStyle'; s.textContent='@keyframes aiSpin{to{transform:rotate(360deg)}}#aiDoors .aiload{display:flex;align-items:center;gap:10px;margin-top:3px}#aiDoors .aispin{width:15px;height:15px;border:2px solid rgba(127,224,200,.25);border-top-color:#7fe0c8;border-radius:50%;animation:aiSpin .8s linear infinite;flex:0 0 auto}#aiDoors .aidots::after{display:inline-block;width:1.1em;text-align:left;content:"";animation:aiDots 1.4s steps(4,end) infinite}@keyframes aiDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}'; document.head.appendChild(s); }
+  ai.innerHTML=`<div class="rtier rtier-exact"><div class="rcount">✨ Searching the map with Claude<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">This usually takes a few seconds — please don’t refresh the page.</span></div></div>`;
   let candidates; try{ candidates=finderCandidates(sel,desc); }catch(e){ ai.innerHTML=''; return; }
   try{
     const r=await fetch(FINDDOOR_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:desc,candidates})});
