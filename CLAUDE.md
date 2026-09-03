@@ -220,5 +220,8 @@ browser-only config field, never committed.
   tool to surface real external orgs (verified URLs) when the map is thin; client dedupes
   already-mapped domains and labels them "unverified suggestion". Still no dataset writes. Web mode
   runs ~40s; own tighter rate caps (`FINDDOORWEB_*`).
-- **Next — AI finder Phase 3:** a `review_queue` + gated review view so you one-click stage finds
-  as `status='pending'` then publish. Access model decided: **public search is read-only, no writes.**
+- ✅ **AI finder Phase 3 shipped (2026-09-03):** maintainer review console in `admin-drafter.html` —
+  "Find gaps on the web" (runs `find-door` web mode), "Stage for review" (`insert-node` with
+  `status='pending'`; invisible on the live map / `published_nodes`), and a "Review queue — pending"
+  list with Publish/Reject via the new gated `review-node` function. The public path still writes
+  nothing; ingestion is fully maintainer-gated. `reject` only ever deletes still-`pending` rows.

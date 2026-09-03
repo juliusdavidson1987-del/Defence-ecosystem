@@ -75,9 +75,25 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div class="step">4 · Add it</div>
   <button class="primary" onclick="buildSQL()">Build SQL</button>
   <button id="insertBtn" onclick="insertDirect()" style="display:none">⚡ Insert directly</button>
+  <button id="stageBtn" onclick="insertStaged()" style="display:none">⏸ Stage for review (pending)</button>
   <span class="tiny" style="margin-left:8px">After adding, run the nightly sync (or the sync action) so data.json catches up.</span>
   <label style="margin-top:11px">SQL — paste into Supabase → SQL Editor → Run</label><textarea id="sqlOut" readonly style="min-height:120px"></textarea>
   <button onclick="copy('sqlOut')" style="margin-top:8px">Copy SQL</button>
+</div>
+
+<div class="card">
+  <div class="step">Find gaps on the web</div>
+  <div class="tiny">Describe a need — Claude searches the web for real organisations not yet in the map. Click one to load it into Step 1, then draft &amp; stage it.</div>
+  <input id="gapDesc" placeholder="e.g. AI predictive maintenance for military ground-vehicle fleets" style="margin-top:8px">
+  <div style="margin-top:9px"><button onclick="findGaps()">🌐 Search the web for gaps</button></div>
+  <div id="gapBox" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+  <div class="step">Review queue — pending</div>
+  <div class="tiny">Organisations staged for review are invisible on the live map until you publish. Publish adds to the map (run the sync after); reject deletes the pending row.</div>
+  <div style="margin-top:9px"><button onclick="loadPending()">↻ Load pending</button></div>
+  <div id="pendingBox" style="margin-top:8px"></div>
 </div>
 
 <div class="card" style="background:none;border-style:dashed">
@@ -103,7 +119,11 @@ $('cfg_key').value=localStorage.getItem('de_key')||DEFAULT_KEY;
 $('cfg_ef').value=localStorage.getItem('de_ef')||'';
 $('cfg_secret').value=localStorage.getItem('de_secret')||'';
 ['cfg_url','cfg_key','cfg_ef','cfg_secret'].forEach(id=>$(id).addEventListener('change',()=>{localStorage.setItem('de_'+id.slice(4),$(id).value);toggleEF();}));
-function toggleEF(){ const on=!!$('cfg_ef').value.trim(); $('efBtn').style.display=on?'':'none'; $('insertBtn').style.display=on?'':'none'; }
+function toggleEF(){ const on=!!$('cfg_ef').value.trim(); $('efBtn').style.display=on?'':'none'; $('insertBtn').style.display=on?'':'none'; const sb=$('stageBtn'); if(sb)sb.style.display=on?'':'none'; }
+const esc=s=>String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+function efBase(){ return $('cfg_ef').value.trim(); }
+function efUrl(name){ return efBase().replace(/\/draft-node$/,'/'+name); }
+function efHeaders(){ return {'Content-Type':'application/json','x-drafter-secret':$('cfg_secret').value.trim()}; }
 toggleEF();
 
 async function loadNodes(){
@@ -182,6 +202,51 @@ window.insertDirect=async()=>{
   try{ const r=await fetch(ef.replace(/\/draft-node$/,'/insert-node'),{method:'POST',headers:{'Content-Type':'application/json','x-drafter-secret':$('cfg_secret').value.trim()},body:JSON.stringify(currentNode())});
     r.ok?toast('✓ Inserted — run the sync to update data.json'):toast('Insert failed: '+r.status); }
   catch(e){ toast('Insert error — see console'); console.error(e); }
+};
+window.insertStaged=async()=>{
+  const ef=efBase(); if(!ef)return; if(!validate())return toast('Fix the ✗ items first');
+  if(!confirm('Stage this node for review (status=pending)? It stays OFF the live map until you publish it.'))return;
+  try{ const r=await fetch(efUrl('insert-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({...currentNode(),status:'pending'})});
+    if(r.ok){ toast('⏸ Staged for review'); loadPending(); } else toast('Stage failed: '+r.status); }
+  catch(e){ toast('Stage error — see console'); console.error(e); }
+};
+window.findGaps=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL in Config first');
+  const desc=$('gapDesc').value.trim(); if(!desc)return toast('Describe a need first');
+  await loadNodes();
+  const box=$('gapBox'); box.innerHTML='<div class="tiny">🌐 Searching the web — up to a minute…</div>';
+  try{
+    const r=await fetch(efUrl('find-door'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({web:true,description:desc,exclude:NODES.slice(0,80).map(n=>n.label)})});
+    const j=await r.json(); const finds=(j.external||[]).filter(x=>x&&x.name&&x.url);
+    if(!finds.length){ box.innerHTML='<div class="tiny">No new organisations found for this.</div>'; return; }
+    box.innerHTML=finds.map((x,i)=>`<div class="chk" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>• <b>${esc(x.name)}</b> <span class="tiny">${esc(x.url)}</span><br><span class="tiny">${esc(x.why||'')}</span></span><button data-i="${i}" class="useGap">Use →</button></div>`).join('');
+    box.querySelectorAll('.useGap').forEach(b=>b.onclick=()=>{ const x=finds[+b.dataset.i]; $('name').value=x.name; $('url').value=x.url; window.scrollTo(0,0); toast('Loaded into Step 1 — draft it, then Stage for review'); checkDupes(); });
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach the web search.</div>'; console.error(e); }
+};
+window.loadPending=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  const box=$('pendingBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret in Config.</div>'; return; }
+    const j=await r.json(); const p=j.pending||[];
+    if(!p.length){ box.innerHTML='<div class="tiny">No pending nodes.</div>'; return; }
+    box.innerHTML=p.map(n=>`<div class="chk" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>• <b>${esc(n.label)}</b> <span class="tiny">[${esc(n.id)}] → ${esc(n.parent)}</span><br><span class="tiny">${esc(n.does||'')}</span></span><span style="white-space:nowrap"><button class="pub primary" data-id="${esc(n.id)}">Publish</button> <button class="rej" data-id="${esc(n.id)}">Reject</button></span></div>`).join('');
+    box.querySelectorAll('.pub').forEach(b=>b.onclick=()=>publishPending(b.dataset.id));
+    box.querySelectorAll('.rej').forEach(b=>b.onclick=()=>rejectPending(b.dataset.id));
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach review-node.</div>'; console.error(e); }
+};
+window.publishPending=async(id)=>{
+  if(!confirm('Publish '+id+' to the live map? (run the sync afterwards to update data.json)'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'publish',id})});
+    if(r.ok){ toast('✓ Published '+id+' — run the sync'); loadPending(); } else toast('Publish failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
+};
+window.rejectPending=async(id)=>{
+  if(!confirm('Reject and DELETE pending node '+id+'? This cannot be undone.'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'reject',id})});
+    if(r.ok){ toast('Rejected '+id); loadPending(); } else toast('Reject failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
 };
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
 function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
