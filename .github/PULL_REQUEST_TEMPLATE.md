@@ -25,8 +25,8 @@ Please fill in the sections below so changes can be reviewed quickly.
 
 ## Validation
 
-- [ ] I ran `node validate.mjs The_Defence_Ecosystem_v2.html` and all checks pass
-- [ ] I reviewed any warnings from the **Abbreviation tripwire** (short domains that don't match the org name)
+- [ ] I ran `node scripts/validate-data.mjs data.json` and all checks pass
+- [ ] I reviewed any warnings (e.g. unknown tag domains, orphaned parents, or a node/affiliation count below the floor)
 
 ## Licence
 

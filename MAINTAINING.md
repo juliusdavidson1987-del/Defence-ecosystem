@@ -4,84 +4,94 @@ This is the operating manual for keeping the tool accurate, stable, and scalable
 over time. It exists so the knowledge of how this works doesn't live only in one
 person's head or in past chat transcripts.
 
+> **Deeper reference:** [`CLAUDE.md`](CLAUDE.md) is the canonical, detailed brief
+> (data model, tags, tree structure, automation stages, current state). This file
+> is the shorter operational manual. If the two ever disagree, `CLAUDE.md` wins —
+> and please fix the mismatch.
+
 ---
 
 ## 1. What the tool is (one paragraph)
 
-A single self-contained HTML file (`The_Defence_Ecosystem_v2.html`, ~360 KB) that
-maps the UK / NATO / allied defence innovation and procurement ecosystem. All data,
-rendering, and styling live in that one file — no server, no build step, no
-dependencies. It's deployed on GitHub Pages by renaming the file to `index.html`.
+A single self-contained `index.html` (~570 KB, all HTML/CSS/JS inline) that maps the
+UK / NATO / allied defence innovation and procurement ecosystem. **The app hardcodes
+no organisation data.** It loads its data at runtime, in order: **Supabase**
+(`published_nodes` view + `reference` table) → **`data.json`** (a mirror of Supabase,
+served from the repo root) → a tiny embedded fallback. It's deployed on GitHub Pages.
+
+**The consequence that governs everything below:** adding or editing an organisation
+is a **data** change (Supabase → `data.json`), *never* an edit to `index.html`.
+`index.html` changes only when the *app itself* changes — a feature, layout, or the
+version stamp.
 
 ---
 
 ## 2. The golden rules
 
-1. **Accuracy over speed.** Verified links only. Hedge contested facts. Never
-   inflate a small nation's capability to hit a number. A truthful "this country's
-   defence activity is essentially procurement plus NATO membership" is more useful
-   than padding.
-2. **Never ship an unverified link.** Every clickable domain must be on the
-   `VERIFIED_DOMAINS` allowlist. If you can't confirm a URL loads, don't make it a
-   link — describe how to find the body instead.
-3. **Validate before every release.** Run `node validate.mjs <file>` and make sure
-   it's all green. CI enforces this, but check locally too.
-4. **One principal body per slot.** Resist mapping every firm in every country;
-   decide what "done enough" looks like per region and hold that line. Scope
-   discipline *is* a stability strategy.
+1. **Accuracy over speed.** Verified facts and verified links only. Hedge contested
+   facts. Never inflate a small nation's capability to hit a number. A truthful "this
+   country's defence activity is essentially procurement plus NATO membership" is more
+   useful than padding. Never invent an organisation, a URL, or a capability.
+2. **Check first before adding anything.** Things you assume are missing are often
+   already in the map under a different id. Always search the data (or use the drafter's
+   dedupe check) before creating a node.
+3. **Representative, not exhaustive.** Cover the landscape sensibly; one principal body
+   per slot. Scope discipline *is* a stability strategy.
+4. **Validate before every release.** Run `node scripts/validate-data.mjs data.json`
+   and make sure it's green. CI enforces this on every push, but check locally too.
+5. **Neutral, factual tone.** No marketing language in descriptions; write in your own
+   words (don't paste site copy).
 
 ---
 
 ## 3. How the data is structured (the mental model)
 
-Inside the single `<script>` at the end of `<body>`:
+Data is a **flat list of nodes** (in Supabase, mirrored to `data.json`), not literals
+in the HTML. Each node:
 
-- **Nodes** are created with two helpers:
-  - `L(id, label, entry, does)` — a leaf (an organisation / body). `entry` is the
-    contact line (may contain a domain, which becomes a link if verified).
-  - `B(id, label, does, [children])` — a branch (a category).
-  - `const TREE = B("root", …)` is the whole tree.
-- **European nations are flat leaves** grouped at render time by a 2-letter id
-  prefix (`fr_`, `de_`, …). The prefix is how an org routes to its nation.
-- Key maps you'll edit alongside a new node:
-  - `TAGS` — routing metadata per node id: `{w:[who], o:[offers], t:[trlLo,trlHi], d:[domains], a:access, g:geo}`
-  - `VERIFIED_DOMAINS` — the link allowlist (a `Set`, built from several arrays)
-  - `NAT_OPPS` — national tender-portal guidance, keyed by nation code
-  - `GATEWAY` — nation → its "front door" body id (surfaced first in Find your door)
-  - `EVENT_NEXT` — event id → next occurrence + venue (the fairs)
-  - `NATION_ORDER` / `NATION_META` / `PREFIX_NATION` — nation registry for the lens
-  - `TECH_ORDER` / `TECH_META` — the technology lens groups
-  - `VERIFIED_BATCHES` / `VERIFIED_OVERRIDES` — per-node "last reviewed" dates
+```
+{ id, label, parent, kind:'org'|'branch', entry:<URL/display>, does:<one-sentence desc>,
+  tags:{ w, o, t, d, a, g }, affiliation:{ net, role, note }, order }
+```
 
-### To add an organisation, touch these in order:
-1. Add the `L(...)` node in the right nation/branch.
-2. Add its `TAGS` entry (routing).
-3. Add its domain to `VERIFIED_DOMAINS` (only if you've confirmed the URL).
-4. If it's a whole new nation: also update `NATION_ORDER`, `NATION_META`,
-   `PREFIX_NATION`, the `nationCodeFor` prefix map, `NAT_OPPS`, and the home-nation
-   picker list.
-5. Run `node validate.mjs <file>`.
+- **`parent`** builds the tree; depth is derived from nesting (a stored `depth` is
+  ignored). `order` (default 0) sorts siblings.
+- **`tags`** drives both runtime lenses (Alliance/country and Technology) and the
+  "Find your door" finder — `w` (who for), `o` (what it offers), `t` (TRL band `[lo,hi]`),
+  `d` (tech domains), `a` (access), `g` (geo). Both lenses are computed from tags at
+  runtime; **there is no separate technology structure to maintain.**
+- **`affiliation`** `{ net, role, note }` renders the `◇` network line (DIANA, NATO CoEs,
+  Catapults, corporate/prime families).
+
+Full field enumerations, the branch/parent id map, and the NAD Group structure live in
+[`CLAUDE.md`](CLAUDE.md) § "Data model".
 
 ---
 
 ## 4. The tooling
 
+All scripts are dependency-free (Node 18+), exit 1 on failure, and live in `scripts/`.
+
 | Script | What it does | When to run |
 |---|---|---|
-| `validate.mjs` | Structural checks: syntax, CSS braces, id uniqueness, orphan tags, unverified links, GATEWAY/CONNECTORS/EVENT_NEXT/NAT_OPPS integrity, node-count floor. No network. | Before every release; CI runs it on every push. |
-| `check-links.mjs` | Fetches every clickable URL and reports dead/redirected links. Needs network. | Monthly, and after adding new domains. `--all` also tests plain text domains. |
-
-Both are dependency-free (Node 18+). Exit code 1 on failure, so both work in CI.
+| `scripts/validate-data.mjs` | Structural checks on `data.json`: valid JSON shape, node-count floor, unique ids, every parent exists, exactly one root, valid `kind`, tag/affiliation shape, affiliation-count floor. No network. | Before every release; CI runs it on every push/PR. |
+| `scripts/sync-datajson.mjs` | Pulls Supabase (`published_nodes` + `reference`, paginated) → writes `data.json`. Needs `SUPABASE_URL` / `SUPABASE_ANON_KEY`. | Via the sync GitHub Action (nightly or on demand); rarely by hand. |
+| `scripts/check-links.mjs` | Fetches every clickable URL in `data.json` and reports dead/redirected links. Needs network. | Monthly, and after adding new domains. CI runs it weekly. |
 
 ```bash
-node validate.mjs The_Defence_Ecosystem_v2.html
-node check-links.mjs The_Defence_Ecosystem_v2.html          # verified links
-node check-links.mjs The_Defence_Ecosystem_v2.html --all    # + plain-text domains
+node scripts/validate-data.mjs data.json
+node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+node scripts/check-links.mjs data.json
 ```
 
-CI (`.github/workflows/ci.yml`) runs `validate.mjs` on every push/PR and
-`check-links.mjs` weekly + on demand. Point `TARGET` at whatever the deployed file
-is named.
+> **Note:** `drafter-engine.mjs` also exists at the repo root (not just in `scripts/`)
+> because `admin-drafter.html` imports `./drafter-engine.mjs` from there. Keep both in
+> sync if you edit the engine. The AI-assisted drafter and issue-ingest are documented
+> in [`CLAUDE.md`](CLAUDE.md) § "Build & automation tooling".
+
+CI lives in `.github/workflows/`: `ci.yml` (validate on every push/PR + weekly link
+check), `sync-datajson.yml` (regenerate `data.json` from Supabase), and
+`ingest-suggestion.yml` (community suggestions → drafted node).
 
 ---
 
@@ -89,15 +99,16 @@ is named.
 
 The tool decays silently without this. A light quarterly pass is enough:
 
-- **Monthly:** run `check-links.mjs`; fix any dead links.
+- **Monthly:** run `scripts/check-links.mjs`; fix any dead links.
 - **Quarterly:**
-  - Refresh the fastest-moving content: **fairs** (`EVENT_NEXT` dates), **new funds
-    / VCs**, **agency reorganisations** (these change most).
-  - Re-research 1–2 regions in depth; bump their dates in `VERIFIED_BATCHES`.
+  - Refresh the fastest-moving content: **fairs** (event dates), **new funds / VCs**,
+    **agency reorganisations** (these change most).
+  - Re-research 1–2 regions in depth; bump their "last reviewed" dates.
   - Add a line to the changelog in the About panel.
-  - Re-stamp `DATA_AS_OF`.
-- **When a user reports a problem:** check they've hard-refreshed (GitHub Pages
-  caches aggressively) before assuming the file is wrong.
+  - Re-stamp the version (see § 7).
+- **When a user reports a problem:** check they've hard-refreshed (GitHub Pages caches
+  aggressively — `Ctrl+Shift+R`, or load `…/Defence-ecosystem/?v=N`) before assuming the
+  data is wrong.
 
 Fastest-drifting content, in order: fair dates → startups/VCs → agency names →
 procurement portals → primes → multinational bodies.
@@ -106,77 +117,45 @@ procurement portals → primes → multinational bodies.
 
 ## 6. Deploying
 
-1. Validate: `node validate.mjs The_Defence_Ecosystem_v2.html` (must be green).
-2. Copy to `index.html`.
-3. Commit & push (CI validates automatically).
-4. Hard-refresh the live page (Ctrl+Shift+R) to beat the Pages cache. The
-   `DATA_AS_OF` stamp in a node's panel confirms which build is live.
+Supabase is the single source of truth; `data.json` is generated from it.
+
+1. **Edit data in Supabase** (SQL editor, or the drafter). This is the *only* place you
+   edit organisation data. Remember: in the Supabase SQL editor, **Run** commits the SQL
+   (this is what changes data); **Save** only bookmarks the query text.
+2. **Run the "Sync data.json from Supabase" GitHub Action** (or wait for the nightly run).
+   It pulls Supabase → writes `data.json` → validates → commits. GitHub Pages redeploys.
+   *Never paste `data.json` into the GitHub web editor — it's ~525 KB and the editor
+   silently truncates large pastes. Upload the file instead.*
+3. **`index.html`** is uploaded only when the *app* changes (a feature or the version
+   stamp), never for data.
+4. **Hard-refresh** the live page (`Ctrl+Shift+R`) to beat the Pages cache. The version
+   stamp in a node's panel confirms which build is live.
+
+> **Supabase "Max rows" must stay 5000.** The default of 1000 silently clipped nodes —
+> a real past bug. The sync script paginates so it can't be clipped, but keep the setting
+> high anyway.
 
 ---
 
-## 7. The scaling ceiling — and the plan to raise it
+## 7. Versioning
 
-**Honest assessment:** the single-file architecture is why this was easy to build
-and why it will eventually be hard to sustain. Data and rendering are married in one
-literal, so every data edit risks a structural error and can only be tested by
-reconstructing the app in a sandbox. The `validate.mjs` + CI safety net makes this
-*safe* up to maybe ~1,500 nodes. Beyond that, the friction compounds.
+Semantic **MAJOR.MINOR.PATCH** (see [`CLAUDE.md`](CLAUDE.md) § "Versioning" for the full
+rules). On release, stamp the version in **three** places or the About panel will lie:
 
-The real fix, when you're ready, is a **data/render split** — described below so you
-can decide with the costs in front of you. It is optional. The tool is stable as-is
-with the CI net; this is about the *next* order of magnitude.
+1. the HTML `DATA_AS_OF` constant,
+2. the `class="aver"` About string in the HTML,
+3. `data.json` `meta.version` (and the deploy SQL header).
 
-### Migration plan: split data from render (keep shipping one file)
+Keep a `CHANGELOG.md`. (Version drift here has bitten before — the About panel was stuck
+at v2.0 for several releases.)
 
-**Goal:** develop with data separate from code, but still *ship* a single
-self-contained HTML file (preserving the offline / no-dependency principle).
+---
 
-**Target shape:**
-```
-/data
-  organisations.json   # the nodes: id, label, entry, does, parent, tags
-  nations.json         # NATION_META, order, prefixes, NAT_OPPS
-  domains.json         # the verified allowlist
-  events.json          # EVENT_NEXT
-/src
-  index.template.html  # the app shell + render code, with a {{DATA}} placeholder
-build.mjs              # inlines the JSON into the template -> dist/index.html
-schema/*.json          # JSON Schema for each data file
-```
+## 8. On architecture (the data/render split is done)
 
-**How it works:** you edit JSON (or the render code) separately. `build.mjs` reads
-the JSON, validates it against the schemas, and writes `dist/index.html` with the
-data inlined — byte-for-byte the same kind of self-contained file you ship today.
-CI validates the JSON on every push; releases run the build.
-
-**Phases (each independently shippable, low-risk):**
-1. **Extract data, no behaviour change.** Write a one-off script that parses the
-   current `L()/B()/TAGS/…` literals into the JSON files above. Add `build.mjs` that
-   re-inlines them. Verify the built file is functionally identical to today's
-   (same node count, same validator output). *This is the big step; everything else
-   is easy after it.*
-2. **Add JSON Schemas.** Now that data is JSON, a schema enforces every invariant
-   `validate.mjs` checks — plus new ones — declaratively. Duplicate ids, bad tag
-   enums, and unverified domains fail at build time.
-3. **Split the render code** out of the template into `/src` modules (optional;
-   improves readability, not required for scaling).
-4. **Retire the bespoke harness.** The sandbox-reconstruction validation we do now
-   is replaced by schema validation on clean JSON — simpler and more reliable.
-
-**Cost:** phase 1 is the real work — maybe a focused session to write and verify the
-extractor and build step. Risk is contained because the acceptance test is exact:
-the built file must match the current one's structure and pass the same validator.
-
-**What you gain:** data editable without touching code; automatic schema validation;
-no growth ceiling on the file; contributors can add organisations safely; the render
-code becomes readable and testable on its own.
-
-**What you lose / must accept:** a build step now exists (you no longer hand-edit the
-shipped file — you edit sources and build). For a project whose whole ethos is "one
-file, no tooling," that's a genuine philosophical shift. It's worth it only when the
-maintenance friction of the single file starts to hurt — which is a *when*, not an
-*if*, but it may not be today.
-
-**Recommendation:** stay single-file with the CI net for now. Do phase 1 the first
-time a data edit causes a nasty structural break that CI catches but is annoying to
-fix by hand — that's the signal the marriage has become a liability.
+Earlier versions married data and rendering in a single HTML literal, and this file used
+to describe a future migration to split them. **That migration has effectively happened:**
+data now lives in Supabase and is mirrored to `data.json`, and the app renders it at
+runtime. The single-file *shipping* artefact (`index.html`) is preserved, but you no
+longer hand-edit data inside it. The remaining structural work — JSON Schema on the data,
+splitting the render code into modules — is optional polish, not a growth ceiling.
