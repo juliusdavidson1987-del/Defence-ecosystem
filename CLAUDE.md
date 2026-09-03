@@ -190,12 +190,15 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.1.1, Aug 2026)
+## Current state (v4.2.0, Sep 2026)
 
-- ~**1,499 nodes**, **187 affiliations**, **40 nations**.
+- ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
 - NAD Group as 9 National Armaments areas.
-- Graded "Find your door" (Exact / Close / Potential collaboration) + partner-nation region chips.
+- Graded "Find your door" (Exact / Close / Potential collaboration) + partner-nation region chips,
+  **now with an AI free-text mode** (v4.2.0): describe your situation → the public `find-door`
+  Edge Function has `claude-opus-5` rank the best doors *from the map* with reasoning (read-only,
+  rate-limited, no dataset writes). Phase 1 of the AI-finder plan.
 - Stages 1–3 automation available; Stage 1 deployed and live.
 - Funding branch includes NSSIF (fixed to `nssif.gov.uk`) + its 19 fund-of-funds partners +
   Ante-Bellum Angels.
@@ -209,5 +212,10 @@ browser-only config field, never committed.
   secret (fail-closed; verified 401 without it). `draft-node` uses `claude-opus-5`. Secrets
   `ANTHROPIC_API_KEY` + `DRAFTER_SHARED_SECRET` set in Supabase; service-role key auto-injected.
   Client sends the secret from a browser-only config field. See `supabase/functions/README.md`.
-- Angels could get their own sub-group under Funding if desired (currently under `f_vc`).
-- Ploughshare/Serapis/DAIC could move under NADG NA-Innovation if confirmed internally.
+- ✅ **Done (2026-09-03):** Angels now have their own Funding sub-branch `f_angels` (Ante-Bellum
+  moved out of `f_vc`); Ploughshare/Serapis/DAIC re-parented under NADG `na_innov`; Comand AI
+  added via Mode B. Node count → ~1,501.
+- **Next — AI finder Phase 2:** external web-search gap-fill when the map is thin (Claude finds
+  real orgs with verified URLs, shown as "not in the map yet — suggested"; still no dataset writes).
+- **Next — AI finder Phase 3:** a `review_queue` + gated review view so you one-click stage finds
+  as `status='pending'` then publish. Access model decided: **public search is read-only, no writes.**

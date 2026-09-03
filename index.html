@@ -880,6 +880,11 @@
     <button class="fchip on" data-v="any">Any</button>
   </div></div>
 
+  <div class="fgroup" data-facet="desc"><div class="flab">Describe your situation <span class="fhint">(optional — the more specific, the better)</span></div>
+    <textarea id="finderDesc" rows="3" placeholder="e.g. We're a 4-person startup with a novel counter-drone RF sensor at TRL 5, after a UK MOD trial and non-dilutive funding — but we're dual-use and also do maritime ISR." style="width:100%;box-sizing:border-box;resize:vertical;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;margin-top:2px"></textarea>
+    <div class="fhint" style="margin-top:4px">Claude reads this and ranks the best doors from the map — useful when the chips above don't quite capture your situation.</div>
+  </div>
+
   <div class="frow"><button class="fgo" id="finderGo">Show my doors →</button><button class="freset" id="finderReset">Reset</button></div>
   <div id="savedBox"></div>
   <div id="finderResults"></div>
@@ -985,7 +990,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.1.1 · updated August 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.2.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5051,10 +5056,48 @@ document.querySelectorAll('#finder .fgroup').forEach(g=>{
 });
 document.getElementById('findBtn').onclick=()=>{ const f=document.getElementById('finder'); f.classList.toggle('open'); if(f.classList.contains('open'))closePanel(); };
 document.getElementById('fclose').onclick=()=>document.getElementById('finder').classList.remove('open');
-document.getElementById('finderGo').onclick=()=>renderFinderResults(readFinder());
+/* ---- AI-assisted "Find your door": rank a shortlist against free text ---- */
+const FINDDOOR_URL='https://igvxlmbndpuegibykygq.functions.supabase.co/find-door';
+const FINDDOOR_STOP=new Set(['with','that','this','from','have','need','want','looking','organisation','organization','company','defence','defense','help','into','their','they','would','could','about','which','where','there','some','more','than','then','them','also','been','being','using','make','made','were','what','when','your','will','also','have']);
+function finderCandidates(sel,desc){
+  const words=(desc.toLowerCase().match(/[a-z]{4,}/g)||[]);
+  const kw=[...new Set(words.filter(w=>!FINDDOOR_STOP.has(w)))].slice(0,20);
+  const doors=Object.values(NODE).filter(isDoorNode);
+  const scored=doors.map(n=>({id:n.id,...scoreNode(n.id,sel)})).sort((a,b)=>b.s-a.s);
+  const facetPool=scored.filter(x=>x.s>0).slice(0,45).map(x=>x.id);
+  const kwPool=kw.length?doors.filter(n=>{const hay=((n.l||'')+' '+(n.does||'')).toLowerCase();return kw.some(w=>hay.includes(w));}).map(n=>n.id):[];
+  const ids=[...new Set([...facetPool,...kwPool])].slice(0,60);
+  return ids.map(id=>{const n=NODE[id];const t=tagsFor(id)||{};return {id,label:n.l,does:(n.does||'').slice(0,180),w:t.w,o:t.o,d:t.d,t:t.t,g:t.g};});
+}
+function finderEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+async function enhanceFinderWithAI(sel,desc){
+  const box=document.getElementById('finderResults');
+  let ai=document.getElementById('aiDoors');
+  if(!ai){ ai=document.createElement('div'); ai.id='aiDoors'; box.insertBefore(ai,box.firstChild); }
+  ai.innerHTML=`<div class="rtier rtier-exact"><div class="rcount">✨ Reading your description…</div></div>`;
+  let candidates; try{ candidates=finderCandidates(sel,desc); }catch(e){ ai.innerHTML=''; return; }
+  try{
+    const r=await fetch(FINDDOOR_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:desc,candidates})});
+    if(r.status===429){ ai.innerHTML=`<div class="fnone">The live search is busy right now — your tag-based results are below.</div>`; return; }
+    const j=await r.json();
+    const matches=(j.matches||[]).filter(m=>NODE[m.id]);
+    if(!matches.length){ ai.innerHTML=`<div class="fnone">Nothing sharper from your description — see the tag-based results below.</div>`; return; }
+    const order={exact:0,close:1,potential:2};
+    matches.sort((a,b)=>(order[a.tier]??3)-(order[b.tier]??3));
+    let html=`<div class="rtier rtier-exact"><div class="rcount">✨ Matched to your description <span class="rtn">${matches.length}</span></div><div class="rtsub">Ranked by Claude from what you wrote, drawing on the map. Tag-based results follow below.</div>`;
+    matches.forEach(m=>{ const n=NODE[m.id]; const col=colorOf(m.id); const ac=ACCESSCOL[accessOf(m.id)],al=ACCESSLAB[accessOf(m.id)];
+      html+=`<div class="rcard" data-id="${m.id}"><div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${finderEsc(n.l)}</span><span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div><div class="rwhy"><span class="wtag">${finderEsc(m.tier||'match')}</span> ${finderEsc(m.why||'')}</div><div class="ract">First step: ${linkifyProse((n.entry||oppsFor(m.id)).replace('@@SUGGEST_GATEWAY@@',''))}</div></div>`;
+    });
+    html+=`</div>`;
+    ai.innerHTML=html;
+    ai.querySelectorAll('.rcard').forEach(card=>{ card.addEventListener('click',e=>{ if(e.target.closest('a'))return; document.getElementById('finder').classList.remove('open'); focusNode(card.dataset.id); }); });
+  }catch(e){ ai.innerHTML=`<div class="fnone">Couldn't reach the live search — your tag-based results are below.</div>`; }
+}
+document.getElementById('finderGo').onclick=()=>{ const sel=readFinder(); renderFinderResults(sel); const d=((document.getElementById('finderDesc')||{}).value||'').trim(); if(d)enhanceFinderWithAI(sel,d); };
 document.getElementById('finderReset').onclick=()=>{
   document.querySelectorAll('#finder .fchip').forEach(c=>c.classList.remove('on'));
   document.querySelector('#finder .fgroup[data-facet="geo"] .fchip[data-v="any"]').classList.add('on');
+  const d=document.getElementById('finderDesc'); if(d)d.value='';
   document.getElementById('finderResults').innerHTML='';
 };
 
@@ -5682,7 +5725,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='August 2026 · v4.1.1 (funding expansion: NSSIF partners + Ante-Bellum Angels · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.2.0 (AI-assisted “Find your door”: describe your situation and Claude ranks the best doors from the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
