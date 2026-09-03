@@ -19,7 +19,7 @@ import { corsHeaders, json, secretOk } from "../_shared/cors.ts";
 
 type NodeIn = {
   id?: string; label?: string; parent?: string; kind?: string;
-  does?: string; entry?: string; tags?: unknown;
+  does?: string; entry?: string; tags?: unknown; status?: string;
 };
 
 Deno.serve(async (req: Request) => {
@@ -46,7 +46,9 @@ Deno.serve(async (req: Request) => {
     does: node.does || "",
     entry: node.entry || "",
     tags: node.tags ?? null,
-    status: "published",
+    // "pending" stages a node for review (invisible on the live map, which only
+    // shows published_nodes); anything else publishes immediately.
+    status: node.status === "pending" ? "pending" : "published",
   };
 
   const { error } = await supabase.from("nodes").upsert(row, { onConflict: "id" });
