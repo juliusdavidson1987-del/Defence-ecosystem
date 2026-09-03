@@ -235,3 +235,6 @@ browser-only config field, never committed.
   node into Step 3 → fix the field → ⚡ Insert directly upserts = rewrite), **Resolve** (applied) or
   **Dismiss** (dropped). `edit-set` marks the `edits` row `resolved`/`dismissed` (kept for history,
   leaves the pending bucket).
+- ✅ **Claims review (2026-09-03):** `admin-drafter.html` "Claims — pending" via `review-node`
+  `claims-list` / `claim-set` — **Approve** (verified contact) or **Dismiss**, with an
+  email-domain-vs-website match check to flag legit vs spam. Row kept for history.

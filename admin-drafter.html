@@ -110,6 +110,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div id="editsBox" style="margin-top:8px"></div>
 </div>
 
+<div class="card">
+  <div class="step">Claims — pending</div>
+  <div class="tiny">Representatives asking to maintain their organisation's entry. The domain check compares their email to the org's website; verify, then Approve (records the verified contact) or Dismiss.</div>
+  <div style="margin-top:9px"><button onclick="loadClaims()">↻ Load claims</button></div>
+  <div id="claimsBox" style="margin-top:8px"></div>
+</div>
+
 <div class="card" style="background:none;border-style:dashed">
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
@@ -325,6 +332,33 @@ async function setEdit(id,status){
   if(status==='resolved'&&!confirm('Mark correction #'+id+' resolved? Do this after you have applied & inserted the fix.'))return;
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'edit-set',id,status})});
     if(r.ok){ toast(status==='dismissed'?'Dropped correction':'Correction resolved'); loadEdits(); } else toast('Failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
+}
+window.loadClaims=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  const box=$('claimsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  const lbl=id=>{ const n=NODES.find(x=>x.id===id); return n?n.label:id; };
+  const domOf=s=>{ const m=String(s||'').split('@')[1]; return m?m.toLowerCase().trim():''; };
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'claims-list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json();
+    if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
+    const cs=j.claims||[];
+    if(!cs.length){ box.innerHTML='<div class="tiny">No pending claims.</div>'; return; }
+    box.innerHTML=cs.map(c=>{ const n=NODES.find(x=>x.id===c.node_id); const entry=((n&&n.entry)||'').toLowerCase(); const ed=domOf(c.email); const match=ed&&entry.includes(ed);
+      const badge=match?'<span style="color:#7fe0c8">✓ domain matches</span>':'<span style="color:#ffc09e">⚠ verify domain</span>';
+      return `<div class="chk" style="display:block"><b>${esc(lbl(c.node_id))}</b> <span class="tiny">#${esc(c.id)} · ${badge}</span><br><span class="tiny">${esc(c.claimant||'')} · ${esc(c.email||'')}${c.role?(' · '+esc(c.role)):''}${c.note?(' — '+esc(c.note)):''}</span><div style="margin-top:6px;white-space:nowrap"><button class="apcl primary" data-cid="${esc(c.id)}">Approve</button> <button class="discl" data-cid="${esc(c.id)}">Dismiss</button> <a class="tiny" href="mailto:${esc(c.email||'')}" style="margin-left:8px">✉ email them</a></div></div>`;
+    }).join('');
+    box.querySelectorAll('.apcl').forEach(b=>b.onclick=()=>setClaim(b.dataset.cid,'approved'));
+    box.querySelectorAll('.discl').forEach(b=>b.onclick=()=>setClaim(b.dataset.cid,'dismissed'));
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach claims.</div>'; console.error(e); }
+};
+async function setClaim(id,status){
+  if(!confirm((status==='approved'?'Approve':'Dismiss')+' claim #'+id+'?'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'claim-set',id,status})});
+    if(r.ok){ toast(status==='approved'?'Claim approved':'Claim dismissed'); loadClaims(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
 }
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
