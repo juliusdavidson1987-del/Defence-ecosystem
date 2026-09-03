@@ -90,6 +90,22 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true });
   }
 
+  if (op === "feedback-list") {
+    // Native feedback inbox (replaces the Google Form).
+    let res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status,created_at").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    if (res.error) res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status").eq("status", "pending").limit(50);
+    if (res.error) return json({ error: res.error.message, feedback: [] }, 502);
+    return json({ feedback: res.data ?? [] });
+  }
+
+  if (op === "feedback-set") {
+    if (!body.id) return json({ error: "id required" }, 400);
+    const status = body.status === "dismissed" ? "dismissed" : "resolved";
+    const { error } = await sb.from("feedback").update({ status }).eq("id", body.id);
+    if (error) return json({ error: error.message }, 502);
+    return json({ ok: true });
+  }
+
   if (op === "stats") {
     // Count helper — returns null (not 0) if the table is missing/unreadable,
     // so the dashboard can show "—" for anything not yet set up.
@@ -110,12 +126,13 @@ Deno.serve(async (req: Request) => {
     }
 
     const today = new Date().toISOString().slice(0, 10);
-    const [nPub, nPend, edT, edP, clT, clP, evT] = await Promise.all([
+    const [nPub, nPend, edT, edP, clT, clP, evT, fbT, fbP] = await Promise.all([
       cnt("nodes", ["status", "published"]),
       cnt("nodes", ["status", "pending"]),
       cnt("edits"), cnt("edits", ["status", "pending"]),
       cnt("claims"), cnt("claims", ["status", "pending"]),
       cnt("events"),
+      cnt("feedback"), cnt("feedback", ["status", "pending"]),
     ]);
 
     let rankTotal = 0, webTotal = 0, rankToday = 0, webToday = 0;
@@ -137,6 +154,7 @@ Deno.serve(async (req: Request) => {
         nodes: { published: nPub, pending: nPend },
         corrections: { total: edT, pending: edP },
         claims: { total: clT, pending: clP },
+        feedback: { total: fbT, pending: fbP },
         events: { total: evT },
         searches: { rankTotal, webTotal, rankToday, webToday },
       },
@@ -145,5 +163,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set | claims-list | claim-set)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set)" }, 400);
 });
