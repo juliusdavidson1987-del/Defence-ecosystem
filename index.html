@@ -992,7 +992,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.4.4 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.4.5 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5794,7 +5794,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.4.4 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.4.5 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5913,10 +5913,11 @@ async function nodeWebSearch(id, refine){
   box.innerHTML=`<div class="rtier"><div class="rcount">🌐 Checking the web for this area<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">Looking for organisations the map may be missing — up to a minute. Please don’t refresh.</span></div></div>`;
   const par=PARENT[id]?NODE[PARENT[id]]:null;
   const nat=(typeof nationCodeFor==='function')?nationCodeFor(id):'';
-  const natName={uk:'the UK',us:'the US',nato:'NATO',eu:'Europe',eu_inst:'the EU',fr:'France',de:'Germany',it:'Italy',nl:'the Netherlands',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'the UAE',sa:'Saudi Arabia',ua:'Ukraine'}[nat]||'';
+  const natName={uk:'the UK',us:'the US',nato:'NATO',eu:'Europe',eu_inst:'the EU',fr:'France',de:'Germany',it:'Italy',nl:'the Netherlands',be:'Belgium',se:'Sweden',no:'Norway',fi:'Finland',dk:'Denmark',ee:'Estonia',lv:'Latvia',lt:'Lithuania',pl:'Poland',cz:'Czechia',sk:'Slovakia',hu:'Hungary',es:'Spain',pt:'Portugal',gr:'Greece',ro:'Romania',bg:'Bulgaria',hr:'Croatia',si:'Slovenia',al:'Albania',mk:'North Macedonia',me:'Montenegro',lu:'Luxembourg',is:'Iceland',tr:'Türkiye',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'the UAE',sa:'Saudi Arabia',ua:'Ukraine'}[nat]||'';
   const isCat=/^(nat_|b_|f_|na_|eu_|pt_|ca_grp|au_grp|nz_grp)/.test(id) || !!(n.children&&n.children.length);
   const subj = isCat ? ('defence or dual-use '+n.l.toLowerCase()+(natName?(' in '+natName):'')) : ('real organisations working in the same space as, or alongside, "'+n.l+'"'+(natName?(' in '+natName):''));
   let desc=`Find ${subj} — real institutes, agencies, companies, universities, labs, programmes or funds with official websites. Include well-known and newer/emerging ones. Be generous with plausible real candidates (a maintainer verifies before anything is added).`;
+  if(natName) desc+=` IMPORTANT: return only organisations genuinely based in or operating in ${natName} — do NOT substitute organisations from the UK or other countries to pad the list; return fewer, or none, rather than off-country results.`;
   if(refine&&refine.trim()) desc+=` Focus especially on: ${refine.trim()}.`;
   const refineBar=`<div class="rtsub" style="margin-top:10px">Not what you were looking for? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on drone R&D / naval / a specific city" style="flex:1;min-width:0;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn plink" style="white-space:nowrap">↻ Again</button></div>`;
   const wire=()=>{ const b=box.querySelector('.webRefineBtn'); if(b) b.onclick=()=>nodeWebSearch(id,(box.querySelector('.webRefineIn')||{}).value||''); };
