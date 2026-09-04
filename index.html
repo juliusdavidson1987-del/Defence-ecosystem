@@ -992,7 +992,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.4.3 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.4.4 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5098,6 +5098,17 @@ function finderDomOf(u){ try{return new URL(u).hostname.replace(/^www\./,'').toL
 let _finderMappedDomains=null;
 function finderMappedDomains(){ if(_finderMappedDomains)return _finderMappedDomains; const set=new Set(); Object.values(NODE).forEach(n=>{const m=((n.entry||'')+'').toLowerCase().match(/([a-z0-9-]+\.)+[a-z]{2,}/); if(m)set.add(m[0].replace(/^www\./,''));}); _finderMappedDomains=set; return set; }
 function finderWebAffordance(desc,exclude,aiEl){ if(document.getElementById('aiWebBtn'))return; const b=document.createElement('button'); b.id='aiWebBtn'; b.className='rbtn'; b.textContent='🌐 Search the wider web'; b.style.marginTop='8px'; b.onclick=()=>finderWebSearch(desc,exclude,aiEl); aiEl.appendChild(b); }
+// Capture web finds for maintainer review — one plain insert per find (fire-and-forget).
+// Plain inserts (not an on_conflict upsert): a new url lands; a duplicate url is rejected
+// by the unique constraint and harmlessly swallowed. (The upsert path needs SELECT, which
+// the insert-only anon policy doesn't grant, so it was 401-ing.)
+function captureWebFinds(finds, query, source){
+  try{ if(typeof SUPABASE==='undefined'||!SUPABASE.url||!finds||!finds.length) return;
+    const u=SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds';
+    const h={apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'return=minimal'};
+    finds.forEach(x=>{ fetch(u,{method:'POST',headers:h,body:JSON.stringify({name:x.name,url:x.url,why:x.why||'',query:(query||'').slice(0,400),source:source||'public',status:'pending'})}).catch(()=>{}); });
+  }catch(_){}
+}
 async function finderWebSearch(desc,exclude,anchorEl,refine){
   finderAiStyle();
   const box=document.getElementById('finderResults'); if(!box)return;
@@ -5115,7 +5126,7 @@ async function finderWebSearch(desc,exclude,anchorEl,refine){
     const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
     if(!finds.length){ w.innerHTML=`<div class="fnone">No new organisations turned up${refine?' for that refinement':''} — try adding detail below and searching again.</div>`+refineBar; wire(); return; }
     // Capture these genuinely-new finds (post map-dedupe) so the maintainer can evaluate & add them. Fire-and-forget.
-    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:(effDesc||'').slice(0,400),source:'public',status:'pending'})))}).catch(()=>{}); } }catch(_){}
+    captureWebFinds(finds, effDesc, 'public');
     let html=`<div class="rtier"><div class="rcount">🌐 Beyond the map <span class="rtn">${finds.length}</span></div><div class="rtsub">Found via live web search — <b>not yet in the map, unverified</b>. Suggestions to check, not endorsements.</div>`;
     finds.forEach(x=>{ const host=finderDomOf(x.url);
       html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
@@ -5783,7 +5794,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.4.3 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.4.4 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5918,7 +5929,7 @@ async function nodeWebSearch(id, refine){
     const mapped=finderMappedDomains();
     const finds=(j.external||[]).filter(x=>x&&x.url&&x.name&&/^https?:\/\//i.test(x.url)).filter(x=>!mapped.has(finderDomOf(x.url)));
     if(!finds.length){ box.innerHTML=`<div class="fnone">Nothing new turned up for this${refine?' refinement':' area'} — try adding detail below and searching again.</div>`+refineBar; wire(); return; }
-    try{ if(typeof SUPABASE!=='undefined'&&SUPABASE.url){ fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/web_finds?on_conflict=url',{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:'Bearer '+SUPABASE.anonKey,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(finds.map(x=>({name:x.name,url:x.url,why:x.why||'',query:('area: '+n.l).slice(0,400),source:'node',status:'pending'})))}).catch(()=>{}); } }catch(_){}
+    captureWebFinds(finds, 'area: '+n.l+(refine?(' — '+refine):''), 'node');
     let html=`<div class="rtier"><div class="rcount">🌐 Found on the web <span class="rtn">${finds.length}</span></div><div class="rtsub">Not yet in the map, unverified — suggestions the maintainer can review and add.</div>`;
     finds.forEach(x=>{ const host=finderDomOf(x.url);
       html+=`<div class="rcard rcard-web"><div class="rhead"><span class="rdot" style="color:#c9a6ff;background:#c9a6ff"></span><span class="rname">${finderEsc(x.name)}</span><span class="abadge" style="color:#c9a6ff;border-color:#c9a6ff55">suggestion</span></div><div class="rwhy">${finderEsc(x.why)}</div><div class="ract">Web: <a href="${finderEscAttr(x.url)}" target="_blank" rel="noopener noreferrer">${finderEsc(host)}</a></div></div>`;
