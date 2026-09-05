@@ -1,0 +1,79 @@
+name: Auto-maintainer (daily)
+
+# Stage 4 — the daily back-room agent. Works the review queues via the gated
+# `auto-maintain` Edge Function (which holds the Anthropic + service-role keys),
+# auto-applies the safe items, holds the rest, opens a GitHub issue + emails the
+# digest, then re-syncs data.json so any published changes reach the live map.
+#
+# Required secret:  DRAFTER_SHARED_SECRET
+# Optional secrets: RESEND_API_KEY, DIGEST_EMAIL_TO, DIGEST_EMAIL_FROM (email digest),
+#                   AUTOMAINT_URL / SUPABASE_URL / SUPABASE_ANON_KEY (overrides).
+
+on:
+  # ── Enable the daily schedule AFTER your first successful manual run ──
+  # Uncomment these two lines once you've added the secrets and tested via
+  # "Run workflow", so failed nightly runs don't pile up before setup:
+  # schedule:
+  #   - cron: '0 6 * * *'        # daily 06:00 UTC (~07:00 UK)
+  workflow_dispatch:
+    inputs:
+      max_per_call:
+        description: 'Heavy (web-search) items per function call'
+        required: false
+        default: '2'
+      always_report:
+        description: 'Open an issue/email even on a quiet day'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write               # commit the re-synced data.json
+  issues: write                 # open the daily digest issue
+
+concurrency:
+  group: auto-maintain
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+
+      - name: Run the auto-maintainer
+        env:
+          DRAFTER_SHARED_SECRET: ${{ secrets.DRAFTER_SHARED_SECRET }}
+          AUTOMAINT_URL:         ${{ secrets.AUTOMAINT_URL }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          RESEND_API_KEY:        ${{ secrets.RESEND_API_KEY }}
+          DIGEST_EMAIL_TO:       ${{ secrets.DIGEST_EMAIL_TO }}
+          DIGEST_EMAIL_FROM:     ${{ secrets.DIGEST_EMAIL_FROM }}
+          GITHUB_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:     ${{ github.repository }}
+          MAX_PER_CALL:          ${{ github.event.inputs.max_per_call || '2' }}
+          ALWAYS_REPORT:         ${{ github.event.inputs.always_report || 'false' }}
+        run: node scripts/auto-maintain-run.mjs
+
+      - name: Re-sync data.json from Supabase
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/sync-datajson.mjs data.json
+
+      - name: Validate the refreshed data
+        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+
+      - name: Commit data.json if the agent changed the map
+        run: |
+          if git diff --quiet -- data.json; then
+            echo "data.json unchanged — nothing to commit."
+          else
+            git config user.name  "ecosystem-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data.json
+            git commit -m "chore: auto-maintainer sync data.json ($(date -u +%Y-%m-%d))"
+            git push
+            echo "data.json updated and pushed."
+          fi

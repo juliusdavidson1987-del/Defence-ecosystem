@@ -164,6 +164,14 @@ Deterministic build scripts (Node, no deps, Node 18+):
   Add the **`approved`** label to a "Suggest an organisation" issue → the action drafts the node
   (dedupe-checked, tagged) and posts it back with SQL. Optional `ANTHROPIC_API_KEY` secret enables
   AI enrichment; without it, it drafts deterministically from the form.
+- **Stage 4 — auto-maintainer agent** (`supabase/functions/auto-maintain` + `scripts/auto-maintain-run.mjs`
+  + `.github/workflows/auto-maintain.yml`; `automation/STAGE4_AUTO_MAINTAINER.md`). A daily agent that
+  works all five review queues (pending nodes, corrections, claims, feedback, web finds): verifies each
+  with `claude-opus-5` + web search, **auto-applies the safe decisions and holds the uncertain ones**
+  (recording a recommendation in `auto_action`/`auto_reason`), then sends a **digest by GitHub issue +
+  email** and re-syncs `data.json`. **New orgs are staged, not published, by default**
+  (`AUTOPUB_NEW_ORGS=false`); the whole policy is env-tunable. The Anthropic + service-role keys stay
+  server-side (the GitHub runner only holds the shared secret). Run log in `auto_runs`.
 
 **Security:** anon key reads only. The Anthropic key and Supabase service-role key live *only*
 inside Edge Functions (server-side secrets), never in the client. The `insert-node` shared-secret
@@ -191,7 +199,7 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.4.2, Sep 2026)
+## Current state (v4.5.0, Sep 2026)
 
 - ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
@@ -201,7 +209,11 @@ browser-only config field, never committed.
   Edge Function has `claude-opus-5` rank the best doors *from the map* with reasoning, and (v4.3.0)
   **search the wider web** when the map is thin, returning real external orgs as "not yet in the map"
   suggestions (read-only, rate-limited, no dataset writes). Phases 1–2 of the AI-finder plan.
-- Stages 1–3 automation available; Stage 1 deployed and live.
+- Stages 1–4 automation available; Stage 1 deployed and live. **Stage 4 (v4.5.0) — the daily
+  auto-maintainer agent** (`auto-maintain` Edge Function + `auto-maintain.yml` workflow): assesses all
+  five review queues with `claude-opus-5` + web search, auto-applies the safe items, holds the rest
+  with a recommendation, and sends a daily digest by GitHub issue + email. New-org auto-publish is OFF
+  by default (staged for one-click approval). See `automation/STAGE4_AUTO_MAINTAINER.md`.
 - Funding branch includes NSSIF (fixed to `nssif.gov.uk`) + its 19 fund-of-funds partners +
   Ante-Bellum Angels.
 

@@ -31,13 +31,10 @@ Deno.serve(async (req: Request) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   if (op === "list") {
-    const { data, error } = await sb
-      .from("nodes")
-      .select("id,label,parent,kind,does,entry,tags")
-      .eq("status", "pending")
-      .order("id");
-    if (error) return json({ error: error.message, pending: [] }, 502);
-    return json({ pending: data ?? [] });
+    let res = await sb.from("nodes").select("id,label,parent,kind,does,entry,tags,auto_action,auto_reason").eq("status", "pending").order("id");
+    if (res.error) res = await sb.from("nodes").select("id,label,parent,kind,does,entry,tags").eq("status", "pending").order("id");
+    if (res.error) return json({ error: res.error.message, pending: [] }, 502);
+    return json({ pending: res.data ?? [] });
   }
 
   if (op === "publish") {
@@ -57,7 +54,7 @@ Deno.serve(async (req: Request) => {
 
   if (op === "edits-list") {
     // Pending corrections from the "Suggest a correction" form (edits table).
-    let res = await sb.from("edits").select("id,node_id,field,suggestion,submitted_by,status").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    let res = await sb.from("edits").select("id,node_id,field,suggestion,submitted_by,status,auto_action,auto_reason").eq("status", "pending").order("id", { ascending: false }).limit(50);
     if (res.error) res = await sb.from("edits").select("id,node_id,field,suggestion,submitted_by,status").eq("status", "pending").limit(50);
     if (res.error) return json({ error: res.error.message, edits: [] }, 502);
     return json({ edits: res.data ?? [] });
@@ -75,7 +72,7 @@ Deno.serve(async (req: Request) => {
 
   if (op === "claims-list") {
     // Pending organisation claims (claims table).
-    let res = await sb.from("claims").select("id,node_id,claimant,email,role,note,status").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    let res = await sb.from("claims").select("id,node_id,claimant,email,role,note,status,auto_action,auto_reason").eq("status", "pending").order("id", { ascending: false }).limit(50);
     if (res.error) res = await sb.from("claims").select("id,node_id,claimant,email,role,note,status").eq("status", "pending").limit(50);
     if (res.error) return json({ error: res.error.message, claims: [] }, 502);
     return json({ claims: res.data ?? [] });
@@ -92,7 +89,7 @@ Deno.serve(async (req: Request) => {
 
   if (op === "feedback-list") {
     // Native feedback inbox (replaces the Google Form).
-    let res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status,created_at").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    let res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status,created_at,auto_action,auto_reason").eq("status", "pending").order("id", { ascending: false }).limit(50);
     if (res.error) res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status").eq("status", "pending").limit(50);
     if (res.error) return json({ error: res.error.message, feedback: [] }, 502);
     return json({ feedback: res.data ?? [] });
@@ -108,7 +105,7 @@ Deno.serve(async (req: Request) => {
 
   if (op === "webfinds-list") {
     // Captured "Beyond the map" web-search suggestions awaiting the maintainer.
-    let res = await sb.from("web_finds").select("id,name,url,why,query,source,status").eq("status", "pending").order("id", { ascending: false }).limit(80);
+    let res = await sb.from("web_finds").select("id,name,url,why,query,source,status,auto_action,auto_reason").eq("status", "pending").order("id", { ascending: false }).limit(80);
     if (res.error) res = await sb.from("web_finds").select("id,name,url,why,query,status").eq("status", "pending").limit(80);
     if (res.error) return json({ error: res.error.message, webfinds: [] }, 502);
     return json({ webfinds: res.data ?? [] });
@@ -120,6 +117,13 @@ Deno.serve(async (req: Request) => {
     const { error } = await sb.from("web_finds").update({ status }).eq("id", body.id);
     if (error) return json({ error: error.message }, 502);
     return json({ ok: true });
+  }
+
+  if (op === "auto-runs") {
+    // The daily auto-maintainer's run log (latest first) for the "Last agent run" card.
+    let res = await sb.from("auto_runs").select("id,ran_at,applied,held,digest").order("ran_at", { ascending: false }).limit(14);
+    if (res.error) return json({ runs: [] });        // table not present yet
+    return json({ runs: res.data ?? [] });
   }
 
   if (op === "stats") {
@@ -181,5 +185,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | webfinds-list | webfind-set)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | auto-runs | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | webfinds-list | webfind-set)" }, 400);
 });
