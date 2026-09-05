@@ -126,7 +126,7 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
 
 <div class="card">
   <div class="step">Feedback — pending</div>
-  <div class="tiny">Messages from the in-app "Send feedback" (plus gateway / other suggestions) — now native instead of the Google Form. Resolve when handled, or Dismiss.</div>
+  <div class="tiny">Messages from the in-app "Send feedback" (plus gateway / other suggestions). If a submission has a <b>source link or attached fact sheet</b>, <b>🧩 Draft node from this</b> reads it (untrusted — facts only) + verifies on the web and loads a drafted node into Step 3 for you to review. <b>📎 View</b> opens the attachment. Resolve when handled, or Dismiss.</div>
   <div style="margin-top:9px"><button onclick="loadFeedback()">↻ Load feedback</button></div>
   <div id="feedbackBox" style="margin-top:8px"></div>
 </div>
@@ -472,7 +472,15 @@ window.loadFeedback=async()=>{
     if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
     const fs=j.feedback||[];
     if(!fs.length){ box.innerHTML='<div class="tiny">No pending feedback.</div>'; return; }
-    box.innerHTML=fs.map(f=>`<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span>${recoLine(f)}<div style="margin-top:6px;white-space:nowrap"><button class="resfb primary" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`).join('');
+    box.innerHTML=fs.map(f=>{
+      const src=f.source_url?`<br><span class="tiny">source: <a href="${escA(f.source_url)}" target="_blank" rel="noopener noreferrer">${esc((f.source_url||'').replace(/^https?:\/\//,'').slice(0,60))}</a></span>`:'';
+      const att=f.attachment_path?`<br><span class="tiny">📎 ${esc(f.attachment_name||'attachment')}${f.attachment_type?(' ('+esc(f.attachment_type)+')'):''}</span>`:'';
+      const dfs=(f.source_url||f.attachment_path)?`<button class="dfs primary" data-id="${esc(f.id)}">🧩 Draft node from this</button> `:'';
+      const vw=f.attachment_path?`<button class="viewatt" data-id="${esc(f.id)}">📎 View</button> `:'';
+      return `<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span>${src}${att}${recoLine(f)}<div style="margin-top:6px;white-space:nowrap">${dfs}${vw}<button class="resfb" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`;
+    }).join('');
+    box.querySelectorAll('.dfs').forEach(b=>b.onclick=()=>draftFromSource(b.dataset.id));
+    box.querySelectorAll('.viewatt').forEach(b=>b.onclick=()=>viewAttachment(b.dataset.id));
     box.querySelectorAll('.resfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'resolved'));
     box.querySelectorAll('.disfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'dismissed'));
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach feedback.</div>'; console.error(e); }
@@ -483,6 +491,29 @@ async function setFeedback(id,status){
     if(r.ok){ toast(status==='resolved'?'Feedback resolved':'Feedback dismissed'); loadFeedback(); } else toast('Failed: '+r.status); }
   catch(e){ toast('error — see console'); console.error(e); }
 }
+window.viewAttachment=async(id)=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'feedback-attachment',id})});
+    const j=await r.json(); if(j.url) window.open(j.url,'_blank','noopener'); else toast('No attachment: '+(j.error||r.status)); }
+  catch(e){ toast('error — see console'); console.error(e); }
+};
+window.draftFromSource=async(id)=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  toast('🧩 Drafting from the source — reading the fact sheet & verifying on the web, up to a minute…');
+  try{
+    const r=await fetch(efUrl('draft-from-source'),{method:'POST',headers:efHeaders(),body:JSON.stringify({feedback_id:id})});
+    if(r.status===401){ toast('Unauthorised — check the shared secret'); return; }
+    const j=await r.json(); const d=j.draft;
+    if(!d){ toast('Draft failed: '+(j.error||r.status)); return; }
+    $('f_id').value=d.id||''; $('f_parent').value=d.parent||''; $('f_label').value=d.label||''; $('f_does').value=d.does||''; $('f_entry').value=d.entry||''; $('f_tags').value=JSON.stringify(d.tags||{});
+    const m=j.meta||{};
+    $('parentNote').textContent='🧩 Drafted from '+(m.attachment||'source')+(m.source_url?(' + '+m.source_url):'')+' — '+(d.note||'review the fields')+(d.id?'':'. New org: set an id in Step 3.')+' Then ⚡ Insert (or Stage), and Resolve the feedback.';
+    if(typeof validate==='function') validate();
+    window.scrollTo(0,0);
+    toast('🧩 Draft ready — review Step 3, then Insert or Stage, then Resolve the feedback');
+  }catch(e){ toast('Draft error — see console'); console.error(e); }
+};
 window.loadWebFinds=async()=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
   const box=$('webfindsBox'); box.innerHTML='<div class="tiny">Loading…</div>';

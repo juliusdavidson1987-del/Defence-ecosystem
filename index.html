@@ -1012,7 +1012,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.7.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.8.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1141,6 +1141,9 @@
   <p class="pintro" id="fbIntro">Tell the maintainer anything — a missing organisation, a broken link, a feature idea, or a fix. It goes straight into the review queue.</p>
   <label class="anlab">Your feedback</label>
   <textarea class="finput" id="fb_text" rows="4" placeholder="What's on your mind…"></textarea>
+  <label class="anlab">Source link (optional) — an official fact sheet or page</label><input class="finput" id="fb_source" placeholder="https://…">
+  <label class="anlab">Attach a fact sheet (optional) — PDF, image or text, max 10 MB</label>
+  <input id="fb_file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp,text/plain" style="color:var(--txt);font-size:12px;margin-bottom:9px;max-width:100%">
   <label class="anlab">Your name (optional)</label><input class="finput" id="fb_name" placeholder="So the maintainer can follow up">
   <div class="frow"><button class="fgo" id="fb_send">✉ Send for review</button><button class="freset" id="fb_cancel">Cancel</button></div>
   <p class="corlic">Submitted under the project licence (data CC BY 4.0 · code MIT). Please share your own words.</p>
@@ -5884,7 +5887,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.7.1 (Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.8.0 (Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6079,15 +6082,41 @@ function openSuggestForm(org, field, details){
   const t=document.getElementById('fbTitle'); if(t) t.textContent = field || 'Send feedback';
   const ta=document.getElementById('fb_text'); if(ta){ ta.value=''; ta.placeholder=(details&&details.trim())?details.trim():"What's on your mind…"; }
   const nm=document.getElementById('fb_name'); if(nm) nm.value='';
+  const src=document.getElementById('fb_source'); if(src) src.value='';
+  const fl=document.getElementById('fb_file'); if(fl) fl.value='';
   const modal=document.getElementById('feedback'); if(modal) modal.classList.add('open');
   setTimeout(()=>{ if(ta) ta.focus(); },50);
 }
+// Upload a fact sheet to the private feedback-uploads bucket (anon insert-only).
+// Returns {path,name,type} or null on failure. Type/size are also enforced by the bucket.
+async function fbUpload(file){
+  const ok=['application/pdf','image/png','image/jpeg','image/webp','text/plain'];
+  if(file.size>10*1024*1024){ showToast('File too large (max 10 MB)'); return null; }
+  if(file.type && !ok.includes(file.type)){ showToast('Unsupported file type (PDF, image or text)'); return null; }
+  const safe=(file.name||'file').replace(/[^a-z0-9._-]+/gi,'_').slice(0,60);
+  const path='fb-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'-'+safe;
+  try{
+    const u=SUPABASE.url.replace(/\/+$/,'')+'/storage/v1/object/feedback-uploads/'+encodeURIComponent(path);
+    const res=await fetch(u,{method:'POST',headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':file.type||'application/octet-stream' },body:file});
+    if(!res.ok) return null;
+    return { path, name:file.name||safe, type:file.type||'' };
+  }catch(_){ return null; }
+}
 async function fbSend(){
+  const btn=document.getElementById('fb_send');
   const msg=(document.getElementById('fb_text').value||'').trim();
   if(!msg){ showToast('Add your feedback first'); return; }
   const name=(document.getElementById('fb_name').value||'').trim();
-  const row={ kind:_fbCtx.kind, org:_fbCtx.org, node_id:_fbCtx.node_id||null, message:msg, submitted_by:name||null, status:'pending' };
+  const source=(document.getElementById('fb_source').value||'').trim();
+  const fEl=document.getElementById('fb_file'); const file=fEl&&fEl.files&&fEl.files[0];
+  let att=null;
   try{
+    if(file){ if(btn) btn.textContent='Uploading…'; att=await fbUpload(file); if(!att){ if(btn) btn.textContent='✉ Send for review'; showToast("Couldn't attach that file — try a smaller PDF/image, or send without it."); return; } }
+    // Only include the attachment columns when used, so plain feedback still works
+    // if the attachments migration hasn't been run yet (unknown columns would 400).
+    const row={ kind:_fbCtx.kind, org:_fbCtx.org, node_id:_fbCtx.node_id||null, message:msg, submitted_by:name||null, status:'pending' };
+    if(source) row.source_url=source;
+    if(att){ row.attachment_path=att.path; row.attachment_name=att.name; row.attachment_type=att.type; }
     const res=await fetch(SUPABASE.url.replace(/\/+$/,'')+'/rest/v1/feedback',{
       method:'POST', headers:{ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey, 'Content-Type':'application/json', Prefer:'return=minimal' },
       body: JSON.stringify(row)
@@ -6095,6 +6124,7 @@ async function fbSend(){
     if(res.ok){ document.getElementById('feedback').classList.remove('open'); showToast('Thanks — sent to the maintainer for review.'); }
     else showToast("Couldn't send just now — please try again.");
   }catch(_){ showToast("Couldn't send just now — please try again."); }
+  if(btn) btn.textContent='✉ Send for review';
 }
 { const s=document.getElementById('fb_send'); if(s) s.onclick=fbSend;
   const c=document.getElementById('fb_cancel'), x=document.getElementById('fbClose'), m=document.getElementById('feedback');

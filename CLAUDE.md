@@ -205,7 +205,7 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.6.0, Sep 2026)
+## Current state (v4.8.0, Sep 2026)
 
 - ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
@@ -235,6 +235,11 @@ browser-only config field, never committed.
   ("Event dates — proposed" → Approve writes `reference.event_next`) via `review-node`
   `eventprops-list`/`eventprop-set`; orchestrated by `scripts/event-refresh-run.mjs` +
   `.github/workflows/event-refresh.yml` (weekly). Nothing auto-publishes — dates are approved by hand.
+- **Feedback attachments (v4.8.0):** the in-app feedback modal accepts a source link + an attached
+  fact sheet (PDF/image/text, ≤10 MB → private `feedback-uploads` Storage bucket, anon upload-only).
+  The gated `draft-from-source` Edge Function reads the attachment as *untrusted* reference data
+  (facts only), verifies on the web, and drafts node fields into `admin-drafter.html` Step 3 for
+  review (🧩 Draft node from this / 📎 View via `review-node` `feedback-attachment`). Nothing auto-applies.
 
 ### Known open items / next ideas
 - ✅ **Confirmed live (2026-09-03):** the deployed site runs the current build — About reads

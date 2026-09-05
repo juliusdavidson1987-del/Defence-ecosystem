@@ -89,7 +89,7 @@ Deno.serve(async (req: Request) => {
 
   if (op === "feedback-list") {
     // Native feedback inbox (replaces the Google Form).
-    let res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status,created_at,auto_action,auto_reason").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    let res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status,created_at,auto_action,auto_reason,source_url,attachment_path,attachment_name,attachment_type").eq("status", "pending").order("id", { ascending: false }).limit(50);
     if (res.error) res = await sb.from("feedback").select("id,kind,org,node_id,message,submitted_by,status").eq("status", "pending").limit(50);
     if (res.error) return json({ error: res.error.message, feedback: [] }, 502);
     return json({ feedback: res.data ?? [] });
@@ -101,6 +101,17 @@ Deno.serve(async (req: Request) => {
     const { error } = await sb.from("feedback").update({ status }).eq("id", body.id);
     if (error) return json({ error: error.message }, 502);
     return json({ ok: true });
+  }
+
+  if (op === "feedback-attachment") {
+    // Short-lived signed URL to view a feedback submission's uploaded fact sheet
+    // (the bucket is private; only the service-role can mint this).
+    if (!body.id) return json({ error: "id required" }, 400);
+    const { data: fb } = await sb.from("feedback").select("attachment_path,attachment_name,attachment_type").eq("id", body.id).maybeSingle();
+    if (!fb?.attachment_path) return json({ error: "no attachment" }, 404);
+    const { data: sig, error } = await sb.storage.from("feedback-uploads").createSignedUrl(fb.attachment_path as string, 600);
+    if (error || !sig) return json({ error: error?.message || "could not sign" }, 502);
+    return json({ url: sig.signedUrl, name: fb.attachment_name, type: fb.attachment_type });
   }
 
   if (op === "webfinds-list") {
@@ -212,5 +223,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats | auto-runs | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | webfinds-list | webfind-set | eventprops-list | eventprop-set)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | auto-runs | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | feedback-attachment | webfinds-list | webfind-set | eventprops-list | eventprop-set)" }, 400);
 });

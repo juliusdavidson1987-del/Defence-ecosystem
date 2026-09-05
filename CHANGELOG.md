@@ -3,6 +3,24 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.8.0 — Feedback attachments → agent drafts the node (2026-09-05)
+- **Feedback can now carry a source link and an attached fact sheet** (PDF / image / text, ≤10 MB)
+  so the maintainer's agent can build the right node from an authoritative source. Uploads go to a
+  **private, size/type-limited Storage bucket** (`feedback-uploads`, anon upload-only, no public read);
+  `migrations/2026-09-05-feedback-attachments.sql`.
+- **Agent drafts, you review.** New gated `draft-from-source` Edge Function reads the attachment
+  (as an untrusted document — facts only, instructions ignored) + the source link + message, verifies
+  on the web with `claude-opus-5`, and proposes node fields into the drafter's Step 3. Surfaced in
+  `admin-drafter.html` → Feedback: **🧩 Draft node from this** and **📎 View** (short-lived signed URL
+  via `review-node` `feedback-attachment`). Nothing goes live unreviewed.
+- Plain text feedback is unchanged and stays working even before the migration (the client only sends
+  the new columns when used).
+
+## v4.7.1 — Fix black-on-black input text (2026-09-05)
+- Several boxes (finder description, "search again" bars, modal fields) set `color:var(--ink)` — a
+  near-black background token — so typed text was dark-on-dark. Now use `var(--txt)` + a theme-aware
+  background; readable in dark, light and high-contrast.
+
 ## v4.7.0 — Taxonomy v2: two-level technology domains (2026-09-05)
 - **The technology taxonomy is now two-level** (see `docs/TAXONOMY.md`): ~9 **categories**
   group ~30 finer **subcategory** tags. Tags stay flat & multi-valued — categories are a
