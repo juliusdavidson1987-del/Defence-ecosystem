@@ -389,7 +389,8 @@
   .crmsub{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:15px 0 7px}
   .crmactions{display:flex;gap:7px;margin-top:15px}
   .crmnote{font-size:10.5px;color:var(--faint);line-height:1.55;margin-top:11px}
-  .finput{width:100%;background:rgba(10,18,32,.9);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:Inter,sans-serif;outline:none;margin-bottom:9px}
+  .finput{width:100%;background:var(--ink2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:Inter,sans-serif;outline:none;margin-bottom:9px}
+  .finput::placeholder{color:var(--faint)}
   .finput:focus{border-color:var(--phos);box-shadow:0 0 0 3px color-mix(in srgb,var(--phos) 15%,transparent)}
   textarea.finput{resize:vertical;line-height:1.5}
   .anlab{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:3px 0 5px}
@@ -901,7 +902,7 @@
   </div></div>
 
   <div class="fgroup" data-facet="desc"><div class="flab">Describe your situation <span class="fhint">(optional — the more specific, the better)</span></div>
-    <textarea id="finderDesc" rows="3" placeholder="e.g. We're a 4-person startup with a novel counter-drone RF sensor at TRL 5, after a UK MOD trial and non-dilutive funding — but we're dual-use and also do maritime ISR." style="width:100%;box-sizing:border-box;resize:vertical;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;margin-top:2px"></textarea>
+    <textarea id="finderDesc" rows="3" placeholder="e.g. We're a 4-person startup with a novel counter-drone RF sensor at TRL 5, after a UK MOD trial and non-dilutive funding — but we're dual-use and also do maritime ISR." style="width:100%;box-sizing:border-box;resize:vertical;background:var(--ink2,#132132);color:var(--txt,#e9eff7);border:1px solid var(--line,#294057);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;margin-top:2px"></textarea>
     <div class="fhint" style="margin-top:4px">Claude reads this and ranks the best doors from the map — useful when the chips above don't quite capture your situation.</div>
   </div>
 
@@ -1011,7 +1012,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.7.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.7.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5205,7 +5206,7 @@ async function finderWebSearch(desc,exclude,anchorEl,refine){
   let w=document.getElementById('aiWeb');
   if(!w){ w=document.createElement('div'); w.id='aiWeb'; if(anchorEl&&anchorEl.parentNode)anchorEl.parentNode.insertBefore(w,anchorEl.nextSibling); else box.insertBefore(w,box.firstChild); }
   const effDesc = desc + (refine&&refine.trim()?(' Focus especially on: '+refine.trim()+'.'):'');
-  const refineBar=`<div class="rtsub" style="margin-top:10px">Not quite what you wanted? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on space / a specific country / early-stage" style="flex:1;min-width:0;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn rbtn" style="white-space:nowrap">↻ Again</button></div>`;
+  const refineBar=`<div class="rtsub" style="margin-top:10px">Not quite what you wanted? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on space / a specific country / early-stage" style="flex:1;min-width:0;background:var(--ink2,#132132);color:var(--txt,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn rbtn" style="white-space:nowrap">↻ Again</button></div>`;
   const wire=()=>{ const b=w.querySelector('.webRefineBtn'); if(b) b.onclick=()=>finderWebSearch(desc,exclude,anchorEl,(w.querySelector('.webRefineIn')||{}).value||''); };
   w.innerHTML=`<div class="rtier"><div class="rcount">🌐 Searching the wider web with Claude<span class="aidots"></span></div><div class="aiload"><span class="aispin"></span><span class="rtsub" style="margin:0">Looking beyond the map — this can take up to a minute. Please don’t refresh.</span></div></div>`;
   try{
@@ -5883,7 +5884,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.7.0 (Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.7.1 (Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6010,7 +6011,7 @@ async function nodeWebSearch(id, refine){
   let desc=`Find ${subj} — real institutes, agencies, companies, universities, labs, programmes or funds with official websites. Include well-known and newer/emerging ones. Be generous with plausible real candidates (a maintainer verifies before anything is added).`;
   if(natName) desc+=` IMPORTANT: return only organisations genuinely based in or operating in ${natName} — do NOT substitute organisations from the UK or other countries to pad the list; return fewer, or none, rather than off-country results.`;
   if(refine&&refine.trim()) desc+=` Focus especially on: ${refine.trim()}.`;
-  const refineBar=`<div class="rtsub" style="margin-top:10px">Not what you were looking for? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on drone R&D / naval / a specific city" style="flex:1;min-width:0;background:var(--card,#132132);color:var(--ink,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn plink" style="white-space:nowrap">↻ Again</button></div>`;
+  const refineBar=`<div class="rtsub" style="margin-top:10px">Not what you were looking for? Add detail and search again:</div><div style="display:flex;gap:6px;margin-top:4px"><input class="webRefineIn" placeholder="e.g. focus on drone R&D / naval / a specific city" style="flex:1;min-width:0;background:var(--ink2,#132132);color:var(--txt,#e9eff7);border:1px solid var(--line,#294057);border-radius:8px;padding:7px 9px;font:inherit;font-size:12px"><button class="webRefineBtn plink" style="white-space:nowrap">↻ Again</button></div>`;
   const wire=()=>{ const b=box.querySelector('.webRefineBtn'); if(b) b.onclick=()=>nodeWebSearch(id,(box.querySelector('.webRefineIn')||{}).value||''); };
   const ex=[]; (n.children||[]).forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
   if(par&&par.children) par.children.forEach(c=>{ const cn=NODE[c.id||c]; if(cn)ex.push(cn.l); });
