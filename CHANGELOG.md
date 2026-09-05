@@ -15,8 +15,12 @@ aren't stamped here unless they change a version.
   grouped under category headings. All old tags remain valid (back-compat aliases), so nothing
   breaks before the retag.
 - Vocab updated across `KNOWN_DOMAINS` (drafter + draft-node), `validate-data.mjs`, and the
-  Edge-Function tag prompts. **Next:** a full AI retag pass to enrich existing nodes into the new
-  subcategories.
+  Edge-Function tag prompts.
+- **Full AI retag tool (shipped).** A one-off `retag` Edge Function + `scripts/retag-run.mjs` +
+  `.github/workflows/retag.yml` walks every org node in batches and has `claude-opus-5` refine
+  `tags.d` into the v2 subcategories (splitting `human`, adding the new keys). **Dry-run by default**
+  (downloadable change list); applying snapshots old tags to `retag_backup` (`migrations/2026-09-05-retag-backup.sql`)
+  for a one-line full revert, then re-syncs data.json. Additive/refining — never blindly overwrites.
 
 ## v4.6.0 — Events reworked: three-layer model + dates as data (2026-09-05)
 - **Events are now a pathways-first, three-layer model** instead of a thin fixed list:

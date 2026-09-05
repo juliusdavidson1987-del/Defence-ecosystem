@@ -1,0 +1,74 @@
+name: Taxonomy v2 retag (one-off)
+
+# One-off: refine every org node's domain tags into the v2 subcategories via the
+# gated `retag` Edge Function. DEFAULTS TO A DRY RUN — preview the proposed changes
+# (downloadable artifact) without writing. Re-run with dry_run=false to apply; the
+# function backs up old tags to retag_backup, and this then re-syncs data.json.
+#
+# Required secret:  DRAFTER_SHARED_SECRET
+# Optional secrets: RETAG_URL / SUPABASE_URL / SUPABASE_ANON_KEY
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only (true) or apply the changes (false)'
+        required: true
+        default: 'true'
+      batch:
+        description: 'Nodes per function call'
+        required: false
+        default: '25'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: retag
+  cancel-in-progress: false
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+
+      - name: Run the retag
+        env:
+          DRAFTER_SHARED_SECRET: ${{ secrets.DRAFTER_SHARED_SECRET }}
+          RETAG_URL:  ${{ secrets.RETAG_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          DRY_RUN:    ${{ github.event.inputs.dry_run }}
+          BATCH:      ${{ github.event.inputs.batch || '25' }}
+        run: node scripts/retag-run.mjs
+
+      - name: Upload the proposed/applied change list
+        uses: actions/upload-artifact@v4
+        with:
+          name: retag-changes
+          path: retag-changes.json
+
+      # On a real apply (dry_run=false) the tags changed — re-sync data.json.
+      - name: Re-sync data.json from Supabase
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/sync-datajson.mjs data.json
+      - name: Validate the refreshed data
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+      - name: Commit data.json
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        run: |
+          if git diff --quiet -- data.json; then
+            echo "data.json unchanged."
+          else
+            git config user.name  "ecosystem-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data.json
+            git commit -m "chore: taxonomy v2 retag — sync data.json ($(date -u +%Y-%m-%d))"
+            git push
+          fi

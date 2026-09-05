@@ -39,3 +39,18 @@ energy, materials, quantum, xcut` and the `x*` function buckets. Only `human` is
 split (needs per-node judgement); the new keys are added where they apply. The
 retag is additive/refining — it preserves sensible existing tags and adds the finer
 ones, never blindly overwriting.
+
+## Running the retag (one-off)
+`retag` Edge Function + `scripts/retag-run.mjs` + `.github/workflows/retag.yml`.
+1. Run `migrations/2026-09-05-retag-backup.sql` in Supabase (the revert snapshot table).
+2. Deploy the function: `supabase functions deploy retag --no-verify-jwt`.
+3. **Preview:** Actions → *Taxonomy v2 retag (one-off)* → Run workflow with
+   `dry_run=true`. Download the **retag-changes** artifact and skim the proposed
+   `[old] → [new]` tag changes.
+4. **Apply:** re-run with `dry_run=false`. The function snapshots old tags to
+   `retag_backup`, writes the new `tags.d`, and the workflow re-syncs `data.json`.
+   Hard-refresh to see the finer buckets populate in the Technology lens.
+5. **Revert (if ever needed):**
+   `update public.nodes n set tags = b.old_tags from public.retag_backup b where n.id = b.id;`
+Reuses the existing `DRAFTER_SHARED_SECRET` — no new secrets. Tunable: `RETAG_BATCH`
+(function) / `BATCH` (workflow input).
