@@ -27,7 +27,9 @@ export const TYPE_TAGS = {
 const UK_BRANCH = { gov:'b_gov',military:'b_flc',intel:'b_flc',procurement:'b_acq',prime:'b_primes',supply:'b_supply',
   sme:'b_tech',startup:'b_tech',investor:'f_vc',academic:'b_sti',research:'b_sti',rto:'b_sti',
   policy:'b_gov',innovation:'b_sti',test:'b_te',nuclear:'b_nuke' };
-export const KNOWN_DOMAINS = ['ai','space','cyber','c4isr','comms','maritime','land','air','counteruas','weapons','directed','hypersonic','nuclear','simulation','training','logistics','energy','materials','human','quantum','xcut'];
+// Two-level taxonomy v2 subcategory keys — see docs/TAXONOMY.md. `human` kept as a
+// v1 alias (unspecified) until the retag splits it into medical / humanperf.
+export const KNOWN_DOMAINS = ['ai','autonomy','software','wargaming','cyber','ew','comms','pnt','quantum','c4isr','space','eoisr','air','land','maritime','weapons','directed','hypersonic','counteruas','nuclear','cbrn','logistics','energy','materials','microelec','medical','humanperf','training','simulation','human','xcut'];
 
 export const slug = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/&/g,'and').replace(/[^a-z0-9]+/g,'').slice(0,22);
 

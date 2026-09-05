@@ -3,6 +3,21 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.7.0 — Taxonomy v2: two-level technology domains (2026-09-05)
+- **The technology taxonomy is now two-level** (see `docs/TAXONOMY.md`): ~9 **categories**
+  group ~30 finer **subcategory** tags. Tags stay flat & multi-valued — categories are a
+  navigation/display layer, so a node can still span domains.
+- **Fixes the coarse spots:** `human` split into `medical` (casualty care, med-devices, biotech)
+  and `humanperf` (performance, augmentation); `quantum` promoted to its own subcategory; added
+  `autonomy`, `software`, `ew`, `pnt`, `eoisr`, `cbrn`, `microelec`. Everything else maps 1:1.
+- **Technology lens is now category → subcategory → nation** (`TECH_TAX` drives `TECH_META`/
+  `TECH_ORDER`/`SUBCAT`/`CAT_META`; `buildTechTree` nests). **Find-your-door** domain chips are
+  grouped under category headings. All old tags remain valid (back-compat aliases), so nothing
+  breaks before the retag.
+- Vocab updated across `KNOWN_DOMAINS` (drafter + draft-node), `validate-data.mjs`, and the
+  Edge-Function tag prompts. **Next:** a full AI retag pass to enrich existing nodes into the new
+  subcategories.
+
 ## v4.6.0 — Events reworked: three-layer model + dates as data (2026-09-05)
 - **Events are now a pathways-first, three-layer model** instead of a thin fixed list:
   **Anchor fairs** (the tentpoles, reparented under `ev_fairs`), **Aggregators & event

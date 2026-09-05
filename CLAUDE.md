@@ -72,9 +72,15 @@ A node:
   - `w` (who it's for): `govmil, academic, prime, sme, startup, investor`
   - `o` (what it offers): `advice, contract, procurement, research, product, investment, grant, test`
   - `t` (TRL band): `[low, high]` integers 1–9
-  - `d` (tech domains): `ai, space, cyber, c4isr, comms, maritime, land, air, counteruas, weapons,
-    directed, hypersonic, nuclear, simulation, training, logistics, energy, materials, human, quantum, xcut`
-    (plus cross-cutting function buckets `xfund, xtest, xacad, xproc, xother` used by the tech lens)
+  - `d` (tech domains): **two-level taxonomy v2 — see [docs/TAXONOMY.md](docs/TAXONOMY.md)**, the single
+    source of truth. ~9 categories group ~30 flat, multi-valued subcategory tags:
+    `ai, autonomy, software, wargaming, cyber, ew, comms, pnt, quantum, c4isr, space, eoisr, air, land,
+    maritime, weapons, directed, hypersonic, counteruas, nuclear, cbrn, logistics, energy, materials,
+    microelec, medical, humanperf, training, simulation, xcut` (plus cross-cutting function buckets
+    `xfund, xtest, xacad, xproc, xother`). `human` is a back-compat alias (unspecified) pending the retag.
+    The Technology lens renders **category → subcategory → nation** (`TECH_TAX` in index.html drives it);
+    the finder chips are grouped by category. Keep TAXONOMY.md, `TECH_TAX`, `KNOWN_DOMAINS`
+    (drafter-engine + draft-node), `validate-data.mjs`, and the Edge-Function tag prompts in sync.
   - `a` (access): `open, restricted, portal, prime`
   - `g` (geo): `uk, us, eu, nato, ca, au, nz, kr, jp, il, in, sg, ae, sa, fr, de, it, nl`
 - **`affiliation`**: `{ net, role, note }` → renders as a light navigation line

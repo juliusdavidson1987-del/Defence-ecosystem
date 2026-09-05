@@ -45,7 +45,7 @@ const CFG = {
 };
 
 // tag vocabulary (kept in sync with CLAUDE.md / the app)
-const TAG_VOCAB = `tags shape { w:[govmil|academic|prime|sme|startup|investor], o:[advice|contract|procurement|research|product|investment|grant|test], t:[low,high] TRL ints 1-9, d:[ai|space|cyber|c4isr|comms|maritime|land|air|counteruas|weapons|directed|hypersonic|nuclear|simulation|training|logistics|energy|materials|human|quantum|xcut], a:open|restricted|portal|prime, g:uk|us|eu|nato|ca|au|nz|kr|jp|il|in|sg|ae|sa|fr|de|it|nl|... (2-letter home country) }`;
+const TAG_VOCAB = `tags shape { w:[govmil|academic|prime|sme|startup|investor], o:[advice|contract|procurement|research|product|investment|grant|test], t:[low,high] TRL ints 1-9, d (pick 1-3 that fit best):[ai|autonomy|software|wargaming|cyber|ew|comms|pnt|quantum|c4isr|space|eoisr|air|land|maritime|weapons|directed|hypersonic|counteruas|nuclear|cbrn|logistics|energy|materials|microelec|medical|humanperf|training|simulation|xcut], a:open|restricted|portal|prime, g:uk|us|eu|nato|ca|au|nz|kr|jp|il|in|sg|ae|sa|fr|de|it|nl|... (2-letter home country) }`;
 
 const now = () => new Date().toISOString();
 

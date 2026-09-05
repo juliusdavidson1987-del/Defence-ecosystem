@@ -35,7 +35,8 @@ const MIN_AFF = num('min-affiliations', 150);
 
 if (!file || !fs.existsSync(file)) { console.error('Usage: node validate-data.mjs <data.json> [--json] [--min-nodes=N] [--min-affiliations=N]'); process.exit(2); }
 
-const KNOWN_DOMAINS = new Set(['ai','space','cyber','c4isr','comms','maritime','land','air','counteruas','weapons','directed','hypersonic','nuclear','simulation','wargaming','training','logistics','energy','materials','human','quantum','xcut','xfund','xtest','xacad','xproc','xother']);
+// Taxonomy v2 subcategory keys (docs/TAXONOMY.md) + cross-cutting function buckets + v1 aliases.
+const KNOWN_DOMAINS = new Set(['ai','autonomy','software','wargaming','cyber','ew','comms','pnt','quantum','c4isr','space','eoisr','air','land','maritime','weapons','directed','hypersonic','counteruas','nuclear','cbrn','logistics','energy','materials','microelec','medical','humanperf','training','simulation','xcut','human','xfund','xtest','xacad','xproc','xother']);
 const KNOWN_KINDS = new Set(['org','branch']);
 
 const results = [];

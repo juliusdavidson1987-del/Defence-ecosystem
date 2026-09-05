@@ -20,10 +20,12 @@ const TYPE_KEYS = [
   "gov", "military", "procurement", "intel", "nuclear", "academic", "research",
   "rto", "test", "prime", "supply", "sme", "startup", "investor", "policy", "innovation",
 ];
+// Taxonomy v2 subcategory keys — see docs/TAXONOMY.md.
 const KNOWN_DOMAINS = [
-  "ai", "space", "cyber", "c4isr", "comms", "maritime", "land", "air", "counteruas",
-  "weapons", "directed", "hypersonic", "nuclear", "simulation", "training", "logistics",
-  "energy", "materials", "human", "quantum", "xcut",
+  "ai", "autonomy", "software", "wargaming", "cyber", "ew", "comms", "pnt", "quantum",
+  "c4isr", "space", "eoisr", "air", "land", "maritime", "weapons", "directed", "hypersonic",
+  "counteruas", "nuclear", "cbrn", "logistics", "energy", "materials", "microelec",
+  "medical", "humanperf", "training", "simulation", "xcut",
 ];
 
 // Pull the first JSON object out of the model's reply, tolerating code fences.
