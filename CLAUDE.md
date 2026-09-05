@@ -209,6 +209,9 @@ browser-only config field, never committed.
   Edge Function has `claude-opus-5` rank the best doors *from the map* with reasoning, and (v4.3.0)
   **search the wider web** when the map is thin, returning real external orgs as "not yet in the map"
   suggestions (read-only, rate-limited, no dataset writes). Phases 1–2 of the AI-finder plan.
+  **v4.5.0:** the wider-web search is also available **on demand** — a "Check the wider web" card is
+  always shown in the finder results (not just when thin), since the sector changes fast; on the
+  tag-only path the query is synthesised from the selected chips (`finderDescForWeb`).
 - Stages 1–4 automation available; Stage 1 deployed and live. **Stage 4 (v4.5.0) — the daily
   auto-maintainer agent** (`auto-maintain` Edge Function + `auto-maintain.yml` workflow): assesses all
   five review queues with `claude-opus-5` + web search, auto-applies the safe items, holds the rest

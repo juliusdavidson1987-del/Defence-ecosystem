@@ -3,7 +3,13 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
-## v4.5.0 — Auto-maintainer agent (2026-09-05)
+## v4.5.0 — Auto-maintainer agent + on-demand web search (2026-09-05)
+- **Find your door — wider-web search on demand.** The "🌐 Search the wider web"
+  option is now always available in the finder results (a "Check the wider web"
+  card), not just when the map is thin — the sector moves fast, so you can check
+  for new/updated organisations even when the map already returns plenty. On the
+  tag-only path (no free-text), the query is synthesised from the selected chips.
+  The auto-run on thin results is unchanged.
 - **Stage 4: a daily back-room agent.** New gated Edge Function `auto-maintain`
   works all five review queues (pending nodes, corrections, claims, feedback, web
   finds), verifying each item with `claude-opus-5` + web search. It **auto-applies

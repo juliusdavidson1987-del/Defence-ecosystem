@@ -992,7 +992,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.4.5 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.5.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5058,7 +5058,17 @@ function renderFinderResults(sel){
     cons.forEach(c=>{ html+=`<div class="rncard" data-id="${c.id}"><span class="rndot"></span><div><div class="rnname">${NODE[c.id].l}</div><div class="rnwhy">${CONNECT_WHY[c.id]||NODE[c.id].does||''}</div></div></div>`; });
     html+=`</div>`;
   }
+  // Always-available "check the wider web" option — not gated on thin results, because the sector moves fast.
+  const webExclude=(lastScored||[]).map(x=>NODE[x.id]&&NODE[x.id].l).filter(Boolean);
+  html+=`<div class="rtier" id="webAlways" style="border-style:dashed"><div class="rcount">🌐 Check the wider web</div><div class="rtsub">The map is curated and the sector moves fast — search live web results for organisations that may not be in the map yet. Suggestions are unverified and go to the maintainer to review.</div><button class="rbtn" id="webAlwaysBtn" style="margin-top:8px">🌐 Search the wider web</button></div>`;
   box.innerHTML=html;
+  const wab=document.getElementById('webAlwaysBtn');
+  if(wab) wab.onclick=()=>{
+    const hasFacets=!!(sel.role||(sel.needs||[]).length||(sel.domains||[]).length||sel.trl||(sel.geo&&sel.geo!=='any'));
+    const typed=((document.getElementById('finderDesc')||{}).value||'').trim();
+    if(!typed&&!hasFacets){ showToast('Add a filter or a short description above for a useful web search'); return; }
+    finderWebSearch(finderDescForWeb(sel),webExclude,document.getElementById('webAlways'));
+  };
   box.querySelectorAll('.rcard').forEach(card=>{
     card.addEventListener('click',e=>{ if(e.target.closest('a'))return; const id=card.dataset.id; document.getElementById('finder').classList.remove('open'); focusNode(id); });
   });
@@ -5098,6 +5108,22 @@ function finderDomOf(u){ try{return new URL(u).hostname.replace(/^www\./,'').toL
 let _finderMappedDomains=null;
 function finderMappedDomains(){ if(_finderMappedDomains)return _finderMappedDomains; const set=new Set(); Object.values(NODE).forEach(n=>{const m=((n.entry||'')+'').toLowerCase().match(/([a-z0-9-]+\.)+[a-z]{2,}/); if(m)set.add(m[0].replace(/^www\./,''));}); _finderMappedDomains=set; return set; }
 function finderWebAffordance(desc,exclude,aiEl){ if(document.getElementById('aiWebBtn'))return; const b=document.createElement('button'); b.id='aiWebBtn'; b.className='rbtn'; b.textContent='🌐 Search the wider web'; b.style.marginTop='8px'; b.onclick=()=>finderWebSearch(desc,exclude,aiEl); aiEl.appendChild(b); }
+// Build a web-search query for the always-available "Check the wider web" option:
+// the typed free-text if given, otherwise a sentence synthesised from the chips.
+function finderDescForWeb(sel){
+  const typed=((document.getElementById('finderDesc')||{}).value||'').trim();
+  if(typed) return typed;
+  const doms=(sel.domains||[]).map(d=>DOMLAB[d]).filter(Boolean);
+  const needs=(sel.needs||[]).map(n=>NEEDLAB[n]).filter(Boolean);
+  const who=sel.role?WHOLAB[sel.role]:''; const geo=(sel.geo&&sel.geo!=='any')?GEOLAB[sel.geo]:'';
+  let s='Organisations in the defence and dual-use innovation and procurement landscape';
+  if(doms.length) s+=' working in '+doms.join(', ');
+  if(needs.length) s+=' offering '+needs.join(', ').toLowerCase();
+  if(who) s+=', relevant to '+who.toLowerCase();
+  if(sel.trl) s+=', around TRL '+sel.trl;
+  if(geo) s+=', based in or serving '+geo;
+  return s+'.';
+}
 // Capture web finds for maintainer review — one plain insert per find (fire-and-forget).
 // Plain inserts (not an on_conflict upsert): a new url lands; a duplicate url is rejected
 // by the unique constraint and harmlessly swallowed. (The upsert path needs SELECT, which
@@ -5157,7 +5183,6 @@ async function enhanceFinderWithAI(sel,desc){
     ai.innerHTML=html;
     ai.querySelectorAll('.rcard').forEach(card=>{ card.addEventListener('click',e=>{ if(e.target.closest('a'))return; document.getElementById('finder').classList.remove('open'); focusNode(card.dataset.id); }); });
     const exclude=candidates.map(c=>c.label).concat(matches.map(m=>NODE[m.id]?NODE[m.id].l:'')).filter(Boolean);
-    finderWebAffordance(desc,exclude,ai);
     const strong=matches.filter(m=>m.tier==='exact'||m.tier==='close').length;
     if(strong<2) finderWebSearch(desc,exclude,ai);
   }catch(e){ ai.innerHTML=`<div class="fnone">Couldn't reach the live search — your tag-based results are below.</div>`; }
@@ -5794,7 +5819,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.4.5 (native feedback → straight into the maintainer review queue, no third-party form · web gap-fill finds captured for maintainer review · AI “Find your door”: describe your situation → Claude ranks the map, and searches the wider web when the map is thin · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.5.0 (Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
