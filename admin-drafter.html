@@ -89,6 +89,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
 </div>
 
 <div class="card">
+  <div class="step">Last agent run</div>
+  <div class="tiny">The daily auto-maintainer's digest — what it auto-applied and what it held for you. Held items in the queues below show a 🤖 recommendation next to their buttons.</div>
+  <div style="margin-top:9px"><button onclick="loadAutoRuns()">↻ Load latest run</button></div>
+  <div id="autoRunsBox" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
   <div class="step">Find gaps on the web</div>
   <div class="tiny">Describe a need — Claude searches the web for real organisations not yet in the map. Click one to load it into Step 1, then draft &amp; stage it.</div>
   <input id="gapDesc" placeholder="e.g. AI predictive maintenance for military ground-vehicle fleets" style="margin-top:8px">
@@ -259,6 +266,26 @@ window.findGaps=async()=>{
     box.querySelectorAll('.useGap').forEach(b=>b.onclick=()=>{ const x=finds[+b.dataset.i]; $('name').value=x.name; $('url').value=x.url; window.scrollTo(0,0); toast('Loaded into Step 1 — draft it, then Stage for review'); checkDupes(); });
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach the web search.</div>'; console.error(e); }
 };
+// Render the daily agent's recommendation on a held item (auto_action/auto_reason from review-node).
+function recoLine(x){ if(!x||!x.auto_action) return '';
+  const m={publish:'🟢 publish',stage:'🟠 stage for review',review:'🟠 review',approve:'🟢 approve',resolve:'✅ resolve',dismiss:'⚪ dismiss',apply:'🟢 apply'};
+  const a=m[x.auto_action]||x.auto_action;
+  return `<div class="tiny" style="margin-top:5px;padding:5px 8px;background:#0e2438;border:1px solid #24445d;border-radius:6px;color:#bfe6da">🤖 <b>Agent recommends:</b> ${esc(a)}${x.auto_reason?(' — '+esc(x.auto_reason)):''}</div>`;
+}
+window.loadAutoRuns=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  const box=$('autoRunsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'auto-runs'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json(); const runs=j.runs||[];
+    if(!runs.length){ box.innerHTML='<div class="tiny">No agent runs recorded yet. The daily auto-maintainer writes here after each run.</div>'; return; }
+    const latest=runs[0]; const when=(latest.ran_at||'').replace('T',' ').slice(0,16);
+    let html=`<div class="chk" style="display:block"><b>Latest run</b> <span class="tiny">${esc(when)} UTC · ${esc(latest.applied)} applied · ${esc(latest.held)} held</span><div style="margin-top:8px;max-height:340px;overflow:auto;background:#0c1c2e;border:1px solid #1d3350;border-radius:8px;padding:10px;white-space:pre-wrap;font-size:12px;line-height:1.5">${esc(latest.digest||'(no digest)')}</div></div>`;
+    if(runs.length>1){ html+='<div class="step" style="margin-top:12px">Earlier runs</div>'+runs.slice(1).map(x=>`<div class="chk">• <span class="tiny">${esc((x.ran_at||'').replace('T',' ').slice(0,16))} UTC — ${esc(x.applied)} applied, ${esc(x.held)} held</span></div>`).join(''); }
+    box.innerHTML=html;
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach the run log.</div>'; console.error(e); }
+};
 window.loadPending=async()=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
   const box=$('pendingBox'); box.innerHTML='<div class="tiny">Loading…</div>';
@@ -267,7 +294,7 @@ window.loadPending=async()=>{
     if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret in Config.</div>'; return; }
     const j=await r.json(); const p=j.pending||[];
     if(!p.length){ box.innerHTML='<div class="tiny">No pending nodes.</div>'; return; }
-    box.innerHTML=p.map(n=>`<div class="chk" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>• <b>${esc(n.label)}</b> <span class="tiny">[${esc(n.id)}] → ${esc(n.parent)}</span><br><span class="tiny">${esc(n.does||'')}</span></span><span style="white-space:nowrap"><button class="pub primary" data-id="${esc(n.id)}">Publish</button> <button class="rej" data-id="${esc(n.id)}">Reject</button></span></div>`).join('');
+    box.innerHTML=p.map(n=>`<div class="chk" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>• <b>${esc(n.label)}</b> <span class="tiny">[${esc(n.id)}] → ${esc(n.parent)}</span><br><span class="tiny">${esc(n.does||'')}</span></span><span style="white-space:nowrap"><button class="pub primary" data-id="${esc(n.id)}">Publish</button> <button class="rej" data-id="${esc(n.id)}">Reject</button></span></div>${recoLine(n)}</div>`).join('');
     box.querySelectorAll('.pub').forEach(b=>b.onclick=()=>publishPending(b.dataset.id));
     box.querySelectorAll('.rej').forEach(b=>b.onclick=()=>rejectPending(b.dataset.id));
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach review-node.</div>'; console.error(e); }
@@ -326,7 +353,7 @@ window.loadEdits=async()=>{
     if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
     const eds=j.edits||[];
     if(!eds.length){ box.innerHTML='<div class="tiny">No pending corrections.</div>'; return; }
-    box.innerHTML=eds.map((e,i)=>`<div class="chk" style="display:block"><b>${esc(lbl(e.node_id))}</b> <span class="tiny">[${esc(e.field||'')}] · #${esc(e.id)}${e.submitted_by?(' · '+esc(e.submitted_by)):''}</span><br><span class="tiny">“${esc((e.suggestion||'').slice(0,240))}”</span><div style="margin-top:6px;white-space:nowrap"><button class="rpedit primary" data-idx="${i}">🔧 Repair with AI</button> <button class="ldedit" data-node="${esc(e.node_id)}">Load to edit</button> <button class="resedit" data-eid="${esc(e.id)}">Resolve</button> <button class="disedit" data-eid="${esc(e.id)}">Dismiss</button></div></div>`).join('');
+    box.innerHTML=eds.map((e,i)=>`<div class="chk" style="display:block"><b>${esc(lbl(e.node_id))}</b> <span class="tiny">[${esc(e.field||'')}] · #${esc(e.id)}${e.submitted_by?(' · '+esc(e.submitted_by)):''}</span><br><span class="tiny">“${esc((e.suggestion||'').slice(0,240))}”</span>${recoLine(e)}<div style="margin-top:6px;white-space:nowrap"><button class="rpedit primary" data-idx="${i}">🔧 Repair with AI</button> <button class="ldedit" data-node="${esc(e.node_id)}">Load to edit</button> <button class="resedit" data-eid="${esc(e.id)}">Resolve</button> <button class="disedit" data-eid="${esc(e.id)}">Dismiss</button></div></div>`).join('');
     box.querySelectorAll('.rpedit').forEach(b=>b.onclick=()=>repairCorrection(eds[+b.dataset.idx]));
     box.querySelectorAll('.ldedit').forEach(b=>b.onclick=()=>loadNodeToEdit(b.dataset.node));
     box.querySelectorAll('.resedit').forEach(b=>b.onclick=()=>setEdit(b.dataset.eid,'resolved'));
@@ -414,7 +441,7 @@ window.loadClaims=async()=>{
     if(!cs.length){ box.innerHTML='<div class="tiny">No pending claims.</div>'; return; }
     box.innerHTML=cs.map(c=>{ const n=NODES.find(x=>x.id===c.node_id); const entry=((n&&n.entry)||'').toLowerCase(); const ed=domOf(c.email); const match=ed&&entry.includes(ed);
       const badge=match?'<span style="color:#7fe0c8">✓ domain matches</span>':'<span style="color:#ffc09e">⚠ verify domain</span>';
-      return `<div class="chk" style="display:block"><b>${esc(lbl(c.node_id))}</b> <span class="tiny">#${esc(c.id)} · ${badge}</span><br><span class="tiny">${esc(c.claimant||'')} · ${esc(c.email||'')}${c.role?(' · '+esc(c.role)):''}${c.note?(' — '+esc(c.note)):''}</span><div style="margin-top:6px;white-space:nowrap"><button class="apcl primary" data-cid="${esc(c.id)}">Approve</button> <button class="discl" data-cid="${esc(c.id)}">Dismiss</button> <a class="tiny" href="mailto:${esc(c.email||'')}" style="margin-left:8px">✉ email them</a></div></div>`;
+      return `<div class="chk" style="display:block"><b>${esc(lbl(c.node_id))}</b> <span class="tiny">#${esc(c.id)} · ${badge}</span><br><span class="tiny">${esc(c.claimant||'')} · ${esc(c.email||'')}${c.role?(' · '+esc(c.role)):''}${c.note?(' — '+esc(c.note)):''}</span>${recoLine(c)}<div style="margin-top:6px;white-space:nowrap"><button class="apcl primary" data-cid="${esc(c.id)}">Approve</button> <button class="discl" data-cid="${esc(c.id)}">Dismiss</button> <a class="tiny" href="mailto:${esc(c.email||'')}" style="margin-left:8px">✉ email them</a></div></div>`;
     }).join('');
     box.querySelectorAll('.apcl').forEach(b=>b.onclick=()=>setClaim(b.dataset.cid,'approved'));
     box.querySelectorAll('.discl').forEach(b=>b.onclick=()=>setClaim(b.dataset.cid,'dismissed'));
@@ -438,7 +465,7 @@ window.loadFeedback=async()=>{
     if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
     const fs=j.feedback||[];
     if(!fs.length){ box.innerHTML='<div class="tiny">No pending feedback.</div>'; return; }
-    box.innerHTML=fs.map(f=>`<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span><div style="margin-top:6px;white-space:nowrap"><button class="resfb primary" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`).join('');
+    box.innerHTML=fs.map(f=>`<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span>${recoLine(f)}<div style="margin-top:6px;white-space:nowrap"><button class="resfb primary" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`).join('');
     box.querySelectorAll('.resfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'resolved'));
     box.querySelectorAll('.disfb').forEach(b=>b.onclick=()=>setFeedback(b.dataset.id,'dismissed'));
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach feedback.</div>'; console.error(e); }
@@ -459,7 +486,7 @@ window.loadWebFinds=async()=>{
     if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
     const fs=j.webfinds||[];
     if(!fs.length){ box.innerHTML='<div class="tiny">No pending web finds.</div>'; return; }
-    box.innerHTML=fs.map((f,i)=>`<div class="chk" style="display:block"><b>${esc(f.name||'')}</b> <span class="tiny">#${esc(f.id)} · <a href="${escA(f.url)}" target="_blank" rel="noopener noreferrer">${esc((f.url||'').replace(/^https?:\/\//,''))}</a></span><br><span class="tiny">${esc((f.why||'').slice(0,220))}${f.query?(' · query: “'+esc((f.query||'').slice(0,80))+'”'):''}</span><div style="margin-top:6px;white-space:nowrap"><button class="addwf primary" data-idx="${i}">Add →</button> <button class="diswf" data-idx="${i}">Dismiss</button></div></div>`).join('');
+    box.innerHTML=fs.map((f,i)=>`<div class="chk" style="display:block"><b>${esc(f.name||'')}</b> <span class="tiny">#${esc(f.id)} · <a href="${escA(f.url)}" target="_blank" rel="noopener noreferrer">${esc((f.url||'').replace(/^https?:\/\//,''))}</a></span><br><span class="tiny">${esc((f.why||'').slice(0,220))}${f.query?(' · query: “'+esc((f.query||'').slice(0,80))+'”'):''}</span>${recoLine(f)}<div style="margin-top:6px;white-space:nowrap"><button class="addwf primary" data-idx="${i}">Add →</button> <button class="diswf" data-idx="${i}">Dismiss</button></div></div>`).join('');
     box.querySelectorAll('.addwf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; addWebFind(f.id,f.name,f.url); });
     box.querySelectorAll('.diswf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; setWebFind(f.id,'dismissed'); });
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach web finds.</div>'; console.error(e); }
