@@ -199,7 +199,7 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.5.0, Sep 2026)
+## Current state (v4.6.0, Sep 2026)
 
 - ~**1,501 nodes**, **187 affiliations**, **40 nations**.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
@@ -219,6 +219,12 @@ browser-only config field, never committed.
   by default (staged for one-click approval). See `automation/STAGE4_AUTO_MAINTAINER.md`.
 - Funding branch includes NSSIF (fixed to `nssif.gov.uk`) + its 19 fund-of-funds partners +
   Ante-Bellum Angels.
+- **Events (v4.6.0)** are a pathways-first, three-layer model under `b_events`: `ev_fairs`
+  (anchor tentpole fairs), `ev_aggreg` (aggregators & calendars — Defence IQ, Clarion, COGES),
+  `ev_activities` (independent organisers & activities — CWIX, Locked Shields). Next-edition
+  **dates live in `reference.event_next`** (not the app): `EVENT_NEXT` is a `let` that
+  `applyData()` overrides from the reference layer, so a date fix is a data change, no redeploy.
+  Phase 2 (a scheduled agent proposing date changes into a review queue) is planned.
 
 ### Known open items / next ideas
 - ✅ **Confirmed live (2026-09-03):** the deployed site runs the current build — About reads

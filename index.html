@@ -992,7 +992,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.5.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.6.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1178,6 +1178,7 @@ function applyData(data){
     if(data.reference.connectors) CONNECTORS=data.reference.connectors;
     if(data.reference.glossary) GLOSSARY=data.reference.glossary;
     if(data.reference.search_synonyms) SEARCH_SYNONYMS=data.reference.search_synonyms;
+    if(data.reference.event_next) EVENT_NEXT=data.reference.event_next;
   }
   return true;
 }
@@ -5819,7 +5820,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.5.0 (Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.6.0 (Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -5853,7 +5854,9 @@ function verifiedDate(id){
 /* ---- fairs freshness: next known occurrence per event, verified from organiser/official sources.
    Fairs are the most time-sensitive content in the tool, so these carry an explicit
    "confirm before booking" caveat. Update these on each maintenance pass. ---- */
-const EVENT_NEXT={
+// Embedded fallback only — applyData() overrides this from reference.event_next
+// (Supabase / data.json), so a date fix is a data change, not an app redeploy.
+let EVENT_NEXT={
   ev_dsei:{next:'7–10 September 2027',where:'ExCeL London'},
   ev_eurosatory:{next:'15–19 June 2026',where:'Paris-Nord Villepinte'},
   ev_farnborough:{next:'20–24 July 2026',where:'Farnborough, UK'},

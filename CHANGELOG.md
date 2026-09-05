@@ -3,6 +3,19 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.6.0 — Events reworked: three-layer model + dates as data (2026-09-05)
+- **Events are now a pathways-first, three-layer model** instead of a thin fixed list:
+  **Anchor fairs** (the tentpoles, reparented under `ev_fairs`), **Aggregators & event
+  calendars** (`ev_aggreg` — Defence IQ, Clarion Defence & Security, COGES/GICAT — the
+  organisers who keep the always-current listings), and **Independent organisers &
+  activities** (`ev_activities` — CWIX, Locked Shields; DIANA/SOFWERX/CCDCOE/Eurodefense.tech
+  referenced from elsewhere). Web-verified nodes, real URLs.
+- **Event dates moved out of `index.html` into `reference.event_next`** — `EVENT_NEXT` is now a
+  `let` that `applyData()` overrides from the reference layer, so fixing a date is a data change
+  (sync, no redeploy) instead of an HTML edit. `migrations/2026-09-05-events-rework.sql`.
+- Phase 2 (a scheduled agent that web-checks next editions and proposes date changes into a review
+  queue) is planned next.
+
 ## v4.5.0 — Auto-maintainer agent + on-demand web search (2026-09-05)
 - **Find your door — wider-web search on demand.** The "🌐 Search the wider web"
   option is now always available in the finder results (a "Check the wider web"
