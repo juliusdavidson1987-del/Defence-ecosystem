@@ -138,6 +138,13 @@ a{color:var(--accent)}.tiny{font-size:11px;color:var(--faint)}
   <div id="webfindsBox" style="margin-top:8px"></div>
 </div>
 
+<div class="card">
+  <div class="step">Event dates — proposed</div>
+  <div class="tiny">The weekly event-refresh agent flags anchor-fair dates that look out of date vs. the official source. <b>Approve</b> writes the new date into the live map (run the sync after); <b>Dismiss</b> drops it.</div>
+  <div style="margin-top:9px"><button onclick="loadEventProps()">↻ Load proposals</button></div>
+  <div id="eventPropsBox" style="margin-top:8px"></div>
+</div>
+
 <div class="card" style="background:none;border-style:dashed">
   <div class="step">Config</div>
   <div class="row"><div><label>Supabase URL</label><input id="cfg_url" class="mono"></div><div><label>Anon key (read-only, for dedupe)</label><input id="cfg_key" class="mono"></div></div>
@@ -502,6 +509,29 @@ async function setWebFind(id,status,silent){
   try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'webfind-set',id,status})});
     if(r.ok){ if(!silent)toast(status==='dismissed'?'Dismissed':'Marked added'); loadWebFinds(); } else if(!silent) toast('Failed: '+r.status); }
   catch(e){ if(!silent){ toast('error — see console'); console.error(e); } }
+}
+window.loadEventProps=async()=>{
+  const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
+  await loadNodes();
+  const box=$('eventPropsBox'); box.innerHTML='<div class="tiny">Loading…</div>';
+  const lbl=id=>{ const n=NODES.find(x=>x.id===id); return n?n.label:id; };
+  try{
+    const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'eventprops-list'})});
+    if(r.status===401){ box.innerHTML='<div class="chk bad">Unauthorised — check the shared secret.</div>'; return; }
+    const j=await r.json();
+    if(j.error){ box.innerHTML='<div class="chk bad">'+esc(j.error)+'</div>'; return; }
+    const ps=j.proposals||[];
+    if(!ps.length){ box.innerHTML='<div class="tiny">No pending date proposals.</div>'; return; }
+    box.innerHTML=ps.map(p=>`<div class="chk" style="display:block"><b>${esc(lbl(p.node_id))}</b> <span class="tiny">#${esc(p.id)}${p.confidence!=null?(' · conf '+Number(p.confidence).toFixed(2)):''}</span><br><span class="tiny">was: <span style="color:#ffc09e">${esc(p.current_next||'—')}${p.current_where?(' · '+esc(p.current_where)):''}</span></span><br><span class="tiny">now: <b style="color:#7fe0c8">${esc(p.proposed_next||'—')}${p.proposed_where?(' · '+esc(p.proposed_where)):''}</b></span>${p.note?('<br><span class="tiny">'+esc(p.note)+'</span>'):''}${p.source_url?('<br><span class="tiny">source: <a href="'+escA(p.source_url)+'" target="_blank" rel="noopener noreferrer">'+esc((p.source_url||'').replace(/^https?:\/\//,'').slice(0,60))+'</a></span>'):''}<div style="margin-top:6px;white-space:nowrap"><button class="apev primary" data-id="${esc(p.id)}">Approve</button> <button class="disev" data-id="${esc(p.id)}">Dismiss</button></div></div>`).join('');
+    box.querySelectorAll('.apev').forEach(b=>b.onclick=()=>setEventProp(b.dataset.id,'approved'));
+    box.querySelectorAll('.disev').forEach(b=>b.onclick=()=>setEventProp(b.dataset.id,'dismissed'));
+  }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach event proposals.</div>'; console.error(e); }
+};
+async function setEventProp(id,status){
+  if(!confirm((status==='approved'?'Approve this date change? It writes the new date into the live map':'Dismiss proposal')+' #'+id+'?'))return;
+  try{ const r=await fetch(efUrl('review-node'),{method:'POST',headers:efHeaders(),body:JSON.stringify({op:'eventprop-set',id,status})});
+    if(r.ok){ toast(status==='approved'?'✓ Date updated — run the sync':'Dismissed'); loadEventProps(); } else toast('Failed: '+r.status); }
+  catch(e){ toast('error — see console'); console.error(e); }
 }
 window.copy=id=>{ $(id).select(); document.execCommand('copy'); };
 function toast(m){ let t=document.createElement('div'); t.textContent=m; t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16263F;border:1px solid var(--accent);color:var(--ink);padding:9px 14px;border-radius:8px;z-index:9;font-size:13px'; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }

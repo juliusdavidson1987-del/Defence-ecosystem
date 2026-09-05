@@ -137,3 +137,27 @@ daily digests, confirm the staged drafts and recommendations are sound, then fli
   `data.json` sync commit, so any change is diffable and revertible.
 - `reject` only ever deletes a **pending** (never-live) node; `dismiss` keeps the
   row (status flips), so claims/feedback/web-finds are recoverable.
+
+---
+
+## Also: the event date-refresh agent (events Phase 2)
+
+A **weekly** sibling agent that keeps trade-fair dates current. It web-checks each
+anchor fair's next edition and, when the official source differs from what's stored,
+files a **proposed change** you approve in the console — it never edits dates itself.
+
+**Setup (reuses everything above — same shared secret, same optional email):**
+1. Run `migrations/2026-09-05-events-rework.sql` (Phase 1) **and**
+   `migrations/2026-09-05-event-proposals.sql` (the proposals table) in Supabase.
+2. Deploy the function: `supabase functions deploy event-refresh --no-verify-jwt`
+   (and re-deploy `review-node` for the `eventprops-*` ops).
+3. It uses the **same GitHub secrets** already set (`DRAFTER_SHARED_SECRET`, and the
+   `RESEND_*` trio for email) — nothing new to add.
+4. Test: Actions → **Event date refresh (weekly)** → **Run workflow**. Then enable the
+   weekly schedule by uncommenting the `schedule:` block in
+   `.github/workflows/event-refresh.yml`.
+
+**Review:** `admin-drafter.html → Event dates — proposed` — **Approve** writes the new
+date into `reference.event_next` (run the sync after); **Dismiss** drops it. Tunables
+(function secrets): `EVENTREFRESH_MAX_PER_RUN` (default 2), `EVENTREFRESH_MIN_CONFIDENCE`
+(default 0.6).

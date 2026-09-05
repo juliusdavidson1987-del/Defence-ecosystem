@@ -119,6 +119,33 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true });
   }
 
+  if (op === "eventprops-list") {
+    // Pending event-date change proposals from the weekly event-refresh agent.
+    let res = await sb.from("event_date_proposals").select("id,node_id,current_next,current_where,proposed_next,proposed_where,source_url,confidence,note,status,created_at").eq("status", "pending").order("id", { ascending: false }).limit(50);
+    if (res.error) return json({ error: res.error.message, proposals: [] });
+    return json({ proposals: res.data ?? [] });
+  }
+
+  if (op === "eventprop-set") {
+    // Approve (write the proposed date into reference.event_next) or dismiss.
+    if (!body.id) return json({ error: "id required" }, 400);
+    if (body.status === "dismissed") {
+      const { error } = await sb.from("event_date_proposals").update({ status: "dismissed" }).eq("id", body.id);
+      if (error) return json({ error: error.message }, 502);
+      return json({ ok: true });
+    }
+    const { data: p, error: pe } = await sb.from("event_date_proposals").select("*").eq("id", body.id).maybeSingle();
+    if (pe || !p) return json({ error: pe?.message || "proposal not found" }, 502);
+    const { data: refRow } = await sb.from("reference").select("value").eq("key", "event_next").maybeSingle();
+    const ev = (refRow?.value ?? {}) as Record<string, unknown>;
+    ev[p.node_id] = { next: p.proposed_next || "", where: p.proposed_where || "" };
+    const up = await sb.from("reference").upsert({ key: "event_next", value: ev }, { onConflict: "key" });
+    if (up.error) return json({ error: up.error.message }, 502);
+    const { error } = await sb.from("event_date_proposals").update({ status: "approved" }).eq("id", body.id);
+    if (error) return json({ error: error.message }, 502);
+    return json({ ok: true });
+  }
+
   if (op === "auto-runs") {
     // The daily auto-maintainer's run log (latest first) for the "Last agent run" card.
     let res = await sb.from("auto_runs").select("id,ran_at,applied,held,digest").order("ran_at", { ascending: false }).limit(14);
@@ -185,5 +212,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return json({ error: "unknown op (expected list | publish | reject | stats | auto-runs | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | webfinds-list | webfind-set)" }, 400);
+  return json({ error: "unknown op (expected list | publish | reject | stats | auto-runs | edits-list | edit-set | claims-list | claim-set | feedback-list | feedback-set | webfinds-list | webfind-set | eventprops-list | eventprop-set)" }, 400);
 });

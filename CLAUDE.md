@@ -224,7 +224,11 @@ browser-only config field, never committed.
   `ev_activities` (independent organisers & activities — CWIX, Locked Shields). Next-edition
   **dates live in `reference.event_next`** (not the app): `EVENT_NEXT` is a `let` that
   `applyData()` overrides from the reference layer, so a date fix is a data change, no redeploy.
-  Phase 2 (a scheduled agent proposing date changes into a review queue) is planned.
+  **Phase 2 (shipped):** a weekly `event-refresh` Edge Function web-checks each anchor fair's next
+  edition and files proposed date changes into `event_date_proposals`, reviewed in the admin console
+  ("Event dates — proposed" → Approve writes `reference.event_next`) via `review-node`
+  `eventprops-list`/`eventprop-set`; orchestrated by `scripts/event-refresh-run.mjs` +
+  `.github/workflows/event-refresh.yml` (weekly). Nothing auto-publishes — dates are approved by hand.
 
 ### Known open items / next ideas
 - ✅ **Confirmed live (2026-09-03):** the deployed site runs the current build — About reads

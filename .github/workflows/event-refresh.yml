@@ -1,0 +1,48 @@
+name: Event date refresh (weekly)
+
+# Events rework Phase 2 — the weekly date-refresh agent. Web-checks each anchor
+# fair's next edition via the gated `event-refresh` Edge Function and opens an
+# issue with any PROPOSED date changes for review in admin-drafter.html. Writes
+# nothing to the map (approval is manual), so no data.json sync here.
+#
+# Required secret:  DRAFTER_SHARED_SECRET
+# Optional secrets: RESEND_API_KEY, DIGEST_EMAIL_TO, DIGEST_EMAIL_FROM,
+#                   EVENTREFRESH_URL / SUPABASE_URL (overrides).
+
+on:
+  # ── Enable the weekly schedule AFTER your first successful manual run ──
+  # schedule:
+  #   - cron: '0 7 * * 1'        # Mondays 07:00 UTC
+  workflow_dispatch:
+    inputs:
+      max_per_call:
+        description: 'Events per function call'
+        required: false
+        default: '2'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: event-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+      - name: Run the event date-refresh agent
+        env:
+          DRAFTER_SHARED_SECRET: ${{ secrets.DRAFTER_SHARED_SECRET }}
+          EVENTREFRESH_URL:      ${{ secrets.EVENTREFRESH_URL }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          RESEND_API_KEY:        ${{ secrets.RESEND_API_KEY }}
+          DIGEST_EMAIL_TO:       ${{ secrets.DIGEST_EMAIL_TO }}
+          DIGEST_EMAIL_FROM:     ${{ secrets.DIGEST_EMAIL_FROM }}
+          GITHUB_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:     ${{ github.repository }}
+          MAX_PER_CALL:          ${{ github.event.inputs.max_per_call || '2' }}
+        run: node scripts/event-refresh-run.mjs

@@ -13,8 +13,14 @@ aren't stamped here unless they change a version.
 - **Event dates moved out of `index.html` into `reference.event_next`** — `EVENT_NEXT` is now a
   `let` that `applyData()` overrides from the reference layer, so fixing a date is a data change
   (sync, no redeploy) instead of an HTML edit. `migrations/2026-09-05-events-rework.sql`.
-- Phase 2 (a scheduled agent that web-checks next editions and proposes date changes into a review
-  queue) is planned next.
+- **Phase 2 — the date-refresh agent (shipped).** A weekly `event-refresh` Edge Function web-checks
+  each anchor fair's next edition and, when the official source differs from `reference.event_next`,
+  files a **proposed change** in `event_date_proposals`. Reviewed in `admin-drafter.html`
+  ("Event dates — proposed" — Approve writes the new date into `reference.event_next`; Dismiss drops
+  it) via `review-node` `eventprops-list`/`eventprop-set`. Orchestrated by
+  `scripts/event-refresh-run.mjs` + `.github/workflows/event-refresh.yml` (weekly, manual-first),
+  which opens an issue listing proposals. Dates are high-stakes, so **nothing auto-publishes**.
+  `migrations/2026-09-05-event-proposals.sql`.
 
 ## v4.5.0 — Auto-maintainer agent + on-demand web search (2026-09-05)
 - **Find your door — wider-web search on demand.** The "🌐 Search the wider web"
