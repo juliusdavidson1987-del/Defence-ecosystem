@@ -88,11 +88,14 @@ async function createIssue(digest, actions, held) {
   if (!repo || !token) return null;
   const labels = (process.env.ISSUE_LABELS || "auto-maintainer").split(",").map((s) => s.trim()).filter(Boolean);
   const title = `🤖 Auto-maintainer — ${new Date().toISOString().slice(0, 10)} · ${actions.length} applied, ${held.length} held`;
-  const res = await fetch(`https://api.github.com/repos/${repo}/issues`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json", "User-Agent": "auto-maintainer" },
-    body: JSON.stringify({ title, body: digest, labels }),
-  });
+  const ghHeaders = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json", "User-Agent": "auto-maintainer" };
+  const post = (body) => fetch(`https://api.github.com/repos/${repo}/issues`, { method: "POST", headers: ghHeaders, body: JSON.stringify(body) });
+  let res = await post({ title, body: digest, labels });
+  if (!res.ok) {
+    // Most likely the label doesn't exist yet — retry once without it so we never lose the digest.
+    console.error(`! issue create with labels failed HTTP ${res.status}; retrying without labels`);
+    res = await post({ title, body: digest });
+  }
   if (!res.ok) { console.error(`! issue create failed HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`); return null; }
   const j = await res.json();
   console.error(`✓ issue #${j.number} created`);
