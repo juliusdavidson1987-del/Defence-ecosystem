@@ -162,7 +162,11 @@ let NODES=[], IDS=new Set();
 
 // populate selectors
 $('type').innerHTML=Object.keys(E.TYPE_TAGS).map(t=>`<option>${t}</option>`).join('');
-$('nations').innerHTML=[...new Set(Object.keys(E.COUNTRY).map(k=>k.replace(/\b\w/g,c=>c.toUpperCase())))].map(n=>`<option>${n}</option>`).join('');
+// Nation options incl. joint bodies. Display value lowercased must match a COUNTRY key
+// (suggestParent lowercases). Skip alias keys so the list stays clean.
+const NAT_DISP={nato:'NATO',eu:'EU'};
+const NAT_SKIP=new Set(['nato / shared','european union','multinational','joint']);
+$('nations').innerHTML=[...new Set(Object.keys(E.COUNTRY))].filter(k=>!NAT_SKIP.has(k)).map(k=>`<option>${NAT_DISP[k]||k.replace(/\b\w/g,c=>c.toUpperCase())}</option>`).join('');
 $('cfg_url').value=localStorage.getItem('de_url')||DEFAULT_URL;
 $('cfg_key').value=localStorage.getItem('de_key')||DEFAULT_KEY;
 $('cfg_ef').value=localStorage.getItem('de_ef')||'';
@@ -210,7 +214,7 @@ Return JSON with these keys:
 - "type": ONE of ${Object.keys(E.TYPE_TAGS).join(', ')}
 - "domains": array from ${E.KNOWN_DOMAINS.join(', ')} (1-4 most relevant; use "xcut" if genuinely cross-cutting)
 - "trl": [low,high] integers 1-9 (maturity of what they field)
-- "nation": the country name
+- "nation": the home country name — OR "NATO", "EU", or "multinational" for a joint / alliance / multinational body
 
 Rules: representative not exhaustive; if you are not confident the organisation is real and defence-relevant, set "does" to "UNVERIFIED" and explain nothing. Do not invent facts.`;
   $('prompt').value=p; copy('prompt'); toast('Prompt copied — paste into Claude');
@@ -220,7 +224,12 @@ window.applyReply=()=>{
   let j; try{ j=JSON.parse(raw); }catch(e){ return toast('Could not parse JSON — check the reply'); }
   if((j.does||'').includes('UNVERIFIED')){ return toast('AI flagged this as UNVERIFIED — do not add.'); }
   const nation=$('nation').value.trim()||j.nation||'';
+  // Reflect the AI's inference back into Step 1 so nation / type / TRL aren't left blank.
+  if(j.nation && !$('nation').value.trim()) $('nation').value=j.nation;
   if(j.type) $('type').value=j.type;
+  if(Array.isArray(j.trl)&&j.trl.length===2){ const v=j.trl.join(','), sel=$('trl');
+    if(![...sel.options].some(o=>o.value===v)){ const o=document.createElement('option'); o.value=v; o.textContent=j.trl[0]+'–'+j.trl[1]+' (drafted)'; sel.appendChild(o); }
+    sel.value=v; }
   const node=E.buildNode({name:$('name').value.trim(),url:$('url').value.trim(),nation,type:j.type||$('type').value,domains:j.domains||[],trl:j.trl,does:j.does},IDS);
   fillForm(node); validate();
 };
@@ -270,7 +279,7 @@ window.findGaps=async()=>{
     const j=await r.json(); const finds=(j.external||[]).filter(x=>x&&x.name&&x.url);
     if(!finds.length){ box.innerHTML='<div class="tiny">No new organisations found for this.</div>'; return; }
     box.innerHTML=finds.map((x,i)=>`<div class="chk" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>• <b>${esc(x.name)}</b> <span class="tiny">${esc(x.url)}</span><br><span class="tiny">${esc(x.why||'')}</span></span><button data-i="${i}" class="useGap">Use →</button></div>`).join('');
-    box.querySelectorAll('.useGap').forEach(b=>b.onclick=()=>{ const x=finds[+b.dataset.i]; $('name').value=x.name; $('url').value=x.url; window.scrollTo(0,0); toast('Loaded into Step 1 — draft it, then Stage for review'); checkDupes(); });
+    box.querySelectorAll('.useGap').forEach(b=>b.onclick=()=>{ const x=finds[+b.dataset.i]; loadIntoStep1(x.name,x.url,x.why||''); });
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach the web search.</div>'; console.error(e); }
 };
 // Render the daily agent's recommendation on a held item (auto_action/auto_reason from review-node).
@@ -525,14 +534,21 @@ window.loadWebFinds=async()=>{
     const fs=j.webfinds||[];
     if(!fs.length){ box.innerHTML='<div class="tiny">No pending web finds.</div>'; return; }
     box.innerHTML=fs.map((f,i)=>`<div class="chk" style="display:block"><b>${esc(f.name||'')}</b> <span class="tiny">#${esc(f.id)} · <a href="${escA(f.url)}" target="_blank" rel="noopener noreferrer">${esc((f.url||'').replace(/^https?:\/\//,''))}</a></span><br><span class="tiny">${esc((f.why||'').slice(0,220))}${f.query?(' · query: “'+esc((f.query||'').slice(0,80))+'”'):''}</span>${recoLine(f)}<div style="margin-top:6px;white-space:nowrap"><button class="addwf primary" data-idx="${i}">Add →</button> <button class="diswf" data-idx="${i}">Dismiss</button></div></div>`).join('');
-    box.querySelectorAll('.addwf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; addWebFind(f.id,f.name,f.url); });
+    box.querySelectorAll('.addwf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; addWebFind(f.id,f.name,f.url,f.why,f.query); });
     box.querySelectorAll('.diswf').forEach(b=>b.onclick=()=>{ const f=fs[+b.dataset.idx]; setWebFind(f.id,'dismissed'); });
   }catch(e){ box.innerHTML='<div class="tiny">Couldn’t reach web finds.</div>'; console.error(e); }
 };
-async function addWebFind(id,name,url){
-  $('name').value=name||''; $('url').value=url||''; window.scrollTo(0,0);
-  toast('Loaded into Step 1 — draft it (⚡), then Stage for review');
-  checkDupes();
+// Load a suggestion into Step 1, seed notes with its context, and — if the Edge
+// Function is configured — auto-draft the rest (nation, type, TRL, description) so
+// the whole node draft starts from good information, not just name + URL.
+async function loadIntoStep1(name,url,notes){
+  $('name').value=name||''; $('url').value=url||''; if(notes!=null) $('notes').value=notes||'';
+  $('nation').value=''; window.scrollTo(0,0); checkDupes();
+  if($('cfg_ef').value.trim()){ toast('Loaded — drafting nation, type, TRL & description with AI…'); try{ await callEdgeFn(); }catch(_){} }
+  else toast('Loaded into Step 1 — set nation/type, then ⚡ Draft, then Stage');
+}
+async function addWebFind(id,name,url,why,query){
+  await loadIntoStep1(name,url, why || (query?('surfaced for: '+query):''));
   setWebFind(id,'added',true);
 }
 async function setWebFind(id,status,silent){

@@ -15,6 +15,12 @@ aren't stamped here unless they change a version.
   via `review-node` `feedback-attachment`). Nothing goes live unreviewed.
 - Plain text feedback is unchanged and stays working even before the migration (the client only sends
   the new columns when used).
+- **Drafter improvements:** loading a web find / gap suggestion now **auto-drafts the rest** — nation,
+  type, TRL and description are inferred (not just name + URL), and seeded notes carry the find's
+  context, so a new node starts from good information. `applyReply` writes the inferred nation/type/TRL
+  back into Step 1. Added **NATO / EU / Multinational-joint** to the nation options (→ `b_nato` /
+  `eu_inst` / `b_multi`, geo `nato`/`eu`, no country-prefixed label) so big joint bodies get a sensible
+  parent. `draft-node` and the manual prompt now recognise those as a "nation".
 
 ## v4.7.1 — Fix black-on-black input text (2026-09-05)
 - Several boxes (finder description, "search again" bars, modal fields) set `color:var(--ink)` — a

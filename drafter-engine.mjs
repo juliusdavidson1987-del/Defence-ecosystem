@@ -11,8 +11,13 @@ export const COUNTRY = {
   canada:['ca','ca_grp'],australia:['au','au_grp'],'new zealand':['nz','nz_grp'],
   'south korea':['kr','pt_kr'],japan:['jp','pt_jp'],israel:['il','pt_il'],
   india:['in','pt_in'],singapore:['sg','pt_sg'],uae:['ae','pt_ae'],'united arab emirates':['ae','pt_ae'],
-  'saudi arabia':['sa','pt_sa'],saudi:['sa','pt_sa'],'united kingdom':['uk',null],uk:['uk',null]
+  'saudi arabia':['sa','pt_sa'],saudi:['sa','pt_sa'],'united kingdom':['uk',null],uk:['uk',null],
+  // Joint / multinational bodies — so big shared organisations get a sensible parent.
+  nato:['nato','b_nato'],'nato / shared':['nato','b_nato'],eu:['eu','eu_inst'],'european union':['eu','eu_inst'],
+  'multinational / joint':['nato','b_multi'],multinational:['nato','b_multi'],joint:['nato','b_multi']
 };
+// Prefixes that should NOT prefix the label with a country name (thematic / joint).
+const NO_LABEL_PREFIX = new Set(['uk','nato','eu']);
 export const TYPE_TAGS = {
   gov:{w:['govmil'],o:['advice'],a:'open'},military:{w:['govmil'],o:['contract'],a:'restricted'},
   procurement:{w:['govmil'],o:['procurement'],a:'portal'},intel:{w:['govmil'],o:['contract'],a:'restricted'},
@@ -79,7 +84,7 @@ export function buildNode({name,url,nation,type,domains,trl,does}, existingIds){
   const id = makeId(name, sp.prefix, existingIds);
   const tags = buildTags(type, domains, sp.prefix, trl);
   const countryName = (nation||'').replace(/\b\w/g, ch=>ch.toUpperCase());
-  const label = /—|:/.test(name) ? name : (sp.prefix&&sp.prefix!=='uk' ? `${countryName} — ${name}` : name);
+  const label = /—|:/.test(name) ? name : (sp.prefix && !NO_LABEL_PREFIX.has(sp.prefix) ? `${countryName} — ${name}` : name);
   return { id, label, parent: sp.parent, kind:'org', entry:url, does, tags, _parentNote: sp.note };
 }
 export function nodeToSQL(n){

@@ -62,7 +62,7 @@ Return JSON with these keys:
 - "type": ONE of ${TYPE_KEYS.join(", ")}
 - "domains": array from ${KNOWN_DOMAINS.join(", ")} (1-4 most relevant; use "xcut" if genuinely cross-cutting)
 - "trl": [low,high] integers 1-9 (maturity of what they field)
-- "nation": the country name
+- "nation": the home country name — OR "NATO", "EU", or "multinational" for a joint / alliance / multinational body
 
 Rules: representative not exhaustive; if you are not confident the organisation is real and defence-relevant, set "does" to "UNVERIFIED" and explain nothing. Do not invent facts.`;
 
