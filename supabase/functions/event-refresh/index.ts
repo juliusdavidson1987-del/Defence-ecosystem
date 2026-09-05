@@ -21,6 +21,11 @@ import { corsHeaders, json, secretOk } from "../_shared/cors.ts";
 
 const MAX_PER_CALL = Number(Deno.env.get("EVENTREFRESH_MAX_PER_RUN") ?? "2");
 const MIN_CONF = Number(Deno.env.get("EVENTREFRESH_MIN_CONFIDENCE") ?? "0.6");
+// When on, high-confidence date changes are written straight into reference.event_next
+// (still logged to event_date_proposals as status='auto_applied' for the audit trail).
+// Off by default; below the apply bar a change is filed for review instead.
+const AUTOAPPLY = /^(1|true|yes)$/i.test(Deno.env.get("EVENTREFRESH_AUTOAPPLY") ?? "");
+const APPLY_CONF = Number(Deno.env.get("EVENTREFRESH_APPLY_CONFIDENCE") ?? "0.8");
 
 function textOf(msg: { content: Array<{ type: string }> }): string {
   return msg.content.filter((b) => b.type === "text").map((b) => (b as unknown as { text: string }).text).join("").trim();
@@ -97,6 +102,8 @@ Deno.serve(async (req: Request) => {
 
     const checked: string[] = [];
     const proposals: Array<Record<string, unknown>> = [];
+    const applied: Array<Record<string, unknown>> = [];
+    let dirty = false;
     for (const id of batch) {
       const node = nodeById.get(id);
       const cur = eventNext[id] || {};
@@ -105,18 +112,27 @@ Deno.serve(async (req: Request) => {
       checked.push(id);
       const v = await checkEvent(client, label, url, cur);
       const changed = !v.same && v.next && (v.next.trim() !== (cur.next || "").trim() || (v.where && v.where.trim() !== (cur.where || "").trim()));
-      if (changed && v.confidence >= MIN_CONF) {
-        const row = {
-          node_id: id, current_next: cur.next || "", current_where: cur.where || "",
-          proposed_next: v.next, proposed_where: v.where, source_url: v.source_url,
-          confidence: v.confidence, note: v.note, status: "pending",
-        };
-        const { error } = await sb.from("event_date_proposals").insert(row);
-        if (!error) proposals.push({ node_id: id, label, ...row });
+      if (!changed || v.confidence < MIN_CONF) continue;
+      const base = {
+        node_id: id, current_next: cur.next || "", current_where: cur.where || "",
+        proposed_next: v.next, proposed_where: v.where, source_url: v.source_url,
+        confidence: v.confidence, note: v.note,
+      };
+      if (AUTOAPPLY && v.confidence >= APPLY_CONF) {
+        // Write the new date into the in-memory blob (flushed once per call), and
+        // log an audit row (status='auto_applied' — not shown in the pending queue).
+        eventNext[id] = { next: v.next, where: v.where };
+        dirty = true;
+        await sb.from("event_date_proposals").insert({ ...base, status: "auto_applied" });
+        applied.push({ node_id: id, label, ...base });
+      } else {
+        const { error } = await sb.from("event_date_proposals").insert({ ...base, status: "pending" });
+        if (!error) proposals.push({ node_id: id, label, ...base });
       }
     }
+    if (dirty) await sb.from("reference").upsert({ key: "event_next", value: eventNext }, { onConflict: "key" });
     const remaining = candidates.length - batch.length;
-    return json({ ran: true, checked, proposals, remaining });
+    return json({ ran: true, checked, applied, proposals, remaining });
   } catch (e) {
     if (e instanceof Anthropic.APIError) return json({ error: `Anthropic ${e.status}: ${e.message}` }, 502);
     return json({ error: String(e) }, 500);

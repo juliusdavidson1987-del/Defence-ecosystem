@@ -22,6 +22,7 @@ on:
 
 permissions:
   issues: write
+  contents: write               # commit the re-synced data.json when a date is auto-applied
 
 concurrency:
   group: event-refresh
@@ -46,3 +47,24 @@ jobs:
           GITHUB_REPOSITORY:     ${{ github.repository }}
           MAX_PER_CALL:          ${{ github.event.inputs.max_per_call || '2' }}
         run: node scripts/event-refresh-run.mjs
+
+      # If the agent auto-applied any date (EVENTREFRESH_AUTOAPPLY=true), reference.event_next
+      # changed — re-sync data.json so the fallback matches the live Supabase data.
+      - name: Re-sync data.json from Supabase
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/sync-datajson.mjs data.json
+      - name: Validate the refreshed data
+        run: node scripts/validate-data.mjs data.json --min-nodes=1200 --min-affiliations=150
+      - name: Commit data.json if a date changed
+        run: |
+          if git diff --quiet -- data.json; then
+            echo "data.json unchanged — nothing to commit."
+          else
+            git config user.name  "ecosystem-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data.json
+            git commit -m "chore: event-refresh sync data.json ($(date -u +%Y-%m-%d))"
+            git push
+          fi

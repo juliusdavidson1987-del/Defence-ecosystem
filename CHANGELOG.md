@@ -19,8 +19,10 @@ aren't stamped here unless they change a version.
   ("Event dates — proposed" — Approve writes the new date into `reference.event_next`; Dismiss drops
   it) via `review-node` `eventprops-list`/`eventprop-set`. Orchestrated by
   `scripts/event-refresh-run.mjs` + `.github/workflows/event-refresh.yml` (weekly, manual-first),
-  which opens an issue listing proposals. Dates are high-stakes, so **nothing auto-publishes**.
-  `migrations/2026-09-05-event-proposals.sql`.
+  which opens an issue listing proposals. `migrations/2026-09-05-event-proposals.sql`.
+  Optional **auto-apply** (`EVENTREFRESH_AUTOAPPLY=true`): high-confidence date changes are written
+  straight into `reference.event_next` (logged as `auto_applied`, reported in the weekly digest, and
+  the workflow re-syncs data.json); below the bar they're still filed for review.
 
 ## v4.5.0 — Auto-maintainer agent + on-demand web search (2026-09-05)
 - **Find your door — wider-web search on demand.** The "🌐 Search the wider web"

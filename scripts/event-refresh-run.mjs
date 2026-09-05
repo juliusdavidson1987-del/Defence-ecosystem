@@ -39,25 +39,33 @@ async function call(payload) {
   return j;
 }
 
-function buildDigest(proposals, checked, error) {
+function changeLines(p) {
+  const L = [`### ${p.label || p.node_id}  \`${p.node_id}\``];
+  L.push(`- was: **${p.current_next || "—"}**${p.current_where ? " · " + p.current_where : ""}`);
+  L.push(`- now: **${p.proposed_next || "—"}**${p.proposed_where ? " · " + p.proposed_where : ""}  _(conf ${Number(p.confidence ?? 0).toFixed(2)})_`);
+  if (p.note) L.push(`- ${p.note}`);
+  if (p.source_url) L.push(`- source: ${p.source_url}`);
+  L.push("");
+  return L;
+}
+function buildDigest(applied, proposals, checked, error) {
   const date = new Date().toISOString().slice(0, 10);
-  const L = [`# 📅 Event date proposals — ${date}`, ""];
-  L.push(`Checked **${checked}** events · **${proposals.length}** proposed change(s).`);
+  const L = [`# 📅 Event dates — ${date}`, ""];
+  L.push(`Checked **${checked}** events · **${applied.length}** auto-applied · **${proposals.length}** proposed for review.`);
   if (error) L.push(`\n> ⚠️ Stopped early: ${error}`);
   L.push("");
-  if (proposals.length) {
-    proposals.forEach((p) => {
-      L.push(`### ${p.label || p.node_id}  \`${p.node_id}\``);
-      L.push(`- was: **${p.current_next || "—"}**${p.current_where ? " · " + p.current_where : ""}`);
-      L.push(`- now: **${p.proposed_next || "—"}**${p.proposed_where ? " · " + p.proposed_where : ""}  _(conf ${Number(p.confidence ?? 0).toFixed(2)})_`);
-      if (p.note) L.push(`- ${p.note}`);
-      if (p.source_url) L.push(`- source: ${p.source_url}`);
-      L.push("");
-    });
-    L.push(`_Review & approve in **admin-drafter.html → Event dates — proposed** (approve writes the date into \`reference.event_next\`; then run the sync)._`);
-  } else {
-    L.push("_All stored event dates still match their official sources — nothing to change._");
+  if (applied.length) {
+    L.push(`## ✅ Auto-applied (${applied.length})`);
+    applied.forEach((p) => L.push(...changeLines(p)));
+    L.push(`_Written into \`reference.event_next\` (live on the site; data.json re-synced by this run)._`);
+    L.push("");
   }
+  if (proposals.length) {
+    L.push(`## ✋ Proposed for review (${proposals.length})`);
+    proposals.forEach((p) => L.push(...changeLines(p)));
+    L.push(`_Approve in **admin-drafter.html → Event dates — proposed** (writes \`reference.event_next\`; then run the sync)._`);
+  }
+  if (!applied.length && !proposals.length) L.push("_All stored event dates still match their official sources — nothing to change._");
   return L.join("\n");
 }
 
@@ -88,22 +96,24 @@ async function sendEmail(digest, count) {
 (async () => {
   if (!SECRET) { console.error("✗ DRAFTER_SHARED_SECRET is required"); process.exit(1); }
   console.error(`→ event-refresh: ${URL}`);
-  const proposals = [], excluded = [];
+  const applied = [], proposals = [], excluded = [];
   let checkedCount = 0, iters = 0, error = null;
   for (; iters < MAX_ITERS; iters++) {
     let r;
     try { r = await call({ op: "run", max: MAX_PER_CALL, exclude: excluded }); }
     catch (e) { error = e.message; console.error(`✗ ${e.message}`); break; }
     const ck = r.checked || [];
+    applied.push(...(r.applied || []));
     proposals.push(...(r.proposals || []));
     excluded.push(...ck);
     checkedCount += ck.length;
-    console.error(`  pass ${iters + 1}: checked ${ck.length}, +${(r.proposals || []).length} proposal(s), ${r.remaining} remaining`);
+    console.error(`  pass ${iters + 1}: checked ${ck.length}, +${(r.applied || []).length} applied, +${(r.proposals || []).length} proposed, ${r.remaining} remaining`);
     if (!ck.length || !r.remaining) break;
   }
-  const digest = buildDigest(proposals, checkedCount, error);
+  const digest = buildDigest(applied, proposals, checkedCount, error);
   console.log(digest);
-  if (proposals.length) { const url = await createIssue(digest, proposals.length); await sendEmail(digest, proposals.length); if (url) console.error(url); }
+  const n = applied.length + proposals.length;
+  if (n) { const url = await createIssue(digest, n); await sendEmail(digest, n); if (url) console.error(url); }
   else console.error("· no changes — no issue/email");
   if (error) process.exit(1);
 })();

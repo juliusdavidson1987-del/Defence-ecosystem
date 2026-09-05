@@ -158,6 +158,12 @@ files a **proposed change** you approve in the console — it never edits dates 
    `.github/workflows/event-refresh.yml`.
 
 **Review:** `admin-drafter.html → Event dates — proposed` — **Approve** writes the new
-date into `reference.event_next` (run the sync after); **Dismiss** drops it. Tunables
-(function secrets): `EVENTREFRESH_MAX_PER_RUN` (default 2), `EVENTREFRESH_MIN_CONFIDENCE`
-(default 0.6).
+date into `reference.event_next` (run the sync after); **Dismiss** drops it.
+
+**Let it apply dates on its own (optional):** set `EVENTREFRESH_AUTOAPPLY=true` and the
+agent writes **high-confidence** date changes straight into `reference.event_next` (still
+logged to `event_date_proposals` as `auto_applied` for the audit trail, and reported in the
+weekly issue/email); anything below the bar is still filed for review. Reversible any time
+with `EVENTREFRESH_AUTOAPPLY=false`. Tunables (function secrets):
+`EVENTREFRESH_AUTOAPPLY` (default off), `EVENTREFRESH_APPLY_CONFIDENCE` (default 0.8),
+`EVENTREFRESH_MAX_PER_RUN` (default 2), `EVENTREFRESH_MIN_CONFIDENCE` (default 0.6).
