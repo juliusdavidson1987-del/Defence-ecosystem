@@ -10,11 +10,8 @@ name: Auto-maintainer (daily)
 #                   AUTOMAINT_URL / SUPABASE_URL / SUPABASE_ANON_KEY (overrides).
 
 on:
-  # ── Enable the daily schedule AFTER your first successful manual run ──
-  # Uncomment these two lines once you've added the secrets and tested via
-  # "Run workflow", so failed nightly runs don't pile up before setup:
-  # schedule:
-  #   - cron: '0 6 * * *'        # daily 06:00 UTC (~07:00 UK)
+  schedule:
+    - cron: '0 6 * * *'          # daily 06:00 UTC (~07:00 UK)
   workflow_dispatch:
     inputs:
       max_per_call:
