@@ -10,9 +10,8 @@ name: Event date refresh (weekly)
 #                   EVENTREFRESH_URL / SUPABASE_URL (overrides).
 
 on:
-  # ── Enable the weekly schedule AFTER your first successful manual run ──
-  # schedule:
-  #   - cron: '0 7 * * 1'        # Mondays 07:00 UTC
+  schedule:
+    - cron: '0 7 * * 1'         # Mondays 07:00 UTC
   workflow_dispatch:
     inputs:
       max_per_call:
