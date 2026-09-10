@@ -648,6 +648,32 @@
   #welcome .wdopt:hover{border-color:color-mix(in srgb,var(--phos) 55%,transparent);transform:translateY(-2px)}
   #welcome .wdopt.on{border-color:var(--phos);box-shadow:0 0 14px color-mix(in srgb,var(--phos) 24%,transparent);background:color-mix(in srgb,var(--phos) 10%,rgba(12,20,36,.85))}
   #welcome .wdopt.rec::after{content:"Recommended";display:block;font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--phos);margin-top:5px}
+  /* ---- Ask the guide (conversational assistant) ---- */
+  #guideBtn{position:fixed;right:16px;bottom:16px;z-index:88;background:#14a08b;color:#fff;border:none;border-radius:22px;padding:11px 16px;font:600 13px Inter,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4);display:flex;gap:7px;align-items:center}
+  #guideBtn:hover{filter:brightness(1.08)}
+  #guide{position:fixed;right:16px;bottom:16px;z-index:89;width:384px;max-width:calc(100vw - 24px);height:564px;max-height:calc(100vh - 24px);display:none}
+  #guide.open{display:block}
+  #guide .gcard{display:flex;flex-direction:column;height:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+  #guide .ghead{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--ink2)}
+  #guide .gtitle{font:600 14px Inter,sans-serif;color:var(--txt)}
+  #guide .ghead button{background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;line-height:1}
+  #guideLog{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .gmsg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.5}
+  .gmsg.user{align-self:flex-end;background:#14a08b;color:#fff;border-bottom-right-radius:4px}
+  .gmsg.bot{align-self:flex-start;background:var(--ink2);color:var(--txt);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .gmsg.bot a{color:var(--phos)}
+  .gchip{display:inline-block;background:rgba(63,224,208,.14);border:1px solid var(--phos);color:var(--txt);border-radius:7px;padding:0 7px;margin:1px 2px;font-size:12px;cursor:pointer}
+  .gchip:hover{background:rgba(63,224,208,.3)}
+  .gtyping{align-self:flex-start;color:var(--mut);font-size:12px;padding:2px 4px}
+  #guideStarters{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 8px}
+  .gstart{background:var(--ink2);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:6px 9px;font-size:11.5px;cursor:pointer;text-align:left}
+  .gstart:hover{color:var(--txt);border-color:var(--phos)}
+  #guideForm{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+  #guideIn{flex:1;resize:none;background:var(--ink2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:13px;max-height:120px;outline:none}
+  #guideSend{background:#14a08b;color:#fff;border:none;border-radius:10px;width:42px;font-size:16px;cursor:pointer}
+  #guideSend:disabled{opacity:.5;cursor:default}
+  #guide .gnote{padding:0 14px 10px;color:var(--faint);font-size:10.5px}
+  @media(max-width:520px){#guide{width:auto;left:8px;right:8px;bottom:8px;height:72vh}#guideBtn{right:12px;bottom:12px}}
 </style>
 </head>
 <body>
@@ -1012,7 +1038,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.8.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.9.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1149,6 +1175,14 @@
   <p class="corlic">Submitted under the project licence (data CC BY 4.0 · code MIT). Please share your own words.</p>
 </div></div>
 
+<button id="guideBtn" aria-label="Ask the guide">💬 Ask the guide</button>
+<div id="guide" role="dialog" aria-modal="true" aria-label="Ask the guide"><div class="gcard">
+  <div class="ghead"><span class="gtitle">💬 Ask the guide</span><button id="guideClose" aria-label="Close">×</button></div>
+  <div id="guideLog"></div>
+  <div id="guideStarters"></div>
+  <form id="guideForm"><textarea id="guideIn" rows="1" placeholder="Ask anything — e.g. who funds early-stage counter-drone in the UK?"></textarea><button type="submit" id="guideSend" aria-label="Send">➤</button></form>
+  <div class="gnote">A navigational aid, not an official source — verify on each body's own site. Conversations aren't stored.</div>
+</div></div>
 <script>
 /* ---------- tree builders ---------- */
 function L(id,l,e,d){return{id,l,entry:e,does:d};}
@@ -5263,6 +5297,64 @@ document.getElementById('finderReset').onclick=()=>{
   document.getElementById('finderResults').innerHTML='';
 };
 
+/* ---- Ask the guide: conversational, map-grounded assistant (public, rate-limited, read-only) ---- */
+const GUIDE_URL='https://igvxlmbndpuegibykygq.functions.supabase.co/guide';
+let guideMsgs=[];
+function guideEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+function guideOverview(){
+  const ov=[], seen=new Set();
+  try{ for(const id in NODE){ const n=NODE[id]; if(n&&n.kind!=='org'&&PARENT[id]==='root'&&!seen.has(id)){ seen.add(id); ov.push({id,label:n.l}); } } }catch(_){}
+  try{ if(typeof TECH_TAX!=='undefined') TECH_TAX.forEach(c=>{ if(!seen.has('techcat_'+c.key)){ seen.add('techcat_'+c.key); ov.push({id:'techcat_'+c.key,label:c.l}); } }); }catch(_){}
+  return ov.slice(0,60);
+}
+function guideCandidates(text){
+  try{ const c=finderCandidates({role:null,roles:[],trl:null,domains:[],needs:[],geo:'any'}, text||''); return (c||[]).slice(0,44); }catch(_){ return []; }
+}
+function guideRender(text){
+  let h=guideEsc(text);
+  h=h.replace(/\[\[([a-z0-9_]+)\]\]/gi,(m,id)=>{ const n=NODE[id]; return n?`<span class="gchip" data-id="${guideEsc(id)}">${guideEsc(n.l)}</span>`:guideEsc(id); });
+  h=h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,(m,t,u)=>`<a href="${guideEsc(u)}" target="_blank" rel="noopener noreferrer">${guideEsc(t)}</a>`);
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  h=h.replace(/^\s*[-•]\s+/gm,'• ');
+  return h.replace(/\n/g,'<br>');
+}
+function guidePaint(){
+  const log=document.getElementById('guideLog'); if(!log)return;
+  log.innerHTML=guideMsgs.map(m=>`<div class="gmsg ${m.role==='user'?'user':'bot'}">${m.role==='user'?guideEsc(m.content):guideRender(m.content)}</div>`).join('');
+  log.querySelectorAll('.gchip').forEach(ch=>ch.onclick=()=>{ const id=ch.dataset.id; if(NODE[id]){ document.getElementById('guide').classList.remove('open'); document.getElementById('guideBtn').style.display=''; focusNode(id); } });
+  log.scrollTop=log.scrollHeight;
+}
+function guideAdd(role,content){ guideMsgs.push({role,content}); guidePaint(); }
+async function guideSend(text){
+  text=(text||'').trim(); if(!text)return;
+  const send=document.getElementById('guideSend'), inp=document.getElementById('guideIn'), st=document.getElementById('guideStarters');
+  guideAdd('user',text); if(inp){inp.value='';inp.style.height='auto';} if(st)st.style.display='none';
+  const log=document.getElementById('guideLog');
+  const typing=document.createElement('div'); typing.className='gtyping'; typing.textContent='Thinking…'; log.appendChild(typing); log.scrollTop=log.scrollHeight;
+  if(send)send.disabled=true;
+  try{
+    const r=await fetch(GUIDE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:guideMsgs.slice(-14),candidates:guideCandidates(text),overview:guideOverview()})});
+    typing.remove();
+    if(r.status===429){ guideAdd('assistant','The guide is busy right now — please try again shortly.'); return; }
+    const j=await r.json(); guideAdd('assistant', j.reply || "Sorry — I couldn't answer that just now. Try “Find your door”, or rephrase.");
+  }catch(e){ typing.remove(); guideAdd('assistant',"Couldn't reach the guide just now — please try again."); }
+  finally{ if(send)send.disabled=false; }
+}
+(function wireGuide(){
+  const btn=document.getElementById('guideBtn'), panel=document.getElementById('guide'), close=document.getElementById('guideClose'), form=document.getElementById('guideForm'), inp=document.getElementById('guideIn');
+  if(!btn||!panel)return;
+  const STARTERS=['Who funds early-stage counter-drone work in the UK?','What’s the difference between DE&S and the NAD Group?','How do I get a UK MOD trial for a dual-use sensor?','How do I use this map?'];
+  const openG=()=>{ panel.classList.add('open'); btn.style.display='none';
+    if(!guideMsgs.length){ guideAdd('assistant','Hi — I’m the guide to the defence ecosystem. Tell me what you’re building or looking for and I’ll point you to the right doors. You can also ask how bodies relate, or how to use the map.');
+      const st=document.getElementById('guideStarters'); if(st){ st.style.display='flex'; st.innerHTML=STARTERS.map(s=>`<button type="button" class="gstart">${guideEsc(s)}</button>`).join(''); st.querySelectorAll('.gstart').forEach((b,i)=>b.onclick=()=>guideSend(STARTERS[i])); }
+    }
+    setTimeout(()=>inp&&inp.focus(),60); };
+  const closeG=()=>{ panel.classList.remove('open'); btn.style.display=''; };
+  btn.onclick=openG; if(close)close.onclick=closeG;
+  if(form)form.onsubmit=e=>{ e.preventDefault(); guideSend(inp.value); };
+  if(inp){ inp.addEventListener('input',()=>{ inp.style.height='auto'; inp.style.height=Math.min(120,inp.scrollHeight)+'px'; });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); guideSend(inp.value); } }); }
+})();
 /* ---- product layer: deep links, CSV export, welcome & about ---- */
 function firstUrl(s){ const m=(s||'').match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,6}(?:\/[^\s·,)]*)?/i); return m?m[0]:''; }
 function firstEmail(s){ const m=(s||'').match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); return m?m[0]:''; }
@@ -5887,7 +5979,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.8.0 (Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.9.0 (New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.

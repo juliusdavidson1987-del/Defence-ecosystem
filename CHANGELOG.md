@@ -3,6 +3,17 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.9.0 — "Ask the guide" conversational assistant (2026-09-10)
+- **A multi-turn AI guide** in the app (floating "💬 Ask the guide" → chat panel) that helps users
+  **find the right door, understand how bodies relate, use the tool, and draft an approach**. Grounded
+  in the map: each turn the client sends the conversation + a retrieved shortlist of relevant orgs +
+  a branch/category overview; Claude answers from the mapped bodies and returns them as `[[id]]` refs
+  the client renders as **clickable chips that focus the map**. **Map-first**, with a wider-web
+  fallback (flagged unverified) when the map is thin.
+- Public, **rate-limited** `guide` Edge Function (`claude-opus-5` + `web_search`, own `GUIDE_*` caps
+  via `increment_rate`), **read-only** — no dataset writes, keys stay server-side. Same security model
+  as Find your door. Starter questions seed first use; conversations aren't stored.
+
 ## v4.8.0 — Feedback attachments → agent drafts the node (2026-09-05)
 - **Feedback can now carry a source link and an attached fact sheet** (PDF / image / text, ≤10 MB)
   so the maintainer's agent can build the right node from an authoritative source. Uploads go to a
