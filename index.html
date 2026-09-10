@@ -1038,7 +1038,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.9.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.9.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -3822,23 +3822,42 @@ function expandQuery(v){
   }
   return [...terms];
 }
-function nodeMatchesQuery(n,v){
-  const hay=(n.l+' '+(n.does||'')+' '+(n.entry||'')+' '+(serialOf(n.id)||'')).toLowerCase();
-  return expandQuery(v).some(t=>hay.includes(t));
+// Score a node against the query so exact acronym/label/id matches rank above
+// broad synonym or description matches (fixes "DSTL" centring on NATO STO).
+function scoreNodeQuery(n,v){
+  const lab=(n.l||'').toLowerCase(), does=(n.does||'').toLowerCase(), entry=(n.entry||'').toLowerCase();
+  const serial=(serialOf(n.id)||'').toLowerCase(), id=(n.id||'').toLowerCase();
+  const esc=v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const wordRe=new RegExp('(?:^|[^a-z0-9])'+esc+'(?:[^a-z0-9]|$)');
+  let s=0;
+  if(id===v||serial===v) s=100;                       // exact id / serial
+  else if(wordRe.test(lab)) s=90;                     // whole-word / acronym in the name, e.g. "(Dstl)"
+  else if(lab.startsWith(v)) s=85;
+  else if(lab.includes(v)) s=70;                      // substring in the name
+  if(s<50 && entry.includes(v)) s=Math.max(s,50);     // in the website/handle
+  if(s<42 && does.includes(v)) s=Math.max(s,42);      // in the description
+  if(s===0){                                          // fall back to synonyms only if nothing direct matched
+    const syn=expandQuery(v).filter(t=>t!==v);
+    if(syn.length){ if(syn.some(t=>lab.includes(t))) s=28; else if(syn.some(t=>(does+' '+entry).includes(t))) s=14; }
+  }
+  return s;
 }
+function nodeMatchesQuery(n,v){ return scoreNodeQuery(n,v)>0; }
 q.addEventListener('input',()=>{
   const v=q.value.trim().toLowerCase();
   Object.values(nodeEls).forEach(el=>el.classList.remove('hit','dim'));
   if(!v)return;
   if(VIEW){ clearViewSel(); }
-  let hits=[];
-  Object.values(NODE).forEach(n=>{ if(nodeMatchesQuery(n,v))hits.push(n.id); });
+  const scored=[];
+  Object.values(NODE).forEach(n=>{ const s=scoreNodeQuery(n,v); if(s>0) scored.push({id:n.id,s}); });
+  scored.sort((a,b)=>b.s-a.s);                        // best match first
+  const hits=scored.map(x=>x.id), hitSet=new Set(hits);
   // expand ancestors of hits
   hits.forEach(id=>{let cur=PARENT[id];while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];}});
   refresh();
-  Object.values(NODE).forEach(n=>{ const el=nodeEls[n.id]; const hit=hits.includes(n.id);
+  Object.values(NODE).forEach(n=>{ const el=nodeEls[n.id]; const hit=hitSet.has(n.id);
     if(isVisible(n.id)){ el.classList.toggle('hit',hit); el.classList.toggle('dim',!hit && hits.length>0);} });
-  if(hits.length) centerOn(hits[0],false);
+  if(hits.length) centerOn(hits[0],false);            // centre on the BEST match, not iteration order
 });
 
 /* legend */
@@ -5979,7 +5998,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.9.0 (New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.9.1 (Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.

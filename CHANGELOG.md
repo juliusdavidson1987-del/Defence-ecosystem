@@ -3,6 +3,13 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.9.1 — Ranked top search (2026-09-10)
+- The top search bar highlighted every match (including broad synonym/description matches) and
+  centred on the **first in iteration order**, so "DSTL" could land on NATO STO. Added
+  `scoreNodeQuery`: exact id/serial (100) > whole-word/acronym in the name (90) > name substring
+  (70) > website (50) > description (42) > synonyms only if nothing direct matched (≤28). The view
+  now centres on the **best-scored** hit. Verified: "DSTL" → Dstl (100), NATO STO off the list.
+
 ## v4.9.0 — "Ask the guide" conversational assistant (2026-09-10)
 - **A multi-turn AI guide** in the app (floating "💬 Ask the guide" → chat panel) that helps users
   **find the right door, understand how bodies relate, use the tool, and draft an approach**. Grounded
