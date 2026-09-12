@@ -11,10 +11,8 @@ name: Coverage sweep
 # Optional secrets: SWEEP_URL / SUPABASE_URL (overrides).
 
 on:
-  # Enable a schedule after your first manual run if you want it to chip through
-  # the grid automatically (it resumes each time):
-  # schedule:
-  #   - cron: '0 4 * * *'        # daily 04:00 UTC
+  schedule:
+    - cron: '0 4 * * *'          # daily 04:00 UTC — advances the grid (resumes each time; no-ops once complete)
   workflow_dispatch:
     inputs:
       cells_per_run:
