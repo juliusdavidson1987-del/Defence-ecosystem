@@ -3,6 +3,15 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Coverage sweep agent (2026-09-12)
+- New gated `coverage-sweep` Edge Function runs the finder's web-search (the v2-taxonomy search
+  that surfaces organisations not yet in the map) **systematically across every nation × technology
+  category** (44 × 8 grid), deduping against the live map and writing new candidates to the
+  `web_finds` review queue. **Resumable** via a cursor in `reference.sweep_cursor`. Read-only w.r.t.
+  the live map; the daily auto-maintainer then verifies + stages/publishes what it surfaces.
+  Orchestrated by `scripts/coverage-sweep-run.mjs` + `.github/workflows/coverage-sweep.yml`
+  (bounded per run so cost stays controllable; opens an issue listing what surfaced).
+
 ## v4.9.1 — Ranked top search (2026-09-10)
 - The top search bar highlighted every match (including broad synonym/description matches) and
   centred on the **first in iteration order**, so "DSTL" could land on NATO STO. Added

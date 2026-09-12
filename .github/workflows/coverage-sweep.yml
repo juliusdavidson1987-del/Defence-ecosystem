@@ -1,0 +1,59 @@
+name: Coverage sweep
+
+# Runs the finder's web-search systematically across every nation × technology
+# category via the gated `coverage-sweep` Edge Function, surfacing NEW candidate
+# organisations into the web_finds review queue (deduped against the live map).
+# Resumable: it keeps a cursor, so each run continues the grid where the last left
+# off. Nothing goes live here — finds go to review, and the daily auto-maintainer
+# verifies + stages/publishes them.
+#
+# Required secret:  DRAFTER_SHARED_SECRET
+# Optional secrets: SWEEP_URL / SUPABASE_URL (overrides).
+
+on:
+  # Enable a schedule after your first manual run if you want it to chip through
+  # the grid automatically (it resumes each time):
+  # schedule:
+  #   - cron: '0 4 * * *'        # daily 04:00 UTC
+  workflow_dispatch:
+    inputs:
+      cells_per_run:
+        description: 'How many grid cells to process this run'
+        required: false
+        default: '40'
+      reset:
+        description: 'Reset the cursor to the start of the grid first?'
+        required: false
+        default: 'false'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: coverage-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+      - name: Reset cursor (optional)
+        if: ${{ github.event.inputs.reset == 'true' }}
+        env:
+          DRAFTER_SHARED_SECRET: ${{ secrets.DRAFTER_SHARED_SECRET }}
+          SWEEP_URL: ${{ secrets.SWEEP_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          node -e "const u=(process.env.SWEEP_URL||('https://igvxlmbndpuegibykygq.functions.supabase.co/coverage-sweep'));fetch(u,{method:'POST',headers:{'Content-Type':'application/json','x-drafter-secret':process.env.DRAFTER_SHARED_SECRET},body:JSON.stringify({op:'reset'})}).then(r=>r.text()).then(t=>console.log('reset:',t));"
+      - name: Run the coverage sweep
+        env:
+          DRAFTER_SHARED_SECRET: ${{ secrets.DRAFTER_SHARED_SECRET }}
+          SWEEP_URL:  ${{ secrets.SWEEP_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          CELLS_PER_RUN: ${{ github.event.inputs.cells_per_run || '40' }}
+        run: node scripts/coverage-sweep-run.mjs
