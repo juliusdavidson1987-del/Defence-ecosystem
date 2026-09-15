@@ -38,6 +38,7 @@ const CFG = {
   maxHeavy: num("AUTOMAINT_MAX_PER_RUN", 2),        // web-search items per invocation (kept low for the wall-clock budget; the orchestrator loops)
   pubNewOrgs: bool("AUTOPUB_NEW_ORGS", false),      // OFF by default: new orgs are staged, not published
   pubMinConf: num("AUTOPUB_MIN_CONFIDENCE", 0.85),
+  webfindMinConf: num("WEBFIND_MIN_CONFIDENCE", 0.7), // web finds are already web-verified when drafted, so a lower bar auto-adds them
   applyCorr: bool("AUTOAPPLY_CORRECTIONS", true),
   corrMinConf: num("AUTOAPPLY_MIN_CONFIDENCE", 0.8),
   resolveFeedback: bool("AUTORESOLVE_FEEDBACK", true),
@@ -108,15 +109,31 @@ async function callClaude(client: Anthropic, system: string, user: string, web: 
 type Rec = { queue: string; id: string; label: string; action: string; reason: string; url?: string };
 type Report = { processed: number; actions: Rec[]; held: Rec[] };
 
-// Simple dedupe against the live map: domain match, or strong name containment.
+// Normalise a name for comparison: drop a "Country — " prefix, "(ACRONYM)" bits and punctuation.
+function normName(s: string): string {
+  return String(s || "").replace(/^[^—:]*[—:]\s*/, "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+// Dedupe against the live map. Two signals ONLY, both strict enough to avoid the
+// "shares 3 letters" false positive that was wrongly rejecting real new orgs:
+//   1) same official DOMAIN (exact host, or one a sub/parent of the other), and
+//   2) essentially the same NAME — identical, or a whole-phrase containment where
+//      the shorter name is substantial (≥12 chars AND ≥2 words of 4+ letters), so
+//      short acronym labels (SES, DIU, ADD, EDA…) never match by name.
 function findDupe(name: string, url: string, corpus: Array<{ id: string; label: string; entry: string }>): { id: string; label: string } | null {
-  const host = hostOf(url);
-  const nmeLc = name.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+  const fhost = hostOf(url);
+  const fn = normName(name);
   for (const n of corpus) {
-    const ent = (n.entry || "").toLowerCase();
-    if (host && ent.includes(host)) return { id: n.id, label: n.label };
-    const lab = (n.label || "").toLowerCase().replace(/^[^—:]*[—:]\s*/, "").replace(/[^a-z0-9 ]/g, "").trim();
-    if (nmeLc.length >= 5 && lab && (lab.includes(nmeLc) || nmeLc.includes(lab))) return { id: n.id, label: n.label };
+    const ehost = hostOf(n.entry || "");
+    if (fhost && ehost && fhost.length > 4 && (fhost === ehost || fhost.endsWith("." + ehost) || ehost.endsWith("." + fhost))) return { id: n.id, label: n.label };
+    const ln = normName(n.label || "");
+    if (!fn || !ln) continue;
+    if (fn === ln) return { id: n.id, label: n.label };
+    const shorter = fn.length <= ln.length ? fn : ln, longer = fn.length <= ln.length ? ln : fn;
+    const shortWords = shorter.split(" ").filter((w) => w.length >= 4).length;
+    if (shorter.length >= 12 && shortWords >= 2 &&
+        (longer.startsWith(shorter + " ") || longer.endsWith(" " + shorter) || longer.includes(" " + shorter + " "))) {
+      return { id: n.id, label: n.label };
+    }
   }
   return null;
 }
@@ -308,7 +325,7 @@ async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Repor
     while (ids.has(id)) { id = base + k; k++; }
     ids.add(id);
     const reachable = await urlReachable(String(node.entry || ""));
-    const canPublish = CFG.pubNewOrgs && d.publishable && d.defence_relevant && d.confidence >= CFG.pubMinConf && reachable && tagsOk(node.tags);
+    const canPublish = CFG.pubNewOrgs && d.publishable && d.defence_relevant && d.confidence >= CFG.webfindMinConf && reachable && tagsOk(node.tags);
     const row = {
       id, label: node.label, parent: node.parent, kind: "org",
       does: node.does || "", entry: node.entry || w.url || "",

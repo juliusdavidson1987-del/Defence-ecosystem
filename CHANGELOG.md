@@ -3,6 +3,17 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Auto-maintainer: dedupe fix + auto-add web finds (2026-09-15)
+- **Fixed a false-positive dedupe** that wrongly rejected real new organisations for "sharing 3
+  letters." `findDupe` matched a short existing acronym label (SES, DIU, ADD…) as a substring of any
+  find's name. Now it dedupes on **exact domain** (host equality / sub-parent) OR a **substantial
+  name match** (identical, or whole-phrase containment where the shorter name is ≥12 chars and ≥2
+  real words) — so acronym collisions no longer cause rejections.
+- **Web finds now auto-add more.** They're already web-verified when drafted, so the publish gate
+  uses a separate, lower bar `WEBFIND_MIN_CONFIDENCE` (default **0.7**, vs 0.85 for other new orgs) —
+  verified, defence-relevant, reachable finds with valid tags get auto-published instead of piling up
+  for manual review. Tunable lower if you want even more auto-added.
+
 ## Coverage sweep agent (2026-09-12)
 - New gated `coverage-sweep` Edge Function runs the finder's web-search (the v2-taxonomy search
   that surfaces organisations not yet in the map) **systematically across every nation × technology
