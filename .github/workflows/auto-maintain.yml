@@ -50,6 +50,7 @@ jobs:
           GITHUB_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY:     ${{ github.repository }}
           MAX_PER_CALL:          ${{ github.event.inputs.max_per_call || '2' }}
+          MAX_ITERS:             '80'    # drain more per run (~160 heavy items/day) to clear the web-finds backlog
           ALWAYS_REPORT:         ${{ github.event.inputs.always_report || 'false' }}
         run: node scripts/auto-maintain-run.mjs
 

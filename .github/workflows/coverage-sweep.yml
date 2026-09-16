@@ -11,8 +11,10 @@ name: Coverage sweep
 # Optional secrets: SWEEP_URL / SUPABASE_URL (overrides).
 
 on:
-  schedule:
-    - cron: '0 4 * * *'          # daily 04:00 UTC — advances the grid (resumes each time; no-ops once complete)
+  # PAUSED while the auto-maintainer clears the web-finds backlog. Uncomment to
+  # resume the daily grid advance once the queue is down:
+  # schedule:
+  #   - cron: '0 4 * * *'        # daily 04:00 UTC
   workflow_dispatch:
     inputs:
       cells_per_run:
