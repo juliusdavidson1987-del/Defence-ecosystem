@@ -73,9 +73,18 @@ async function createIssue(body, count) {
   if (!SECRET) { console.error("✗ DRAFTER_SHARED_SECRET is required"); process.exit(1); }
   const grid = await call({ op: "grid" }).catch(() => ({}));
   console.error(`→ coverage-sweep: ${URL}  (grid ${grid.total || "?"} cells)`);
-  const added = []; let cellsDone = 0, remaining = grid.total || 0, total = grid.total || 0, iters = 0, error = null;
+  const added = []; let cellsDone = 0, remaining = grid.total || 0, total = grid.total || 0, iters = 0, error = null, fails = 0;
   for (; iters < MAX_ITERS && cellsDone < CELLS_PER_RUN; iters++) {
-    let r; try { r = await call({ op: "run", max: MAX_PER_CALL }); } catch (e) { error = e.message; console.error(`✗ ${e.message}`); break; }
+    let r;
+    try { r = await call({ op: "run", max: MAX_PER_CALL }); fails = 0; }
+    catch (e) {
+      // Skip a flaky invocation (e.g. transient Supabase 546); abort only after 3 in a row.
+      fails++;
+      console.error(`✗ ${e.message}${fails < 3 ? " — skipping, continuing" : " — aborting after 3 consecutive failures"}`);
+      if (fails >= 3) { error = e.message; break; }
+      await new Promise((res) => setTimeout(res, 4000));
+      continue;
+    }
     added.push(...(r.added || [])); cellsDone += r.processed || 0; remaining = r.remaining ?? remaining; total = r.total || total;
     console.error(`  +${r.processed} cells (cursor ${r.nextCursor}/${total}), +${(r.added || []).length} finds; ${remaining} left`);
     if (r.done || !r.processed) break;
@@ -83,5 +92,5 @@ async function createIssue(body, count) {
   const body = digest(added, cellsDone, remaining, total, error);
   console.log(body);
   if (added.length || error) { const url = await createIssue(body, added.length); if (url) console.error(url); }
-  if (error) process.exit(1);
+  if (error && !added.length && !cellsDone) process.exit(1);
 })();

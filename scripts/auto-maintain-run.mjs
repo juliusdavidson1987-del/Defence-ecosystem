@@ -170,14 +170,23 @@ if (isMain) (async () => {
   try { cfg = (await call({ op: "config" })).config; } catch (e) { console.error(`! config read failed: ${e.message}`); }
 
   const actions = [], held = [];
-  let remaining = null, iters = 0, error = null;
+  let remaining = null, iters = 0, error = null, fails = 0, processedAny = 0;
   for (; iters < MAX_ITERS; iters++) {
     let r;
-    try { r = await call({ op: "run", max: MAX_PER_CALL }); }
-    catch (e) { error = e.message; console.error(`✗ ${e.message}`); break; }
+    try { r = await call({ op: "run", max: MAX_PER_CALL }); fails = 0; }
+    catch (e) {
+      // A single flaky invocation (e.g. a transient Supabase 546 WORKER_RESOURCE_LIMIT)
+      // must NOT kill the whole drain — skip it and keep going; abort only after 3 in a row.
+      fails++;
+      console.error(`✗ pass ${iters + 1}: ${e.message}${fails < 3 ? " — skipping, continuing" : " — aborting after 3 consecutive failures"}`);
+      if (fails >= 3) { error = e.message; break; }
+      await new Promise((res) => setTimeout(res, 4000));
+      continue;
+    }
     actions.push(...(r.actions || []));
     held.push(...(r.held || []));
     remaining = r.remaining || remaining;
+    processedAny += r.processed || 0;
     console.error(`  pass ${iters + 1}: processed ${r.processed}, +${(r.actions || []).length} actioned, +${(r.held || []).length} held`);
     if (!r.processed) break;                       // nothing left to do
   }
@@ -197,5 +206,7 @@ if (isMain) (async () => {
   } else {
     console.error("· quiet day — no issue/email (set ALWAYS_REPORT=true to report anyway)");
   }
-  if (error) process.exit(1);
+  // Only a total failure (aborted with zero progress) is an error exit; a partial
+  // run that still actioned/held work stays green so the Action isn't marked failed.
+  if (error && !actions.length && !held.length && !processedAny) process.exit(1);
 })();
