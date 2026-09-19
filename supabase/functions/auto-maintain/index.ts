@@ -1,7 +1,7 @@
 // Edge Function: auto-maintain  (GATED — requires x-drafter-secret)
 // ---------------------------------------------------------------------------
 // Stage 4 — the daily back-room agent. Works the five review queues the public
-// tool fills, VERIFIES each item with claude-opus-5 + web search, then:
+// tool fills, VERIFIES each item with claude-sonnet-5 + web search, then:
 //
 //   • auto-applies the clear-cut, safe decisions, and
 //   • HOLDS anything uncertain for the maintainer, recording a one-line
@@ -91,11 +91,11 @@ async function urlReachable(u: string): Promise<boolean> {
 async function callClaude(client: Anthropic, system: string, user: string, web: boolean): Promise<Record<string, unknown>> {
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: user }];
   const opts = () => ({
-    model: "claude-opus-5",
+    model: "claude-sonnet-5",
     max_tokens: 4096,
     output_config: { effort: web ? "medium" as const : "low" as const },
     system,
-    ...(web ? { tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 4 }] } : {}),
+    ...(web ? { tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 2 }] } : {}),
     messages,
   });
   let resp = await client.messages.create(opts());

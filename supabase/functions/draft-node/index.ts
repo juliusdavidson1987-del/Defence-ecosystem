@@ -70,7 +70,7 @@ Rules: representative not exhaustive; if you are not confident the organisation 
   try {
     // Opus 5 runs adaptive thinking by default; we read only the text block(s).
     const msg = await client.messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
     });

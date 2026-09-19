@@ -98,8 +98,8 @@ Draft the entry. Verify on the web first.`;
 
     const messages: Anthropic.MessageParam[] = [{ role: "user", content: [{ type: "text", text: userText }, ...contentBlocks] }];
     const opts = () => ({
-      model: "claude-opus-5", max_tokens: 8192, output_config: { effort: "medium" as const },
-      system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 5 }], messages,
+      model: "claude-sonnet-5", max_tokens: 8192, output_config: { effort: "medium" as const },
+      system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 2 }], messages,
     });
     let resp = await client.messages.create(opts());
     for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }

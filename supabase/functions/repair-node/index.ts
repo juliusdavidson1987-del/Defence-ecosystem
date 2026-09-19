@@ -9,7 +9,7 @@
 //          parents:[{id,label}] }        // valid branch ids it may re-home under
 //     -> { repair:{label,parent,does,entry,tags,note} }
 //
-// Uses claude-opus-5 with web search to VERIFY the correction (renames, mergers,
+// Uses claude-sonnet-5 with web search to VERIFY the correction (renames, mergers,
 // defunct bodies, reference URLs) before proposing the rewrite. The maintainer
 // reviews the proposal in the drafter and applies it (upsert) — nothing is
 // written to the map by this function.
@@ -74,21 +74,21 @@ ${parents.map((p) => `${p.id} — ${p.label}`).join("\n")}`;
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: user }];
   try {
     let resp = await client.messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 8192,
       output_config: { effort: "medium" },
       system,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 2 }],
       messages,
     });
     for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) {
       messages.push({ role: "assistant", content: resp.content });
       resp = await client.messages.create({
-        model: "claude-opus-5",
+        model: "claude-sonnet-5",
         max_tokens: 8192,
         output_config: { effort: "medium" },
         system,
-        tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+        tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 2 }],
         messages,
       });
     }

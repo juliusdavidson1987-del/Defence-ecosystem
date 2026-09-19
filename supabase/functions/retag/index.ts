@@ -1,7 +1,7 @@
 // Edge Function: retag  (GATED — requires x-drafter-secret)
 // ---------------------------------------------------------------------------
 // Taxonomy v2 — the one-off retag pass. Walks the org nodes in batches and, using
-// claude-opus-5 (no web search — pure classification from name + description),
+// claude-haiku-4-5 (no web search — pure classification from name + description),
 // refines each node's domain tags (tags.d) into the v2 subcategories:
 //   • preserves sensible existing tags, adds finer/missing ones;
 //   • splits the legacy 'human' tag into 'medical' and/or 'humanperf';
@@ -84,7 +84,7 @@ ${VOCAB}
 
 Return ONLY minified JSON: {"tags":[{"id":"<id>","d":["key","key"]}]}`;
     const msg = await client.messages.create({
-      model: "claude-opus-5", max_tokens: 4096, output_config: { effort: "low" },
+      model: "claude-haiku-4-5", max_tokens: 4096,
       system, messages: [{ role: "user", content: `Organisations (JSON):\n${JSON.stringify(payload)}` }],
     });
     const parsed = parseJson(textOf(msg)) as { tags?: Array<{ id?: string; d?: unknown }> };
