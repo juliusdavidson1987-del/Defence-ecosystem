@@ -681,6 +681,10 @@
   .wcoffee .cx{font-size:12.5px;line-height:1.45;color:var(--txt);flex:1}
   .wcoffee .cb{flex:0 0 auto;background:#ffdd00;color:#141414;font-weight:700;border-radius:8px;padding:8px 13px;font-size:12.5px;white-space:nowrap}
   @media(max-width:520px){.wcoffee{flex-wrap:wrap}.wcoffee .cb{width:100%;text-align:center}}
+  /* persistent support button on the map (sits just above "Ask the guide") */
+  #supportBtn{position:fixed;right:16px;bottom:64px;z-index:88;background:rgba(255,221,0,.12);color:var(--txt);border:1px solid #e6b800;border-radius:20px;padding:8px 13px;font:600 12px Inter,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);display:flex;gap:6px;align-items:center;text-decoration:none}
+  #supportBtn:hover{background:rgba(255,221,0,.22)}
+  @media(max-width:520px){#supportBtn{right:12px;bottom:58px}}
 </style>
 </head>
 <body>
@@ -1188,6 +1192,7 @@
   <p class="corlic">Submitted under the project licence (data CC BY 4.0 · code MIT). Please share your own words.</p>
 </div></div>
 
+<a id="supportBtn" href="https://www.buymeacoffee.com/juliusdavit" target="_blank" rel="noopener noreferrer" aria-label="Support The Defence Ecosystem — buy me a coffee" title="Free & independent — support running costs">☕ Support</a>
 <button id="guideBtn" aria-label="Ask the guide">💬 Ask the guide</button>
 <div id="guide" role="dialog" aria-modal="true" aria-label="Ask the guide"><div class="gcard">
   <div class="ghead"><span class="gtitle">💬 Ask the guide</span><button id="guideClose" aria-label="Close">×</button></div>
@@ -5376,12 +5381,13 @@ async function guideSend(text){
   const btn=document.getElementById('guideBtn'), panel=document.getElementById('guide'), close=document.getElementById('guideClose'), form=document.getElementById('guideForm'), inp=document.getElementById('guideIn');
   if(!btn||!panel)return;
   const STARTERS=['Who funds early-stage counter-drone work in the UK?','What’s the difference between DE&S and the NAD Group?','How do I get a UK MOD trial for a dual-use sensor?','How do I use this map?'];
-  const openG=()=>{ panel.classList.add('open'); btn.style.display='none';
+  const sup=document.getElementById('supportBtn');
+  const openG=()=>{ panel.classList.add('open'); btn.style.display='none'; if(sup)sup.style.display='none';
     if(!guideMsgs.length){ guideAdd('assistant','Hi — I’m the guide to the defence ecosystem. Tell me what you’re building or looking for and I’ll point you to the right doors. You can also ask how bodies relate, or how to use the map.');
       const st=document.getElementById('guideStarters'); if(st){ st.style.display='flex'; st.innerHTML=STARTERS.map(s=>`<button type="button" class="gstart">${guideEsc(s)}</button>`).join(''); st.querySelectorAll('.gstart').forEach((b,i)=>b.onclick=()=>guideSend(STARTERS[i])); }
     }
     setTimeout(()=>inp&&inp.focus(),60); };
-  const closeG=()=>{ panel.classList.remove('open'); btn.style.display=''; };
+  const closeG=()=>{ panel.classList.remove('open'); btn.style.display=''; if(sup)sup.style.display=''; };
   btn.onclick=openG; if(close)close.onclick=closeG;
   if(form)form.onsubmit=e=>{ e.preventDefault(); guideSend(inp.value); };
   if(inp){ inp.addEventListener('input',()=>{ inp.style.height='auto'; inp.style.height=Math.min(120,inp.scrollHeight)+'px'; });
