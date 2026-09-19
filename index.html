@@ -674,6 +674,13 @@
   #guideSend:disabled{opacity:.5;cursor:default}
   #guide .gnote{padding:0 14px 10px;color:var(--faint);font-size:10.5px}
   @media(max-width:520px){#guide{width:auto;left:8px;right:8px;bottom:8px;height:72vh}#guideBtn{right:12px;bottom:12px}}
+  /* ---- support / buy me a coffee ---- */
+  .wcoffee{display:flex;align-items:center;gap:12px;margin:16px 0 0;padding:12px 14px;border:1px solid #e6b800;border-radius:12px;background:rgba(255,221,0,.09);text-decoration:none;color:var(--txt);transition:.13s}
+  .wcoffee:hover{background:rgba(255,221,0,.17)}
+  .wcoffee .ci{font-size:22px;flex:0 0 auto;line-height:1}
+  .wcoffee .cx{font-size:12.5px;line-height:1.45;color:var(--txt);flex:1}
+  .wcoffee .cb{flex:0 0 auto;background:#ffdd00;color:#141414;font-weight:700;border-radius:8px;padding:8px 13px;font-size:12.5px;white-space:nowrap}
+  @media(max-width:520px){.wcoffee{flex-wrap:wrap}.wcoffee .cb{width:100%;text-align:center}}
 </style>
 </head>
 <body>
@@ -1000,6 +1007,11 @@
       <div class="wtile" id="wSearch"><div class="wi">⌕</div><div class="wt">Search by name →</div><div class="wd">Know who you're after? Jump straight to any organisation, or its reference code.</div></div>
     </div>
     <div class="wbtns"><button class="wenter" id="wEnter">Enter →</button><button class="wabout" id="wAboutLink">About &amp; disclaimer</button></div>
+    <a class="wcoffee" href="https://www.buymeacoffee.com/juliusdavit" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee — support The Defence Ecosystem">
+      <span class="ci">☕</span>
+      <span class="cx"><b>Enjoying The Defence Ecosystem?</b> It's free and independent — if you find it useful, please consider contributing to its running costs and supporting further expansion.</span>
+      <span class="cb">Buy me a coffee</span>
+    </a>
     <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. Coverage is deepest for the UK — where it began — and substantial across the US, Europe and the major allies, but it's representative, not exhaustive, and thinner for smaller nations. Organisation details, access routes and fit ratings are best-effort and change over time — always verify on the organisation's own site before acting.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Corrections welcome via any entry's ✎ button. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
   </div>
 </div>
@@ -1030,6 +1042,7 @@
     <p class="alic">This is an open reference — you're welcome to build on it. The <b>code</b> is licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT Licence</a>; the <b>organisation data and descriptions</b> under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0 (CC BY 4.0)</a> — reuse freely, including commercially, with credit to "The Defence Ecosystem (Julius Davidson)". Corrections and additions are accepted under the same licences.</p>
     <p class="alic">Some entries are informed by UK public sector information: <i>Contains public sector information licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noopener">Open Government Licence v3.0</a>.</i> Organisation names and logos remain the property of their owners; their inclusion is for identification only and implies no affiliation or endorsement.</p>
     <p class="alic">Maintained by <b>Julius Davidson</b> · <a href="mailto:juliusdavidson1987@gmail.com">juliusdavidson1987@gmail.com</a></p>
+    <p class="alic">☕ <b>Support the project</b> — The Defence Ecosystem is free and independent. If it's useful to you, please consider <a href="https://www.buymeacoffee.com/juliusdavit" target="_blank" rel="noopener">contributing to its running costs</a> to help keep it live and expand it.</p>
     <h4>What's changed</h4>
     <ul class="achangelog">
       <li><b>Aug 2026</b> — Added an open licence (MIT + CC BY 4.0), contribution terms, and a named maintainer.</li>
@@ -1038,7 +1051,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.9.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.9.2 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5998,7 +6011,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.9.1 (Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.9.2 (Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.

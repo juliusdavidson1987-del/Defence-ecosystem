@@ -23,6 +23,11 @@ aren't stamped here unless they change a version.
   Orchestrated by `scripts/coverage-sweep-run.mjs` + `.github/workflows/coverage-sweep.yml`
   (bounded per run so cost stays controllable; opens an issue listing what surfaced).
 
+## v4.9.2 — Support call-out (2026-09-19)
+- Added a "☕ Buy me a coffee" support call-out ([buymeacoffee.com/juliusdavit](https://www.buymeacoffee.com/juliusdavit))
+  prominently on the home/welcome screen (below Enter) and persistently in the About panel — the map is
+  free and independent; contributions go to running costs and further expansion.
+
 ## v4.9.1 — Ranked top search (2026-09-10)
 - The top search bar highlighted every match (including broad synonym/description matches) and
   centred on the **first in iteration order**, so "DSTL" could land on NATO STO. Added
