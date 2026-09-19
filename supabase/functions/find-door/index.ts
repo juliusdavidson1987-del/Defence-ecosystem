@@ -77,7 +77,7 @@ Rules:
 Return ONLY minified JSON: {"matches":[{"id":"<candidate id>","tier":"exact|close|potential","why":"..."}]}`;
 
   const msg = await client.messages.create({
-    model: "claude-opus-5",
+    model: "claude-sonnet-5",
     max_tokens: 4096,
     output_config: { effort: "low" },
     system,
@@ -108,22 +108,22 @@ Return ONLY minified JSON as your final message: {"external":[{"name":"...","url
   }];
 
   let resp = await client.messages.create({
-    model: "claude-opus-5",
+    model: "claude-sonnet-5",
     max_tokens: 8192,
     output_config: { effort: "medium" },
     system,
-    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
     messages,
   });
   // Continue if the server-tool turn paused (bounded).
   for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) {
     messages.push({ role: "assistant", content: resp.content });
     resp = await client.messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 8192,
       output_config: { effort: "medium" },
       system,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
       messages,
     });
   }

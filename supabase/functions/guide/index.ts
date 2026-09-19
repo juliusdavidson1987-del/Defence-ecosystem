@@ -86,13 +86,19 @@ Deno.serve(async (req: Request) => {
   }).join("\n");
   const ovStr = overview.map((o) => { const x = o as { id?: string; label?: string }; return `${x.id} — ${x.label}`; }).join("\n");
 
-  const system = `${BASE_SYSTEM}\n\nMAP OVERVIEW (top branches & technology categories — ids you may link):\n${ovStr || "(none provided)"}\n\nRELEVANT ORGANISATIONS for the latest message (id — label — does [tags]):\n${candStr || "(none matched — rely on the overview, ask a clarifying question, or search the web if the map is thin)"}`;
+  const context = `MAP OVERVIEW (top branches & technology categories — ids you may link):\n${ovStr || "(none provided)"}\n\nRELEVANT ORGANISATIONS for the latest message (id — label — does [tags]):\n${candStr || "(none matched — rely on the overview, ask a clarifying question, or search the web if the map is thin)"}`;
 
   const client = new Anthropic({ apiKey });
   try {
     const opts = () => ({
-      model: "claude-opus-5", max_tokens: 2048, output_config: { effort: "low" as const },
-      system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 3 }], messages: clean,
+      model: "claude-sonnet-5", max_tokens: 2048, output_config: { effort: "low" as const },
+      // Cache the large static preamble so multi-turn chats don't re-pay its
+      // input cost each turn (ephemeral prompt cache).
+      system: [
+        { type: "text" as const, text: BASE_SYSTEM, cache_control: { type: "ephemeral" as const } },
+        { type: "text" as const, text: context },
+      ],
+      tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 3 }], messages: clean,
     });
     let resp = await client.messages.create(opts());
     for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) { clean.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }

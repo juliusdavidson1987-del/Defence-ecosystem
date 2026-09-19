@@ -48,10 +48,11 @@ one-click insert buttons appear once the URL is set.
 
 ## Notes
 
-- Models: the background/maintenance functions run on `claude-sonnet-5`
-  (`retag`, pure classification, on `claude-haiku-4-5`) to keep cost down; the
-  public `guide` and `find-door` stay on `claude-opus-5` for answer quality.
-  Change the model in each `index.ts` if you want a different tier.
+- Models: functions run on `claude-sonnet-5` to keep cost down, with `retag`
+  (pure classification) on `claude-haiku-4-5`. `guide` also caches its large
+  static system preamble (ephemeral prompt cache) so multi-turn chats don't
+  re-pay its input each turn. Bump a function back to `claude-opus-5` in its
+  `index.ts` if you want more quality on that path.
 - The SDK imports are unpinned (`npm:@anthropic-ai/sdk`, `npm:@supabase/supabase-js@2`).
   Pin `@anthropic-ai/sdk` to an exact version once you confirm one deploys cleanly.
 - Keep `TYPE_KEYS` / `KNOWN_DOMAINS` in `draft-node/index.ts` in sync with
