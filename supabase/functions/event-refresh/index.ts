@@ -2,7 +2,7 @@
 // ---------------------------------------------------------------------------
 // Events rework Phase 2 — the weekly date-refresh agent.
 //
-// For each anchor fair in reference.event_next, uses claude-opus-5 + web search
+// For each anchor fair in reference.event_next, uses claude-sonnet-5 + web search
 // to find the OFFICIAL next edition (date + place). When it differs from what's
 // stored, it files a PROPOSED change in event_date_proposals for the maintainer.
 // Dates are high-stakes, so nothing is written to reference.event_next here —
@@ -46,8 +46,8 @@ Set "same": true if the stored value is still correct (then still fill next/wher
   const user = `Event: ${label}\nOfficial URL: ${url || "(none)"}\nCurrently stored → next: "${cur.next || ""}", where: "${cur.where || ""}"\n\nConfirm the official next edition.`;
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: user }];
   const opts = () => ({
-    model: "claude-opus-5", max_tokens: 2048, output_config: { effort: "medium" as const },
-    system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 4 }], messages,
+    model: "claude-sonnet-5", max_tokens: 2048, output_config: { effort: "medium" as const },
+    system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 2 }], messages,
   });
   let resp = await client.messages.create(opts());
   for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }

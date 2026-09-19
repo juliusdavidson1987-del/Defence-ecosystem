@@ -12,7 +12,7 @@ name: Coverage sweep
 
 on:
   schedule:
-    - cron: '0 4 * * *'          # daily 04:00 UTC — advances the grid (resumes each time; no-ops once complete)
+    - cron: '0 4 * * 1'          # weekly, Monday 04:00 UTC — advances the grid (resumes each time; no-ops once complete). Was daily; cut to reduce AI cost. Run manually to accelerate.
   workflow_dispatch:
     inputs:
       cells_per_run:

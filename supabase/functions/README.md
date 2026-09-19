@@ -48,8 +48,10 @@ one-click insert buttons appear once the URL is set.
 
 ## Notes
 
-- `draft-node` uses `claude-opus-5`. Change the model in `draft-node/index.ts`
-  if you want a cheaper/faster tier (that's your call, not a default).
+- Models: the background/maintenance functions run on `claude-sonnet-5`
+  (`retag`, pure classification, on `claude-haiku-4-5`) to keep cost down; the
+  public `guide` and `find-door` stay on `claude-opus-5` for answer quality.
+  Change the model in each `index.ts` if you want a different tier.
 - The SDK imports are unpinned (`npm:@anthropic-ai/sdk`, `npm:@supabase/supabase-js@2`).
   Pin `@anthropic-ai/sdk` to an exact version once you confirm one deploys cleanly.
 - Keep `TYPE_KEYS` / `KNOWN_DOMAINS` in `draft-node/index.ts` in sync with

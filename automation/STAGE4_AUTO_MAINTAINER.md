@@ -1,7 +1,7 @@
 # Stage 4 — the Auto-maintainer agent
 
-A daily agent that works your five review queues on its own: it **verifies each
-item with `claude-opus-5` + web search, auto-applies the clear-cut ones, holds
+A weekly agent that works your five review queues on its own: it **verifies each
+item with `claude-sonnet-5` + web search, auto-applies the clear-cut ones, holds
 the uncertain ones for you (with a recommendation), and sends you a digest** —
 by GitHub issue and email. It then re-syncs `data.json` so any published change
 reaches the live map.
