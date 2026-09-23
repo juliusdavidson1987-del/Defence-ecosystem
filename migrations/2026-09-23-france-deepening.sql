@@ -46,15 +46,15 @@ insert into public.nodes (id,label,parent,kind,does,entry,tags,entity_type_overr
  ('fr_dga_ev','DGA Essais en vol','eu_fr','org',
   'The DGA''s flight-test centre (Istres, Cazaux, Brétigny) — qualifies and evaluates military and civil aircraft and airborne systems for the French state and supports airworthiness and exports.',
   'armement.defense.gouv.fr/test-de-materiel/implantations-de-la-dga/dga-essais-en-vol',
-  '{"w":["govmil","prime"],"o":["test"],"t":[5,9],"d":["air","xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
+  '{"w":["govmil"],"o":["test"],"t":[5,9],"d":["air","xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
  ('fr_dga_mi','DGA Maîtrise de l''information','eu_fr','org',
   'The DGA''s expertise and test centre for digital defence systems — navigation, optronics, electronic warfare and secure networks — based at Bruz.',
   'defense.gouv.fr/dga',
-  '{"w":["govmil","prime"],"o":["test"],"t":[4,9],"d":["ew","c4isr","xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
+  '{"w":["govmil"],"o":["test"],"t":[4,9],"d":["ew","c4isr","xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
  ('fr_dga_centres','DGA — centres d''expertise et d''essais','eu_fr','org',
   'The DGA''s network of technical expertise and test centres (flight, missiles, aeronautics, land, naval and information systems) that evaluate and qualify French defence equipment.',
   'defense.gouv.fr/dga/implantations-dga/centres-dexpertise-dessais-dga-poles-dinnovation-technique',
-  '{"w":["govmil","prime"],"o":["test"],"t":[4,9],"d":["xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
+  '{"w":["govmil"],"o":["test"],"t":[4,9],"d":["xtest"],"a":"restricted","g":"fr"}'::jsonb,null,null,'published'),
 
 -- ---- Academia & research -------------------------------------------------
  ('fr_polytechnique','École Polytechnique','eu_fr','org',

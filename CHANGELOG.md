@@ -3,6 +3,24 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US rebalance — fix mis-bucketing + fill empty Academia & Supply (data, 2026-09-23)
+- **Root-caused two empty US Alliance-lens buckets.** The US-expansion nodes were tagged
+  `w:['prime']` (meaning "serves primes"), but `funcForOrg()` reads `w:['prime']` as *being* a prime
+  and files the org under **Industry** — so DEVCOM + its labs, the Navy warfare centers, NRO/NSA/
+  ARCYBER, White Sands/AEDC/AFTC and JPEO-CBRND were all mis-shelved into Industry (87), draining
+  Academia, Supply, Test, Intel and RTO. (Confirmed a global `funcForOrg` change was unsafe — 274
+  orgs move, breaking correctly-classified ones like Dstl, QinetiQ, Darktrace, SSTL.)
+- **Fix** (`migrations/2026-09-23-us-rebalance.sql`, idempotent): drop the audience-`prime` from ~24
+  gov/lab/test nodes and set `entity_type` so each buckets correctly (labs → RTO, NRO/NSA → Intel,
+  ranges → Test, JPEO-CBRND → Acquisition, NPS/AFIT → Academia); also un-mis-shelves the UK DSC.
+- **Filled the two empty buckets with verified orgs:** Academia — **NDU, US Naval War College, US
+  Army War College, Air University**; Supply chain — **Moog, Curtiss-Wright, Mercury Systems,
+  Ducommun, HEICO, TransDigm**. Result (simulated): Academia 0→6, Supply 0→6, Industry 87→66,
+  RTO 2→22, Intel 21→25, Test 3→6; no US bucket left empty.
+- **Convention learned:** never put `prime` in `w` for government/lab/test/academia nodes — that
+  audience tag is the signal for an industry *prime*. Fixed the same latent issue in the (not-yet-run)
+  France DGA test nodes.
+
 ## France deepening — fill nuclear / T&E / academia / S&T (data, 2026-09-23)
 - **13 web-verified French bodies added** (`migrations/2026-09-23-france-deepening.sql`) so France
   fills the same function buckets as the UK in the Alliance lens. France was strong on primes,
