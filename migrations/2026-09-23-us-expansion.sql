@@ -1,0 +1,166 @@
+-- ============================================================================
+-- US deepening — fill the genuinely thin/empty US categories flagged by the owner:
+--   military medical R&D, CBRN, microelectronics, quantum, directed energy, the
+--   DEVCOM / Navy warfare-center network, intel S&T (IARPA/NRO), T&E ranges and
+--   DoD manufacturing (ManTech) institutes.
+--
+-- 33 organisations, every one web-verified with its official URL on 2026-09-23.
+-- Dedupe-checked against the live map first (CDAO / NSIN / SpaceWERX already
+-- existed and were dropped). Homes chosen from the existing b_us subtree:
+--   us_labs (Research labs & S&T), us_agencies (Specialist agencies),
+--   us_govagencies (Defense-wide agencies), us_cyber, us_associations,
+--   us_ffrdc (research/education institutes).
+--
+-- Run in the Supabase SQL editor, then run the "Sync data.json" action. Idempotent.
+-- ============================================================================
+insert into public.nodes (id,label,parent,kind,does,entry,tags,status) values
+
+-- ---- Military medical R&D (was medical:1) ---------------------------------
+ ('us_usamrdc','US Army Medical Research & Development Command (USAMRDC/MRDC)','us_labs','org',
+  'The US Army''s medical materiel developer, based at Fort Detrick, running military medicine research and development across infectious disease, combat casualty care, medical devices and soldier health, in partnership with Defense Health Agency R&D.',
+  'mrdc.health.mil',
+  '{"w":["govmil","academic"],"o":["research","test"],"t":[1,7],"d":["medical","humanperf"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_wrair','Walter Reed Army Institute of Research (WRAIR)','us_labs','org',
+  'The Department of Defense''s largest biomedical research institute (Silver Spring, Maryland), specialising in infectious-disease drugs and vaccines, brain health and soldier performance.',
+  'wrair.health.mil',
+  '{"w":["govmil","academic"],"o":["research"],"t":[1,7],"d":["medical","humanperf"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_usamriid','US Army Medical Research Institute of Infectious Diseases (USAMRIID)','us_labs','org',
+  'The Department of Defense''s lead laboratory for medical biological defence (Fort Detrick), developing vaccines, drugs and diagnostics against biological threats, with maximum-containment (BSL-3/4) capability.',
+  'usamriid.health.mil',
+  '{"w":["govmil","academic"],"o":["research"],"t":[1,7],"d":["medical","cbrn"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_nmrc','Naval Medical Research Command (NMRC)','us_labs','org',
+  'The headquarters of Navy Medicine research and development, conducting biomedical research for the Navy and Marine Corps spanning infectious disease, combat casualty care, and aerospace and undersea medicine.',
+  'med.navy.mil/Naval-Medical-Research-Command/',
+  '{"w":["govmil","academic"],"o":["research"],"t":[1,7],"d":["medical","humanperf"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_dha','Defense Health Agency (DHA)','us_govagencies','org',
+  'The Defense-wide agency that manages the Military Health System; its Research & Development directorate provides unified oversight of the services'' medical research commands.',
+  'health.mil',
+  '{"w":["govmil"],"o":["advice","research"],"t":[4,9],"d":["medical"],"a":"restricted","g":"us"}'::jsonb,'published'),
+
+-- ---- DEVCOM (Army S&T command + its centers) ------------------------------
+ ('us_devcom','DEVCOM — Army Combat Capabilities Development Command','us_labs','org',
+  'The US Army''s principal science-and-technology command (under Army Futures Command), overseeing the Army Research Laboratory and six technology centers spanning ground, air, armaments, C5ISR, chem-bio and soldier systems.',
+  'devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[1,9],"d":["land","autonomy","materials"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_ac','DEVCOM Armaments Center (Picatinny)','us_labs','org',
+  'The US Army''s research and development center for armaments, munitions and fire control, based at Picatinny Arsenal, New Jersey.',
+  'ac.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["weapons","land"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_avmc','DEVCOM Aviation & Missile Center (AvMC)','us_labs','org',
+  'The US Army''s aviation and missile research, development and engineering center at Redstone Arsenal, Alabama.',
+  'avmc.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["air","weapons"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_c5isr','DEVCOM C5ISR Center','us_labs','org',
+  'The US Army''s research center for command, control, communications, computers, cyber, intelligence, surveillance and reconnaissance, based at Aberdeen Proving Ground, Maryland.',
+  'c5isrcenter.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["c4isr","comms","ew"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_cbc','DEVCOM Chemical Biological Center (CBC)','us_labs','org',
+  'The United States'' principal research and development center for non-medical chemical and biological defence, based at Aberdeen Proving Ground, Maryland (formerly Edgewood).',
+  'cbc.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["cbrn"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_gvsc','DEVCOM Ground Vehicle Systems Center (GVSC)','us_labs','org',
+  'The US Army''s research and development center for manned and autonomous ground vehicles, based at the Detroit Arsenal, Michigan.',
+  'gvsc.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["land","autonomy"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_devcom_sc','DEVCOM Soldier Center (Natick)','us_labs','org',
+  'The US Army''s research and development center for soldier systems — protection, clothing, shelters, food and airdrop — based at Natick, Massachusetts.',
+  'sc.devcom.army.mil',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[2,8],"d":["humanperf","materials"],"a":"restricted","g":"us"}'::jsonb,'published'),
+
+-- ---- Navy warfare centers ------------------------------------------------
+ ('us_nswc_dahlgren','Naval Surface Warfare Center Dahlgren Division','us_labs','org',
+  'A NAVSEA warfare center (King George County, Virginia) leading research, development and integration of surface-ship combat systems, including directed energy and hypervelocity weapons.',
+  'navsea.navy.mil/Home/Warfare-Centers/NSWC-Dahlgren/',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[3,8],"d":["weapons","directed","c4isr"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_nswc_crane','Naval Surface Warfare Center Crane Division','us_labs','org',
+  'A NAVSEA warfare center (Crane, Indiana) specialising in electronic warfare, expeditionary systems, strategic missions and trusted microelectronics.',
+  'navsea.navy.mil/Home/Warfare-Centers/NSWC-Crane/',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[3,8],"d":["ew","microelec","weapons"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_nuwc','Naval Undersea Warfare Center (NUWC)','us_labs','org',
+  'The US Navy''s full-spectrum RDT&E center for submarines, undersea weapons and autonomous undersea systems, headquartered at Newport, Rhode Island.',
+  'navsea.navy.mil/Home/Warfare-Centers/NUWC-Newport/',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[3,8],"d":["maritime","autonomy"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_nawcwd','Naval Air Warfare Center Weapons Division (NAWCWD)','us_labs','org',
+  'The US Navy''s center of excellence for air-launched weapons research, development, test and evaluation, operating from China Lake and Point Mugu, California.',
+  'navair.navy.mil/nawcwd/',
+  '{"w":["govmil","prime","sme"],"o":["research","test"],"t":[3,8],"d":["weapons","air"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_navwar','Naval Information Warfare Systems Command (NAVWAR)','us_cyber','org',
+  'The US Navy''s systems command (San Diego) for information-warfare and C4I systems — acquiring and sustaining networks, communications and cyber capabilities across the fleet (formerly SPAWAR).',
+  'navwar.navy.mil',
+  '{"w":["govmil","prime"],"o":["procurement","research"],"t":[6,9],"d":["comms","c4isr","cyber"],"a":"restricted","g":"us"}'::jsonb,'published'),
+
+-- ---- Intel S&T, CBRN acquisition, cyber, T&E oversight --------------------
+ ('us_jpeocbrnd','Joint PEO for CBRN Defense (JPEO-CBRND)','us_agencies','org',
+  'The Joint Services'' lead for developing, acquiring and fielding chemical, biological, radiological and nuclear defence equipment and medical countermeasures.',
+  'jpeocbrnd.osd.mil',
+  '{"w":["govmil","prime","sme"],"o":["procurement","contract","product"],"t":[6,9],"d":["cbrn"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_iarpa','Intelligence Advanced Research Projects Activity (IARPA)','us_agencies','org',
+  'The Intelligence Community''s high-risk, high-payoff research organisation (within ODNI), funding academic and industry research across AI, quantum, sensing and analytics.',
+  'iarpa.gov',
+  '{"w":["govmil","academic","startup"],"o":["research","grant","contract"],"t":[1,4],"d":["ai","c4isr","quantum"],"a":"portal","g":"us"}'::jsonb,'published'),
+ ('us_nro','National Reconnaissance Office (NRO)','us_agencies','org',
+  'The US agency that designs, builds, launches and operates the nation''s reconnaissance satellites, delivering overhead intelligence to defence and the Intelligence Community.',
+  'nro.gov',
+  '{"w":["govmil","prime"],"o":["procurement","research"],"t":[6,9],"d":["space","eoisr","c4isr"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_dote','Director, Operational Test & Evaluation (DOT&E)','us_govagencies','org',
+  'The Secretary of Defense''s independent authority for operational test and evaluation, assessing whether major defence systems are effective, suitable and survivable.',
+  'dote.osd.mil',
+  '{"w":["govmil"],"o":["advice","test"],"t":[7,9],"d":["xtest"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_nsa','National Security Agency / Central Security Service (NSA/CSS)','us_cyber','org',
+  'The US agency responsible for signals intelligence and cybersecurity, providing cryptologic products and services and cyber defence for national security systems.',
+  'nsa.gov',
+  '{"w":["govmil","prime"],"o":["research","advice"],"t":[4,9],"d":["cyber","comms"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_arcyber','US Army Cyber Command (ARCYBER)','us_cyber','org',
+  'The US Army''s command for cyberspace, information and electronic-warfare operations, and an Army service component of US Cyber Command.',
+  'arcyber.army.mil',
+  '{"w":["govmil","prime"],"o":["advice"],"t":[6,9],"d":["cyber","ew"],"a":"restricted","g":"us"}'::jsonb,'published'),
+
+-- ---- Microelectronics & quantum (was microelec:2, quantum:1) --------------
+ ('us_nstc','National Semiconductor Technology Center (NSTC)','us_labs','org',
+  'The CHIPS-for-America national semiconductor R&D centre — a public-private focal point for advanced semiconductor research, prototyping and workforce (operated under NIST / CHIPS for America).',
+  'nist.gov/chips/research-development-programs/national-semiconductor-technology-center',
+  '{"w":["govmil","academic","prime","sme","startup"],"o":["research","advice"],"t":[2,7],"d":["microelec"],"a":"open","g":"us"}'::jsonb,'published'),
+ ('us_microcommons','Microelectronics Commons','us_labs','org',
+  'A US Department of Defense-funded national network of regional hubs that prototype and transition microelectronics from lab to fab for defence and commercial use.',
+  'microelectronicscommons.org',
+  '{"w":["govmil","academic","prime","sme","startup"],"o":["research","test"],"t":[3,7],"d":["microelec"],"a":"open","g":"us"}'::jsonb,'published'),
+ ('us_qedc','Quantum Economic Development Consortium (QED-C)','us_associations','org',
+  'A NIST-backed industry consortium (managed by SRI) that grows the US quantum-technology ecosystem — enabling technologies, standards and workforce across industry, academia and government.',
+  'quantumconsortium.org',
+  '{"w":["prime","sme","startup","academic"],"o":["advice","research"],"t":[2,7],"d":["quantum"],"a":"open","g":"us"}'::jsonb,'published'),
+
+-- ---- Major test & evaluation ranges --------------------------------------
+ ('us_wsmr','White Sands Missile Range (WSMR)','us_labs','org',
+  'The Department of Defense''s largest fully-instrumented, open-air research, development, test and evaluation range, in New Mexico.',
+  'home.army.mil/wsmr/',
+  '{"w":["govmil","prime"],"o":["test"],"t":[5,9],"d":["xtest","weapons"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_aedc','Arnold Engineering Development Complex (AEDC)','us_labs','org',
+  'The US Air Force''s ground-test complex (Arnold AFB, Tennessee, plus geographically separated units), operating wind tunnels, engine test cells and space-environment chambers.',
+  'arnold.af.mil',
+  '{"w":["govmil","prime"],"o":["test"],"t":[5,9],"d":["xtest","air"],"a":"restricted","g":"us"}'::jsonb,'published'),
+ ('us_aftc','Air Force Test Center (AFTC)','us_labs','org',
+  'The US Air Force''s developmental flight- and weapons-test organisation, spanning Edwards AFB, Eglin AFB and Arnold AFB.',
+  'aftc.af.mil',
+  '{"w":["govmil","prime"],"o":["test"],"t":[5,9],"d":["xtest","air"],"a":"restricted","g":"us"}'::jsonb,'published'),
+
+-- ---- Federal graduate schools & DoD manufacturing (ManTech) institutes ----
+ ('us_nps','Naval Postgraduate School (NPS)','us_ffrdc','org',
+  'The US Navy''s graduate university (Monterey, California), delivering defence-focused graduate education and applied research across the services.',
+  'nps.edu',
+  '{"w":["govmil","academic"],"o":["research","advice"],"t":[1,6],"d":["xacad"],"a":"open","g":"us"}'::jsonb,'published'),
+ ('us_afit','Air Force Institute of Technology (AFIT)','us_ffrdc','org',
+  'The US Air Force''s graduate school of engineering and management (Wright-Patterson AFB), delivering defence graduate education and research alongside AFRL.',
+  'afit.edu',
+  '{"w":["govmil","academic"],"o":["research","advice"],"t":[1,6],"d":["xacad"],"a":"open","g":"us"}'::jsonb,'published'),
+ ('us_americamakes','America Makes (National Additive Manufacturing Innovation Institute)','us_ffrdc','org',
+  'The US national institute for additive manufacturing (3D printing), a Manufacturing USA institute sponsored by the Department of Defense, connecting industry, academia and government.',
+  'americamakes.us',
+  '{"w":["prime","sme","academic","govmil"],"o":["research","advice"],"t":[4,8],"d":["materials"],"a":"open","g":"us"}'::jsonb,'published'),
+ ('us_arm','ARM Institute (Advanced Robotics for Manufacturing)','us_ffrdc','org',
+  'The US national institute for robotics in manufacturing, a Manufacturing USA institute sponsored by the Department of Defense, advancing industrial robotics, AI and workforce.',
+  'arminstitute.org',
+  '{"w":["prime","sme","academic","govmil"],"o":["research","advice"],"t":[4,8],"d":["autonomy","materials"],"a":"open","g":"us"}'::jsonb,'published')
+
+on conflict (id) do update set
+  label=excluded.label, parent=excluded.parent, kind=excluded.kind,
+  does=excluded.does, entry=excluded.entry, tags=excluded.tags, status='published';

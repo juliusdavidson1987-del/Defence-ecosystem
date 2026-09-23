@@ -205,9 +205,17 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.9.0, Sep 2026)
+## Current state (v4.10.0, Sep 2026)
 
-- ~**1,501 nodes**, **187 affiliations**, **40 nations**.
+- ~**1,990+ nodes** (grown via the coverage sweep + auto-maintainer since v4.9.0),
+  **187 affiliations**, **40 nations**.
+- **US deepened (2026-09-23):** an audit found the US thin for its size (154 org nodes) with several
+  near-empty domains; `migrations/2026-09-23-us-expansion.sql` added 33 web-verified bodies (medical
+  R&D, CBRN, microelectronics, quantum, DEVCOM + Navy warfare centers, IARPA/NRO, T&E ranges, cyber,
+  ManTech institutes). **Structural reminder:** the UK is the thematic spine (Strategy / Acquisition /
+  STI…); every other nation incl. the US is a country container with its own flatter branch set, so
+  the US has no "Science, Technology & Innovation" heading — its S&T is under `us_labs` / `us_ffrdc` /
+  `us_service`. No branch is actually empty.
 - Newest partner nations: India, Singapore, UAE, Saudi Arabia (under `b_partners`).
 - NAD Group as 9 National Armaments areas.
 - Graded "Find your door" (Exact / Close / Potential collaboration) + partner-nation region chips,

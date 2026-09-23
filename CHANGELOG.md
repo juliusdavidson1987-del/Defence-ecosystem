@@ -3,6 +3,22 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US deepening — fill the thin/empty US categories (data, 2026-09-23)
+- **33 web-verified US organisations added** (`migrations/2026-09-23-us-expansion.sql`) to fix the
+  genuinely thin/empty US pockets an audit surfaced: **military medical R&D** (USAMRDC/MRDC, WRAIR,
+  USAMRIID, Naval Medical Research Command, DHA — was 1 node), **CBRN** (JPEO-CBRND, DEVCOM Chemical
+  Biological Center — was 1), **microelectronics** (NSTC, Microelectronics Commons — was 2),
+  **quantum** (QED-C — was 1), the **DEVCOM** command + its centers (Armaments, AvMC, C5ISR, GVSC,
+  Soldier), the **Navy warfare-center network** (NSWC Dahlgren & Crane, NUWC, NAWCWD, NAVWAR),
+  **intel S&T** (IARPA, NRO), **T&E** (DOT&E, White Sands, AEDC, Air Force Test Center), **cyber**
+  (NSA/CSS, ARCYBER), and **DoD manufacturing (ManTech) institutes** (America Makes, ARM Institute)
+  plus the graduate schools NPS & AFIT. Every URL verified on the day; dedupe-checked first
+  (CDAO / NSIN / SpaceWERX already existed and were dropped). Homed in the existing `b_us` subtree.
+- **Note on structure:** the US "empty higher categories" feeling is by design — the UK is the
+  thematic spine (Strategy, Acquisition, Science/Tech/Innovation…); every other nation, incl. the US,
+  is a country container with its own flatter structure (Departments · Labs & S&T · FFRDCs · Service
+  units · Agencies · Primes · Scaleups · VC). No branch on the map is actually empty.
+
 ## Auto-maintainer: dedupe fix + auto-add web finds (2026-09-15)
 - **Fixed a false-positive dedupe** that wrongly rejected real new organisations for "sharing 3
   letters." `findDupe` matched a short existing acronym label (SES, DIU, ADD…) as a substring of any
