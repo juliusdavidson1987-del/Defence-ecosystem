@@ -3,6 +3,21 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Map-wide categorisation audit & fix (data, 2026-09-23)
+- Audited all ~2,040 nodes for the mis-tagging that surfaced during the US work and found it was
+  map-wide. `migrations/2026-09-23-map-categorisation-fix.sql` (idempotent):
+  - **Normalises 75 nodes** whose `tags.w`/`tags.o` were scalar strings instead of arrays (schema
+    says arrays) — a latent inconsistency that also broke jsonb tag edits.
+  - **7 research labs → RTO** (Dstl, NPL, AFRL, DEVCOM ARL, SEI, Draper, GTRI) — they were stuck in
+    Industry via audience-`prime` / a stray `entity_type`.
+  - **69 government / agency / command / procurement bodies → correct buckets** (drop audience-`prime`
+    so `funcForOrg` routes them): e.g. DE&S, DGA, BAAINBw, NSPA, EDA, DAPA, ATLA and ~15 national
+    MoD/armament agencies → procurement; ANSSI, COMCYBER, cyber/space commands, NCIA, CISA, USSF →
+    intel; CDAO, DIB, NSIN, ACT → innovation. Map-wide **Industry 473→~414**.
+  - **Left real companies, trade associations, events and shipyards untouched** (verified Darktrace,
+    QinetiQ, SSTL, Roke, Smiths, 4iG, Excalibur, Rheinmetall Canada all stay in Industry) — the fix is
+    per-type, not a blanket rule, after confirming a global `funcForOrg` change was unsafe (274 movers).
+
 ## US depth — make the light buckets believable (data, 2026-09-23)
 - Topped up the still-light US Alliance-lens buckets (`migrations/2026-09-23-us-depth.sql`):
   **frontline** 1→4 (re-homed Army Futures Command + SOCOM from Industry; added INDOPACOM, Navy
