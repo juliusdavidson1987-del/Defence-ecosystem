@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Dedup: fold duplicate NSIN into one (data, 2026-09-23)
+- NSIN was in the map twice — `nsin` (correct home under `us_diu_grp`, properly tagged) and
+  `inc_nsin` (under `b_incubators`, with `tags:null`, a latent UK-geo default bug).
+  `migrations/2026-09-23-nsin-merge.sql` keeps `nsin`, folds in the fuller description, and
+  deletes `inc_nsin`. Neither had children. (Surfaced by the US audit below.)
+
 ## US deepening — fill the thin/empty US categories (data, 2026-09-23)
 - **33 web-verified US organisations added** (`migrations/2026-09-23-us-expansion.sql`) to fix the
   genuinely thin/empty US pockets an audit surfaced: **military medical R&D** (USAMRDC/MRDC, WRAIR,
