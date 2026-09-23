@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## France deepening — fill nuclear / T&E / academia / S&T (data, 2026-09-23)
+- **13 web-verified French bodies added** (`migrations/2026-09-23-france-deepening.sql`) so France
+  fills the same function buckets as the UK in the Alliance lens. France was strong on primes,
+  defence-tech and intel/cyber but had **no nuclear, no test & evaluation, thin academia**. Adds:
+  **CEA/DAM** (nuclear deterrent) + **CEA, CEA-List, CEA-Leti, ISL** (S&T/RTOs); **DGA Essais en vol,
+  DGA Maîtrise de l'information, DGA centres d'expertise et d'essais** (T&E); **École Polytechnique,
+  ISAE-SUPAERO, ENSTA Paris, Institut Polytechnique de Paris** (academia); **SGDSN** (government).
+  Dedupe-checked (Bpifrance already existed, skipped); parented under `eu_fr`; tags set so
+  `funcForOrg()` files each in the right bucket. First of the nation-coverage build-outs (after the
+  US) — deepening allies toward UK-level depth rather than restructuring the tree (the Alliance lens
+  is already nation-symmetric).
+
 ## Dedup: fold duplicate NSIN into one (data, 2026-09-23)
 - NSIN was in the map twice — `nsin` (correct home under `us_diu_grp`, properly tagged) and
   `inc_nsin` (under `b_incubators`, with `tags:null`, a latent UK-geo default bug).
