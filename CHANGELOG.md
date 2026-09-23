@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US nuclear enterprise + acquisition build-out (data, 2026-09-23)
+- **Built the US Nuclear enterprise properly.** The bucket held only LANL, a messy combined
+  "Sandia/LANL/Livermore" node, and Infleqtion (a *quantum* firm mis-filed via the word "atomic").
+  `migrations/2026-09-23-us-nuclear-enterprise.sql`: repurposes the combined node into proper
+  **Sandia National Laboratories**, un-mis-tags **Infleqtion** (→ defence-tech), and adds the real
+  complex — **NNSA, Lawrence Livermore, Pantex, Y-12, Kansas City NSC, Nevada NSS, Savannah River,
+  Naval Reactors, AFNWC, US STRATCOM, AF Global Strike Command**. Nuclear 3 → **13**.
+- **Strengthened Acquisition** with the major systems/contracting commands — **NAVSEA, NAVAIR,
+  AFLCMC, Army Contracting Command** (procurement 5 → **9**). All web-verified, dedupe-checked, and
+  tagged so `funcForOrg()` files them right (nuclear via `d:['nuclear']`; procurement via `o` +
+  no audience-`prime`).
+
 ## US rebalance — fix mis-bucketing + fill empty Academia & Supply (data, 2026-09-23)
 - **Root-caused two empty US Alliance-lens buckets.** The US-expansion nodes were tagged
   `w:['prime']` (meaning "serves primes"), but `funcForOrg()` reads `w:['prime']` as *being* a prime
