@@ -11,14 +11,15 @@ Functions.
 
 | Category | Subcategory (tag key) |
 |---|---|
-| **AI, autonomy & software** | `ai` AI & machine learning · `autonomy` Autonomy & robotics · `software` Software, data & digital infrastructure · `wargaming` Decision support & wargaming |
+| **AI, autonomy & software** | `ai` AI & machine learning · `autonomy` Autonomy & robotics · `software` Software, data & digital infrastructure |
 | **Cyber, EW & comms** | `cyber` Cyber & information security · `ew` Electronic warfare & spectrum · `comms` Communications & networks · `pnt` Position, navigation & timing · `quantum` Quantum |
 | **Sensing, ISR & space** | `c4isr` C4ISR, sensors & radar · `space` Space systems · `eoisr` Earth observation & space ISR |
 | **Platforms & domains** | `air` Air & uncrewed · `land` Land systems · `maritime` Maritime & undersea |
 | **Weapons & effects** | `weapons` Weapons, munitions & missiles · `directed` Directed energy · `hypersonic` Hypersonics · `counteruas` Counter-UAS & air/missile defence |
 | **Strategic & deterrence** | `nuclear` Nuclear · `cbrn` CBRN & counter-WMD |
 | **Sustainment & industrial base** | `logistics` Logistics & sustainment · `energy` Energy, power & propulsion · `materials` Advanced materials & manufacturing · `microelec` Microelectronics & semiconductors |
-| **Human & medical** | `medical` Combat casualty care & medical · `humanperf` Human performance & augmentation · `training` Training & education · `simulation` Modelling & simulation |
+| **Simulation, modelling & wargaming** | `simulation` Modelling, simulation & synthetic environments · `wargaming` Wargaming & decision support |
+| **Human & medical** | `medical` Combat casualty care & medical · `humanperf` Human performance & augmentation · `training` Training & education |
 | **Cross-cutting functions** | `xfund` Funding & capital · `xtest` Test & evaluation · `xacad` Academia & research · `xproc` Procurement & policy · `xother` Cross-cutting bodies |
 
 `xcut` remains a valid generic "cross-cutting / unspecified domain" tag (buckets

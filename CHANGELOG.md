@@ -23,6 +23,17 @@ aren't stamped here unless they change a version.
   Orchestrated by `scripts/coverage-sweep-run.mjs` + `.github/workflows/coverage-sweep.yml`
   (bounded per run so cost stays controllable; opens an issue listing what surfaced).
 
+## v4.10.0 — Simulation & modelling as a clear area (2026-09-23)
+- **New dedicated technology category "Simulation, modelling & wargaming"** (`simulation` +
+  `wargaming`) — previously `simulation` sat under Human & medical and `wargaming` under AI/autonomy,
+  so the M&S area (56+21 orgs: CAE, Improbable, Hadean, NATO M&S CoE…) had no findable home. It's now
+  its own category in the Technology lens and finder. Raised by the head of the UK Defence Simulation
+  Centre. `TECH_TAX` + finder chips + docs/TAXONOMY.md updated.
+- **Added the missing UK M&S governance bodies:** the **Defence Simulation Centre (DSC)** (the MOD's
+  M&S "front door", DCMCI/Defence Academy, Strategic Command) and the **Defence Modelling & Simulation
+  Office (DMSO)** (M&S technical/standards authority, JSP 939), under `b_sti`.
+  `migrations/2026-09-23-simulation-modelling.sql`. Web-verified.
+
 ## v4.9.2 — Support call-out (2026-09-19)
 - Added a "☕ Buy me a coffee" support call-out ([buymeacoffee.com/juliusdavit](https://www.buymeacoffee.com/juliusdavit))
   prominently on the home/welcome screen (below Enter) and persistently in the About panel — the map is
