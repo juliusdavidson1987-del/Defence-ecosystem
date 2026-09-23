@@ -3,6 +3,19 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US depth — make the light buckets believable (data, 2026-09-23)
+- Topped up the still-light US Alliance-lens buckets (`migrations/2026-09-23-us-depth.sql`):
+  **frontline** 1→4 (re-homed Army Futures Command + SOCOM from Industry; added INDOPACOM, Navy
+  Warfare Development Command), **test** 6→10 (Yuma Proving Ground, NAWCAD Patuxent, Aberdeen &
+  Redstone Test Centers), **science** 5→9 (Army Research Office, AFOSR, ORNL, PNNL), **supply** 5→8
+  (CAES, Parsons + Moog fixed). Also re-homed RCCTO and Army Applications Lab (Industry→Innovation).
+  No US bucket now sits in single-low digits except frontline (4), which is by design (operational
+  commands are peripheral to an innovation/procurement map; the experimentation ecosystem sits in
+  Innovation = 13).
+- **Fixed two funcForOrg keyword edge-cases:** the four French schools were landing in RTO not
+  Academia because the matcher checks unaccented `ecole`/`polytechnic` (reworded with "university");
+  Moog was in Defence-tech because "counter-UAS" contains `uas` (reworded). France academia 0→4.
+
 ## US nuclear enterprise + acquisition build-out (data, 2026-09-23)
 - **Built the US Nuclear enterprise properly.** The bucket held only LANL, a messy combined
   "Sandia/LANL/Livermore" node, and Infleqtion (a *quantum* firm mis-filed via the word "atomic").
