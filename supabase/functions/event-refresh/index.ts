@@ -19,7 +19,10 @@ import Anthropic from "npm:@anthropic-ai/sdk";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, json, secretOk } from "../_shared/cors.ts";
 
-const MAX_PER_CALL = Number(Deno.env.get("EVENTREFRESH_MAX_PER_RUN") ?? "2");
+// One event per invocation by default — each check is a Sonnet call + web search,
+// and doing several per call exceeded Supabase's per-invocation compute budget
+// (HTTP 546 WORKER_RESOURCE_LIMIT). The orchestrator loops, so coverage is unchanged.
+const MAX_PER_CALL = Number(Deno.env.get("EVENTREFRESH_MAX_PER_RUN") ?? "1");
 const MIN_CONF = Number(Deno.env.get("EVENTREFRESH_MIN_CONFIDENCE") ?? "0.6");
 // When on, high-confidence date changes are written straight into reference.event_next
 // (still logged to event_date_proposals as status='auto_applied' for the audit trail).
@@ -46,11 +49,11 @@ Set "same": true if the stored value is still correct (then still fill next/wher
   const user = `Event: ${label}\nOfficial URL: ${url || "(none)"}\nCurrently stored → next: "${cur.next || ""}", where: "${cur.where || ""}"\n\nConfirm the official next edition.`;
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: user }];
   const opts = () => ({
-    model: "claude-sonnet-5", max_tokens: 2048, output_config: { effort: "medium" as const },
-    system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 2 }], messages,
+    model: "claude-sonnet-5", max_tokens: 1024, output_config: { effort: "low" as const },
+    system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 1 }], messages,
   });
   let resp = await client.messages.create(opts());
-  for (let i = 0; i < 3 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }
+  for (let i = 0; i < 2 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }
   const r = parseJson(textOf(resp));
   return {
     same: r.same !== false,

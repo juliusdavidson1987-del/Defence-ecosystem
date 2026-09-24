@@ -18,8 +18,9 @@
  */
 
 const SECRET = process.env.DRAFTER_SHARED_SECRET || "";
-const MAX_PER_CALL = Number(process.env.MAX_PER_CALL) || 2;
-const MAX_ITERS = Number(process.env.MAX_ITERS) || 20;
+const MAX_PER_CALL = Number(process.env.MAX_PER_CALL) || 1;
+const MAX_ITERS = Number(process.env.MAX_ITERS) || 40;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function functionUrl() {
   if (process.env.EVENTREFRESH_URL) return process.env.EVENTREFRESH_URL.replace(/\/+$/, "");
@@ -97,23 +98,32 @@ async function sendEmail(digest, count) {
   if (!SECRET) { console.error("✗ DRAFTER_SHARED_SECRET is required"); process.exit(1); }
   console.error(`→ event-refresh: ${URL}`);
   const applied = [], proposals = [], excluded = [];
-  let checkedCount = 0, iters = 0, error = null;
+  let checkedCount = 0, iters = 0, error = null, consecutiveFails = 0;
   for (; iters < MAX_ITERS; iters++) {
     let r;
-    try { r = await call({ op: "run", max: MAX_PER_CALL, exclude: excluded }); }
-    catch (e) { error = e.message; console.error(`✗ ${e.message}`); break; }
+    try { r = await call({ op: "run", max: MAX_PER_CALL, exclude: excluded }); consecutiveFails = 0; }
+    catch (e) {
+      // A single flaky invocation (e.g. HTTP 546 compute limit / 504 idle timeout)
+      // shouldn't fail the whole weekly run — back off and retry; give up only after
+      // several in a row. Progress already made is still reported.
+      error = e.message; consecutiveFails++;
+      console.error(`✗ pass ${iters + 1}: ${e.message} (fail ${consecutiveFails}/3)`);
+      if (consecutiveFails >= 3) { console.error("· 3 consecutive failures — stopping"); break; }
+      await sleep(4000); continue;
+    }
     const ck = r.checked || [];
     applied.push(...(r.applied || []));
     proposals.push(...(r.proposals || []));
     excluded.push(...ck);
     checkedCount += ck.length;
     console.error(`  pass ${iters + 1}: checked ${ck.length}, +${(r.applied || []).length} applied, +${(r.proposals || []).length} proposed, ${r.remaining} remaining`);
-    if (!ck.length || !r.remaining) break;
+    if (!ck.length || !r.remaining) { error = null; break; } // clean finish — clear any earlier transient error
   }
   const digest = buildDigest(applied, proposals, checkedCount, error);
   console.log(digest);
   const n = applied.length + proposals.length;
   if (n) { const url = await createIssue(digest, n); await sendEmail(digest, n); if (url) console.error(url); }
   else console.error("· no changes — no issue/email");
-  if (error) process.exit(1);
+  // Fail the job only if we ended on an error having made no progress at all.
+  if (error && !checkedCount && !applied.length && !proposals.length) process.exit(1);
 })();

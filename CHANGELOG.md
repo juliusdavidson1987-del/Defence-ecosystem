@@ -3,6 +3,16 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Event-refresh: fix the WORKER_RESOURCE_LIMIT failures (2026-09-24)
+- The weekly `event-refresh` workflow was failing on Supabase `HTTP 546 WORKER_RESOURCE_LIMIT` —
+  each invocation ran up to ~8 sequential Sonnet+web-search requests (2 events × up to 4 turns),
+  exceeding the Edge Function's per-invocation compute budget, and the orchestrator aborted the whole
+  run on the first error. Fixed by **trimming per-call work** — 1 event/call (was 2), `web_search`
+  `max_uses` 1 (was 2), continuation turns capped at 2 (was 3), `max_tokens` 1024, effort `low` —
+  and making the **orchestrator resilient** (retry/back-off on a flaky call, stop only after 3
+  consecutive failures, and fail the job only if it made no progress at all; `MAX_ITERS` 20→40 to
+  still cover every fair one-per-call). Requires redeploying the `event-refresh` Edge Function.
+
 ## v4.10.1 — guard against orphaned/synthetic parents (2026-09-24)
 - **Root-caused the nightly Sync / Auto-maintainer failures** (failing since 21 Sep): they weren't an
   API-cost issue — the data validator was rejecting an orphaned parent. Adding an organisation in the
