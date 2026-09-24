@@ -30,6 +30,7 @@
 import Anthropic from "npm:@anthropic-ai/sdk";
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, json, secretOk } from "../_shared/cors.ts";
+import { isSynthetic, safeParent } from "../_shared/parent.ts";
 
 // ── config ─────────────────────────────────────────────────────────────────
 const num = (k: string, d: number) => { const v = Number(Deno.env.get(k)); return Number.isFinite(v) && v > 0 ? v : d; };
@@ -254,7 +255,7 @@ async function procFeedback(client: Anthropic, sb: SupabaseClient, report: Repor
   }
 }
 
-async function procCorrections(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, parents: Array<{ id: string; label: string }>) {
+async function procCorrections(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, parents: Array<{ id: string; label: string }>, validParents: Set<string>) {
   const { data } = await sb.from("edits").select("id,node_id,field,suggestion").eq("status", "pending").is("auto_assessed_at", null).limit(budget());
   for (const e of data ?? []) {
     if (budget() <= 0) break;
@@ -270,8 +271,11 @@ async function procCorrections(client: Anthropic, sb: SupabaseClient, report: Re
     const a = await assessCorrection(client, node, { field: e.field, suggestion: e.suggestion }, parents);
     if (CFG.applyCorr && a.recommendation === "apply" && a.confidence >= CFG.corrMinConf && !a.structural && a.repair) {
       const rep = a.repair;
+      // Guard the parent: a repair must never introduce a synthetic/orphan parent;
+      // fall back to the node's existing (already-valid) parent if it can't resolve.
+      const repParent = safeParent(rep.parent ?? (node.parent as string), rep.tags ?? node.tags, validParents) ?? (node.parent as string);
       const row = {
-        id: node.id, label: rep.label ?? node.label, parent: rep.parent ?? node.parent, kind: node.kind || "org",
+        id: node.id, label: rep.label ?? node.label, parent: repParent, kind: node.kind || "org",
         does: rep.does ?? node.does, entry: rep.entry ?? node.entry,
         tags: tagsOk(rep.tags) ? rep.tags : (tagsOk(node.tags) ? node.tags : null),
         status: "published",
@@ -291,7 +295,7 @@ async function procCorrections(client: Anthropic, sb: SupabaseClient, report: Re
   }
 }
 
-async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, parents: Array<{ id: string; label: string }>, corpus: Array<{ id: string; label: string; entry: string }>, ids: Set<string>) {
+async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, parents: Array<{ id: string; label: string }>, corpus: Array<{ id: string; label: string; entry: string }>, ids: Set<string>, validParents: Set<string>) {
   const { data } = await sb.from("web_finds").select("id,name,url,why,query").eq("status", "pending").is("auto_assessed_at", null).limit(budget());
   for (const w of data ?? []) {
     if (budget() <= 0) break;
@@ -324,10 +328,17 @@ async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Repor
     let base = prefix + slug(String(node.label || w.name || "org")); let id = base, k = 2;
     while (ids.has(id)) { id = base + k; k++; }
     ids.add(id);
+    // Guard the parent: never write a synthetic/orphan parent (would break the sync validator).
+    const parent = safeParent(node.parent as string, node.tags, validParents);
+    if (!parent) {
+      await holdRow(sb, "web_finds", w.id, "review", `verified but no valid parent (AI gave '${node.parent}', tags.g didn't map) — set a home`);
+      report.held.push({ queue: "webfind", id: String(w.id), label, action: "review", reason: `verified but couldn't place it under a real branch (parent '${node.parent}')` });
+      continue;
+    }
     const reachable = await urlReachable(String(node.entry || ""));
     const canPublish = CFG.pubNewOrgs && d.publishable && d.defence_relevant && d.confidence >= CFG.webfindMinConf && reachable && tagsOk(node.tags);
     const row = {
-      id, label: node.label, parent: node.parent, kind: "org",
+      id, label: node.label, parent, kind: "org",
       does: node.does || "", entry: node.entry || w.url || "",
       tags: tagsOk(node.tags) ? node.tags : null,
       status: canPublish ? "published" : "pending",
@@ -344,7 +355,7 @@ async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Repor
   }
 }
 
-async function procPendingNodes(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, corpus: Array<{ id: string; label: string; entry: string }>) {
+async function procPendingNodes(client: Anthropic, sb: SupabaseClient, report: Report, budget: () => number, spend: () => void, corpus: Array<{ id: string; label: string; entry: string }>, validParents: Set<string>) {
   const { data } = await sb.from("nodes").select("id,label,parent,kind,does,entry,tags").eq("status", "pending").is("auto_assessed_at", null).limit(budget());
   for (const n of data ?? []) {
     if (budget() <= 0) break;
@@ -364,12 +375,19 @@ async function procPendingNodes(client: Anthropic, sb: SupabaseClient, report: R
       report.held.push({ queue: "pending-node", id: String(n.id), label, action: "review", reason: `could not verify — ${v.note}` });
       continue;
     }
-    const canPublish = CFG.pubNewOrgs && v.defence_relevant && v.confidence >= CFG.pubMinConf && reachable && tagsOk(n.tags);
+    // Guard the parent BEFORE publishing: app-created pending nodes can carry a
+    // synthetic (nat_*/tech_*) or orphan parent (from adding an org while a lens
+    // branch was selected). Publishing that breaks the sync validator. Remap to a
+    // real container from tags.g; if it can't be placed, hold for review.
+    const goodParent = safeParent(n.parent as string, n.tags, validParents);
+    const canPublish = CFG.pubNewOrgs && v.defence_relevant && v.confidence >= CFG.pubMinConf && reachable && tagsOk(n.tags) && !!goodParent;
     if (canPublish) {
-      await sb.from("nodes").update({ status: "published", auto_assessed_at: now(), auto_action: "publish", auto_reason: v.note }).eq("id", n.id);
-      report.actions.push({ queue: "pending-node", id: String(n.id), label, action: "published", reason: v.note, url: firstUrl(String(n.entry || "")) });
+      const upd: Record<string, unknown> = { status: "published", auto_assessed_at: now(), auto_action: "publish", auto_reason: v.note };
+      if (goodParent && goodParent !== n.parent) upd.parent = goodParent; // fix a synthetic/orphan parent as we publish
+      await sb.from("nodes").update(upd).eq("id", n.id);
+      report.actions.push({ queue: "pending-node", id: String(n.id), label, action: "published", reason: goodParent !== n.parent ? `${v.note} (reparented ${n.parent}→${goodParent})` : v.note, url: firstUrl(String(n.entry || "")) });
     } else {
-      const why = !CFG.pubNewOrgs ? "auto-publish of new orgs is off" : !v.defence_relevant ? "relevance unclear" : !reachable ? "official URL didn't resolve" : !tagsOk(n.tags) ? "tags incomplete" : `confidence ${v.confidence.toFixed(2)} < ${CFG.pubMinConf}`;
+      const why = !goodParent ? `invalid parent '${n.parent}' — needs a real home` : !CFG.pubNewOrgs ? "auto-publish of new orgs is off" : !v.defence_relevant ? "relevance unclear" : !reachable ? "official URL didn't resolve" : !tagsOk(n.tags) ? "tags incomplete" : `confidence ${v.confidence.toFixed(2)} < ${CFG.pubMinConf}`;
       await holdRow(sb, "nodes", n.id, "publish", `looks real (${v.note}) — awaiting your publish [${why}]`);
       report.held.push({ queue: "pending-node", id: String(n.id), label, action: "publish", reason: `looks real — awaiting your publish [${why}]. ${v.note}`, url: firstUrl(String(n.entry || "")) });
     }
@@ -437,14 +455,18 @@ Deno.serve(async (req: Request) => {
     ]);
     const parents = (branchRows ?? []).map((b) => ({ id: b.id as string, label: b.label as string }));
     const ids = new Set<string>((corpusRows ?? []).map((r) => r.id as string));
+    // Real container ids a node may sit under (branches + root). Used to guard
+    // against orphaned/synthetic parents before anything is written/published.
+    const validParents = new Set<string>((branchRows ?? []).map((b) => b.id as string));
+    validParents.add("root");
     const corpus = (corpusRows ?? []).filter((r) => r.status === "published").map((r) => ({ id: r.id as string, label: (r.label as string) || "", entry: (r.entry as string) || "" }));
 
     // Cheap queues first (deterministic / no web search), then heavy queues within budget.
     await procClaims(sb, report);
     await procFeedback(client, sb, report);
-    if (budget() > 0) await procCorrections(client, sb, report, budget, spend, parents);
-    if (budget() > 0) await procWebFinds(client, sb, report, budget, spend, parents, corpus, ids);
-    if (budget() > 0) await procPendingNodes(client, sb, report, budget, spend, corpus);
+    if (budget() > 0) await procCorrections(client, sb, report, budget, spend, parents, validParents);
+    if (budget() > 0) await procWebFinds(client, sb, report, budget, spend, parents, corpus, ids, validParents);
+    if (budget() > 0) await procPendingNodes(client, sb, report, budget, spend, corpus, validParents);
 
     const remaining = await remainingCounts(sb);
     return json({ ran: true, processed: report.processed, actions: report.actions, held: report.held, remaining });

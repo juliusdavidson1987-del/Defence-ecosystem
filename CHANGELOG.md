@@ -3,6 +3,21 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.10.1 — guard against orphaned/synthetic parents (2026-09-24)
+- **Root-caused the nightly Sync / Auto-maintainer failures** (failing since 21 Sep): they weren't an
+  API-cost issue — the data validator was rejecting an orphaned parent. Adding an organisation in the
+  app while a *runtime-only* Alliance/Technology branch (`nat_*` / `tech_*`) was selected stored that
+  synthetic id as the node's parent; the auto-maintainer then published it, orphaning it and failing
+  the validator (which blocks the whole sync). `migrations/2026-09-24-fix-orphan-parents.sql` repairs
+  the three affected nodes (Beaten Zone Venture Partners → au_grp; Business Finland → eu_nordic;
+  Marduk Technologies → eu_baltic).
+- **Hardened every write path so it can't recur** (new `supabase/functions/_shared/parent.ts`):
+  `insert-node` and the `auto-maintain` agent (web-finds, pending-node publish, corrections) now
+  reject/remap any synthetic or non-existent parent to the real national container from `tags.g`
+  (holding for review if it can't be placed); the in-app "Add an organisation" flow resolves a
+  synthetic branch to a real container *before* writing, and stamps the correct geo. Requires
+  redeploying the `insert-node` and `auto-maintain` Edge Functions.
+
 ## Map-wide categorisation audit & fix (data, 2026-09-23)
 - Audited all ~2,040 nodes for the mis-tagging that surfaced during the US work and found it was
   map-wide. `migrations/2026-09-23-map-categorisation-fix.sql` (idempotent):

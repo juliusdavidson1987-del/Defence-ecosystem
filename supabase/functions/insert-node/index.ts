@@ -16,6 +16,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, json, secretOk } from "../_shared/cors.ts";
+import { isSynthetic, safeParent } from "../_shared/parent.ts";
 
 type NodeIn = {
   id?: string; label?: string; parent?: string; kind?: string;
@@ -46,10 +47,27 @@ Deno.serve(async (req: Request) => {
   if (!supabaseUrl || !serviceKey) return json({ error: "Supabase env not configured" }, 500);
 
   const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Guard the parent: never store a synthetic (nat_*/tech_*) or non-existent parent
+  // — it orphans the node and fails the data validator (breaking the nightly sync).
+  // A branch node may legitimately sit under another branch or 'root'; an org must
+  // land under a real container. Remap from tags.g when possible, else reject.
+  const { data: branchRows } = await supabase.from("nodes").select("id").eq("kind", "branch");
+  const validParents = new Set<string>((branchRows ?? []).map((b) => b.id as string));
+  validParents.add("root");
+  let parent = String(node.parent);
+  if (isSynthetic(parent) || !validParents.has(parent)) {
+    const remapped = safeParent(parent, node.tags, validParents);
+    if (!remapped) {
+      return json({ error: `parent '${node.parent}' is not a real container (synthetic or unknown) and could not be remapped from tags.g — set a valid parent`, code: "bad_parent" }, 400);
+    }
+    parent = remapped;
+  }
+
   const row = {
     id: node.id,
     label: node.label,
-    parent: node.parent,
+    parent,
     kind: node.kind || "org",
     does: node.does || "",
     entry: node.entry || "",

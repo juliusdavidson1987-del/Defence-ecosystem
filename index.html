@@ -1056,7 +1056,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.10.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.10.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5844,6 +5844,17 @@ function submitNewNodeToForm(){
   openSuggestForm(name, 'New organisation to add', details);
   showToast('Opening the submission form…');
 }
+// Map a home-country code -> a REAL container id (mirrors supabase/functions/_shared/parent.ts).
+const ADD_GEO_CONTAINER={us:'b_us',fr:'eu_fr',de:'eu_de',it:'eu_it',nl:'eu_nl',tr:'eu_turkey',ua:'eu_ukraine',ca:'ca_grp',au:'au_grp',nz:'nz_grp',kr:'pt_kr',jp:'pt_jp',il:'pt_il',in:'pt_in',sg:'pt_sg',ae:'pt_ae',sa:'pt_sa',eu:'eu_inst',nato:'b_nato',es:'eu_central',pt:'eu_central',pl:'eu_central',cz:'eu_central',sk:'eu_central',hu:'eu_central',gr:'eu_central',ro:'eu_central',bg:'eu_central',hr:'eu_central',si:'eu_central',al:'eu_central',mk:'eu_central',me:'eu_central',lu:'eu_central',be:'eu_central',se:'eu_nordic',no:'eu_nordic',fi:'eu_nordic',dk:'eu_nordic',is:'eu_nordic',ee:'eu_baltic',lv:'eu_baltic',lt:'eu_baltic'};
+// The nation code encoded in a synthetic Alliance-lens branch id (nat_<code>[_func]).
+function natCodeOf(p){ const m=String(p||'').match(/^nat_([a-z]{2,4})(?:_|$)/); return m?m[1]:''; }
+// Never store a synthetic (nat_*/tech_*) or unknown parent — that orphans the node and
+// breaks the data validator. Resolve it to a real container (by nation) before writing.
+function resolveAddParent(p){
+  if(p && NODE[p] && !/^(nat_|tech_|techcat_)/.test(p)) return p;         // already a real node
+  const c=ADD_GEO_CONTAINER[natCodeOf(p)]; if(c && NODE[c]) return c;      // synthetic nation branch -> container
+  return NODE['b_tech'] ? 'b_tech' : 'root';                              // last-resort real branch
+}
 // Stage 3: write a proposed organisation straight into Supabase as a 'pending' row, landing in
 // the maintainer's review queue. Falls back to the Google Form if Supabase isn't configured or
 // the write fails. Row-level security only permits inserting pending rows — never published.
@@ -5853,7 +5864,8 @@ async function submitNewNodeToSupabase(){
   const btn=document.getElementById('an_submit'); const orig=btn?btn.textContent:'';
   if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
   try{
-    const parent=document.getElementById('an_parent').value||'root';
+    const rawParent=document.getElementById('an_parent').value||'root';
+    const parent=resolveAddParent(rawParent); // never store a synthetic/orphan parent
     const parentSel=document.getElementById('an_parent'); const parentLabel=parentSel&&parentSel.options[parentSel.selectedIndex]?parentSel.options[parentSel.selectedIndex].textContent.replace(/^[\s　›]+/,''):'';
     const dom=chipVals('an_dom'), offer=chipVals('an_offer'), access=document.getElementById('an_access').value;
     // a stable-ish candidate id; the reviewer can rename on approval
@@ -5861,7 +5873,8 @@ async function submitNewNodeToSupabase(){
     const tags = (dom.length||offer.length||access) ? {
       w:deriveWho(offer), o:offer.length?offer:['advice'],
       t: offer.includes('research')?[1,5]:(offer.includes('test')?[4,8]:[3,8]),
-      d: dom.length?dom:['xcut'], a: access||'open', g: geoOfBranch(parent)
+      // geo from the selected nation branch (synthetic nat_<code> or real container)
+      d: dom.length?dom:['xcut'], a: access||'open', g: natCodeOf(rawParent)||geoOfBranch(parent)
     } : null;
     const row={
       id, label:name, parent, kind:'org', entry:v('an_entry')||'', does:v('an_does')||'',
@@ -6020,7 +6033,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.10.0 (Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.10.1 (Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
