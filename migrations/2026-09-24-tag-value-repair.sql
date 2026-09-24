@@ -1,0 +1,143 @@
+-- ============================================================================
+-- Data repair — invalid tag ENUM values found in a full integrity sweep (2026-09-24).
+-- Targeted per-field fixes (o/d/a/g only) so this is order-independent and never
+-- disturbs other tag fields (e.g. the 'w' audience fixes in the categorisation pass).
+--   offers:  funding->investment · training/export/partner->advice · xtest->test
+--   access:  via/invite->restricted
+--   domains: uas->autonomy
+--   geo:     two nodes missing tags.g (Slovakia->sk, Portugal->pt)
+-- Also normalises any remaining scalar w/o/d to arrays. Idempotent. Run in Supabase, then sync.
+-- ============================================================================
+
+-- normalise scalar tag values to arrays (safe no-op if already arrays)
+update public.nodes set tags = jsonb_set(tags,'{w}', to_jsonb(array[tags->>'w'])) where jsonb_typeof(tags->'w')='string';
+update public.nodes set tags = jsonb_set(tags,'{o}', to_jsonb(array[tags->>'o'])) where jsonb_typeof(tags->'o')='string';
+update public.nodes set tags = jsonb_set(tags,'{d}', to_jsonb(array[tags->>'d'])) where jsonb_typeof(tags->'d')='string';
+
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='spta';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='inspace';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='adarga';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='faculty';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='hadean';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='malloy';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='montvieux';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='palantir';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='quantumsys';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='ripjar';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='stark';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='tekever';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='chessdyn';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='blighter';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='idquantique';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='riverlane';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='animaldynamics';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='cambridgepixel';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='flarebright';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='iceni';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='oxfordspace';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='plextek';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='satellitevu';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='nuquantum';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='evolito';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='physicsx';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='infleqtion';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='ode';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment","advice"]'::jsonb) where id='sub-beaten-zone-venture-part';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='lv_fsdi';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='lt_ldsia';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice","test"]'::jsonb) where id='es_inta';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='ca_cadsi';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='ro_patromil';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='sk_zbop';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='instituteofnavalmedici';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='bg_bdia';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='hr_cdicc';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='si_industry';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_dc3';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='sco';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_ccdcoe';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_ccdcoe';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_ensec';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_cwo';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_cwo';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_mw';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_mw';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_stratcom';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_a16z_ad';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_generalcatalyst';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_shieldcap';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_razorsedge';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_decisivepoint';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_scout';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_8vc';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_dcvc';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_foundersfund';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='us_rtxventures';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_japcc';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_mileng';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_mileng';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_eod';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_eod';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_csw';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_csw';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_nmw';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_nmw';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_marsec';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_marsec';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_cbrn';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_cbrn';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='coe_cied';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_cied';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_dat';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_dat';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_iamd';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_iamd';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_ms';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_ms';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_space';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_ndia';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_ausa';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_afa';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_navyleague';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_afcea';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_aia';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='ca_cccs';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='afc';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_climate';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='au_qctrl';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='kr_kdia';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='jp_keidanren';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='il_mai';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='nato_aegisashore_ro';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice","contract"]'::jsonb) where id='us_usarmyartificialintell';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='au_asd_acsc';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_ccoe';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_ccoe';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='coe_milmed';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='coe_milmed';
+update public.nodes set tags = jsonb_set(tags,'{o}','["investment"]'::jsonb) where id='de_vsquared';
+update public.nodes set tags = jsonb_set(tags,'{o}','["grant","advice"]'::jsonb) where id='gr_hcdi';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='iceye';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='rafrco';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='anduril';
+update public.nodes set tags = jsonb_set(tags,'{o}','["contract"]'::jsonb) where id='helsing';
+update public.nodes set tags = jsonb_set(tags,'{o}','["product","advice"]'::jsonb) where id='no_norwaylaerdalmedical';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='no_norwaynorwegianairambu';
+update public.nodes set tags = jsonb_set(tags,'{o}','["product","contract","advice"]'::jsonb) where id='ee_estoniacybexertechnolo';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='rccto';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='ee_estoniatartuuniversity';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='lv_latviarsumedicaleducat';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='lt_lithuanialithuanianuni';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='pl_polandmilitaryinstitut';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice","test"]'::jsonb) where id='pl_polandmilitaryinstitut2';
+update public.nodes set tags = jsonb_set(tags,'{g}','"sk"'::jsonb) where id='slovakiaslovakorganisa';
+update public.nodes set tags = jsonb_set(tags,'{g}','"pt"'::jsonb) where id='portugalbeyondvision';
+update public.nodes set tags = jsonb_set(tags,'{d}','["autonomy","c4isr"]'::jsonb) where id='gr_greecealtuslsa';
+update public.nodes set tags = jsonb_set(tags,'{o}','["research","advice"]'::jsonb) where id='cz_czechiamilitaryunivers';
+update public.nodes set tags = jsonb_set(tags,'{o}','["product","advice"]'::jsonb) where id='is_icelandawarego';
+update public.nodes set tags = jsonb_set(tags,'{d}','["ai","autonomy"]'::jsonb) where id='ua_ukraineswarmer';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='us_cisa';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='ukef';
+update public.nodes set tags = jsonb_set(tags,'{a}','"restricted"'::jsonb) where id='natoact';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='nato_space';
+update public.nodes set tags = jsonb_set(tags,'{o}','["advice"]'::jsonb) where id='fr_anssi';
