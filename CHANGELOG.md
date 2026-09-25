@@ -3,6 +3,19 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.11.0 — scope broadened to national security (2026-09-25)
+- **Defence & dual-use → defence, SECURITY & dual-use.** The map now covers the national-security &
+  resilience bodies that share the same innovation/procurement pipeline (agreed scope: protective
+  security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised
+  crime, intelligence enablers, resilience; excludes pure private guarding/consumer security). No
+  restructure — security bodies blend into the existing tree + tags.
+- **First UK security tranche** (`migrations/2026-09-25-uk-security.sql`, 14 web-verified nodes):
+  HMGCC + HMGCC Co-Creation, ACE (Accelerated Capability Environment), JSaRC, MI5, SIS/MI6, National
+  Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial,
+  College of Policing, Homeland Security Group, National Security Secretariat. (NCSC, NPSA, GCHQ,
+  Home Office, DASA, Dstl were already in.) App framing (welcome/About/meta) updated to say defence,
+  national security & dual-use.
+
 ## Event-refresh: fix the WORKER_RESOURCE_LIMIT failures (2026-09-24)
 - The weekly `event-refresh` workflow was failing on Supabase `HTTP 546 WORKER_RESOURCE_LIMIT` —
   each invocation ran up to ~8 sequential Sonnet+web-search requests (2 events × up to 4 turns),

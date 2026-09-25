@@ -7,8 +7,12 @@ Context for working on this project. Read this first every session.
 ## What this is
 
 **The Defence Ecosystem** is an interactive, single-file HTML tool that maps the UK / NATO /
-allied / partner-nation defence *innovation and procurement* landscape — the organisations,
-who they are, what they do, and how to approach them. It renders as a radial collapsible
+allied / partner-nation defence, **national-security** & dual-use *innovation and procurement*
+landscape — the organisations, who they are, what they do, and how to approach them. Scope
+(decided 2026-09-25) covers **defence + national security & resilience** (protective security/CNI,
+cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime,
+intelligence enablers, resilience) + dual-use — the bodies that share one innovation/procurement
+pipeline; it excludes pure private guarding/consumer security. It renders as a radial collapsible
 mind-map with an "Explore" list, a **"Find your door"** graded finder, detail panels, and
 **two runtime lenses** (by Alliance/country, and by Technology). It runs on phone and desktop.
 
