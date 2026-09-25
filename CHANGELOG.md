@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Feedback console: full text + multi-item drafter (2026-09-25)
+- **Fix — truncated feedback.** The maintainer "Feedback — pending" queue cut each message off at 320
+  characters (so multi-point feedback was unreadable). It now shows the **full message with line
+  breaks preserved**.
+- **Fix — drafter on multi-item feedback.** "🧩 Draft node(s) from this" previously drafted only one
+  organisation; feedback that lists several (e.g. "1. Improbable Defence is now Skyral… 2. a new UK
+  Centre for…") lost everything after the first. `draft-from-source` now extracts **every** distinct
+  organisation and returns one draft per item — each flagged **new** or **correction** (matched to an
+  existing node id where identifiable, via a candidate corpus), each web-verified — and the console
+  lists them to load into Step 3 one at a time. The drafter is also now offered for **text-only
+  feedback** (no source link/attachment needed). Requires redeploying the `draft-from-source` function.
+
 ## v4.11.0 — scope broadened to national security (2026-09-25)
 - **Defence & dual-use → defence, SECURITY & dual-use.** The map now covers the national-security &
   resilience bodies that share the same innovation/procurement pipeline (agreed scope: protective

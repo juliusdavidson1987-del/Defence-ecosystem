@@ -484,9 +484,14 @@ window.loadFeedback=async()=>{
     box.innerHTML=fs.map(f=>{
       const src=f.source_url?`<br><span class="tiny">source: <a href="${escA(f.source_url)}" target="_blank" rel="noopener noreferrer">${esc((f.source_url||'').replace(/^https?:\/\//,'').slice(0,60))}</a></span>`:'';
       const att=f.attachment_path?`<br><span class="tiny">📎 ${esc(f.attachment_name||'attachment')}${f.attachment_type?(' ('+esc(f.attachment_type)+')'):''}</span>`:'';
-      const dfs=(f.source_url||f.attachment_path)?`<button class="dfs primary" data-id="${esc(f.id)}">🧩 Draft node from this</button> `:'';
+      // Offer the drafter for any substantive feedback — a source link/attachment OR
+      // just a text message (it reads the message content too). Feedback can list
+      // several orgs/corrections, so the drafter returns one draft per item.
+      const dfs=(f.source_url||f.attachment_path||(f.message||'').trim().length>20)?`<button class="dfs primary" data-id="${esc(f.id)}">🧩 Draft node(s) from this</button> `:'';
       const vw=f.attachment_path?`<button class="viewatt" data-id="${esc(f.id)}">📎 View</button> `:'';
-      return `<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span><br><span class="tiny">${esc((f.message||'').slice(0,320))}</span>${src}${att}${recoLine(f)}<div style="margin-top:6px;white-space:nowrap">${dfs}${vw}<button class="resfb" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`;
+      // Show the FULL message (was truncated to 320 chars), preserving line breaks/numbered lists.
+      const msg=`<div class="tiny" style="white-space:pre-wrap;margin-top:3px">${esc(f.message||'')}</div>`;
+      return `<div class="chk" style="display:block"><b>${esc(f.kind||'Feedback')}</b> <span class="tiny">#${esc(f.id)}${f.org?(' · '+esc(f.org)):''}${f.node_id?(' · '+esc(lbl(f.node_id))):''}${f.submitted_by?(' · '+esc(f.submitted_by)):''}</span>${msg}${src}${att}${recoLine(f)}<div id="dfsbox_${esc(f.id)}"></div><div style="margin-top:6px;white-space:nowrap">${dfs}${vw}<button class="resfb" data-id="${esc(f.id)}">Resolve</button> <button class="disfb" data-id="${esc(f.id)}">Dismiss</button></div></div>`;
     }).join('');
     box.querySelectorAll('.dfs').forEach(b=>b.onclick=()=>draftFromSource(b.dataset.id));
     box.querySelectorAll('.viewatt').forEach(b=>b.onclick=()=>viewAttachment(b.dataset.id));
@@ -506,22 +511,38 @@ window.viewAttachment=async(id)=>{
     const j=await r.json(); if(j.url) window.open(j.url,'_blank','noopener'); else toast('No attachment: '+(j.error||r.status)); }
   catch(e){ toast('error — see console'); console.error(e); }
 };
+window._dfsItems={};
+// Load one drafted item into Step 3 for review/insert.
+window.loadDraftIntoStep3=(d,meta)=>{
+  $('f_id').value=d.id||''; $('f_parent').value=d.parent||''; $('f_label').value=d.label||''; $('f_does').value=d.does||''; $('f_entry').value=d.entry||''; $('f_tags').value=JSON.stringify(d.tags||{});
+  const m=meta||{}; const act=d.action==='correct'?'✎ correction to an existing org':'＋ new org';
+  $('parentNote').textContent='🧩 Drafted ('+act+') from '+(m.attachment||'feedback')+(m.source_url?(' + '+m.source_url):'')+' — '+(d.note||'review the fields')+(d.id?'':'. New org: set an id in Step 3.')+' Then ⚡ Insert (or Stage). Resolve the feedback once every item is handled.';
+  if(typeof validate==='function') validate();
+  window.scrollTo(0,0);
+  toast('🧩 Loaded into Step 3 — review, then Insert or Stage');
+};
 window.draftFromSource=async(id)=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
   await loadNodes();
-  toast('🧩 Drafting from the source — reading the fact sheet & verifying on the web, up to a minute…');
+  const dbox=$('dfsbox_'+id); if(dbox) dbox.innerHTML='<div class="tiny">🧩 Reading the feedback & verifying on the web, up to a minute…</div>';
+  toast('🧩 Drafting from the feedback — reading & verifying on the web, up to a minute…');
   try{
     const r=await fetch(efUrl('draft-from-source'),{method:'POST',headers:efHeaders(),body:JSON.stringify({feedback_id:id})});
-    if(r.status===401){ toast('Unauthorised — check the shared secret'); return; }
-    const j=await r.json(); const d=j.draft;
-    if(!d){ toast('Draft failed: '+(j.error||r.status)); return; }
-    $('f_id').value=d.id||''; $('f_parent').value=d.parent||''; $('f_label').value=d.label||''; $('f_does').value=d.does||''; $('f_entry').value=d.entry||''; $('f_tags').value=JSON.stringify(d.tags||{});
-    const m=j.meta||{};
-    $('parentNote').textContent='🧩 Drafted from '+(m.attachment||'source')+(m.source_url?(' + '+m.source_url):'')+' — '+(d.note||'review the fields')+(d.id?'':'. New org: set an id in Step 3.')+' Then ⚡ Insert (or Stage), and Resolve the feedback.';
-    if(typeof validate==='function') validate();
-    window.scrollTo(0,0);
-    toast('🧩 Draft ready — review Step 3, then Insert or Stage, then Resolve the feedback');
-  }catch(e){ toast('Draft error — see console'); console.error(e); }
+    if(r.status===401){ toast('Unauthorised — check the shared secret'); if(dbox)dbox.innerHTML=''; return; }
+    const j=await r.json();
+    // New multi-item shape {items:[...]}; fall back to the old single {draft}.
+    const items=Array.isArray(j.items)&&j.items.length?j.items:(j.draft?[j.draft]:[]);
+    if(!items.length){ toast('Draft failed: '+(j.error||r.status)); if(dbox)dbox.innerHTML='<div class="chk bad tiny">Draft failed: '+esc(j.error||('HTTP '+r.status))+'</div>'; return; }
+    const m=j.meta||{}; window._dfsItems[id]={items,meta:m};
+    if(items.length===1){ if(dbox)dbox.innerHTML=''; loadDraftIntoStep3(items[0],m); return; }
+    // Multiple items — list them so the maintainer works through each into Step 3.
+    if(dbox){
+      dbox.innerHTML='<div class="tiny" style="margin-top:6px">🧩 <b>'+items.length+' items</b> found in this feedback — load each into Step 3, Insert (or Stage), then Resolve the feedback:</div>'+
+        items.map((d,i)=>`<div class="chk" style="display:block;margin-top:4px"><b>${esc(d.label||'(no label)')}</b> <span class="tiny">${d.action==='correct'?'✎ correction'+(d.id?(' · '+esc(d.id)):''):'＋ new org'}</span><br><span class="tiny">${esc(d.does||d.note||'')}</span>${d.entry?('<br><span class="tiny">'+esc(String(d.entry).replace(/^https?:\/\//,''))+'</span>'):''}<div style="margin-top:5px"><button class="dfsload primary" data-fid="${esc(id)}" data-i="${i}">Load into Step 3 →</button></div></div>`).join('');
+      dbox.querySelectorAll('.dfsload').forEach(b=>b.onclick=()=>{ const st=window._dfsItems[b.dataset.fid]; if(st) loadDraftIntoStep3(st.items[+b.dataset.i],st.meta); });
+    }
+    toast('🧩 '+items.length+' drafts ready — load each into Step 3');
+  }catch(e){ toast('Draft error — see console'); if(dbox)dbox.innerHTML=''; console.error(e); }
 };
 window.loadWebFinds=async()=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
