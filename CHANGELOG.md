@@ -15,6 +15,12 @@ aren't stamped here unless they change a version.
   College of Policing, Homeland Security Group, National Security Secretariat. (NCSC, NPSA, GCHQ,
   Home Office, DASA, Dstl were already in.) App framing (welcome/About/meta) updated to say defence,
   national security & dual-use.
+- **Phase 2 — US** (`migrations/2026-09-25-us-security.sql`): DHS, DHS S&T Directorate, ODNI, FBI, CIA,
+  Secret Service, TSA, CBP, FEMA (In-Q-Tel, CISA, NSA, NGA, DC3 already in).
+- **Phase 3 — thin-nation gaps** (`migrations/2026-09-25-security-gaps.sql`): a per-nation audit found
+  most allies already had their core intelligence + cyber agencies from the country builds; filled the
+  genuine gaps — Portugal (SIS, SIED), Türkiye (USOM), South Korea (NIS, KISA), Denmark (FE/DDIS),
+  Slovakia (SIS, NBÚ). Others (Slovenia, Croatia, UAE, NZ, etc.) were already covered.
 
 ## Event-refresh: fix the WORKER_RESOURCE_LIMIT failures (2026-09-24)
 - The weekly `event-refresh` workflow was failing on Supabase `HTTP 546 WORKER_RESOURCE_LIMIT` —
