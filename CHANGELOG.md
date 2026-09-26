@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.11.1 — "Related organisations" needs a real link (2026-09-26)
+- **Fix.** The node "Related organisations" panel could show a **random-looking** selection: the old
+  scoring let an org qualify on *same country + same entity type with zero shared technology* (2+2 =
+  the threshold), so unrelated bodies appeared just because they shared a nationality and a type; and
+  orgs tagged only `xcut` (no real domain) got *only* those random matches. Now a **genuine link is
+  required** — a shared technology domain (a tentative but real capability tie) or a shared network /
+  corporate-family affiliation (a firm tie); same-country/same-type alone no longer counts. A single
+  broad shared tag between unlike bodies is also excluded (needs ≥2 shared domains, or 1 shared domain
+  *and* the same kind of body, or a shared affiliation). Comparable orgs in **peer nations** are still
+  shown ("comparable elsewhere") but **capped at 2** so a node isn't overloaded. Nodes with no genuine
+  link now correctly show **no** related orgs rather than filler.
+
 ## Feedback console: full text + multi-item drafter (2026-09-25)
 - **Fix — truncated feedback.** The maintainer "Feedback — pending" queue cut each message off at 320
   characters (so multi-point feedback was unreadable). It now shows the **full message with line

@@ -1056,7 +1056,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.11.0 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.11.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -2600,14 +2600,19 @@ function serialOf(id){ return SERIAL[id]||''; }
 function nodeBySerial(s){ return SERIAL_REV[String(s||'').trim().toUpperCase()]||null; }
 
 /* ---------- related organisations ----------
-   Suggests a few genuinely-adjacent bodies so people discover the org they didn't know
-   to search for. Scores by shared nation, same entity type, and overlapping technology
-   domains — never the node itself, its children, or things already cross-linked. */
+   Suggests a few GENUINELY-linked bodies so people discover an org they didn't know
+   to search for. A real link is REQUIRED — never a random pick: either a shared
+   technology domain (a tentative but real capability link) or a shared network /
+   corporate-family affiliation (a firm link). Same country + same type ALONE is not a
+   link and no longer qualifies. A similar org in a peer nation is a valid "comparable
+   elsewhere", but cross-nation peers are capped so the list stays focused, not overloaded.
+   Never returns the node itself, its children, parent, or things already cross-linked. */
 function relatedNodes(id, max){
   max=max||5;
   const t=tagsFor(id); if(!t) return [];
   const myType=entityType(id); const myNat=nationCodeFor(id);
   const myDom=(t.d||[]).filter(d=>d!=='xcut');
+  const aff=(NODE[id]&&NODE[id].affiliation)||null; const myAff=(aff&&aff.net)?String(aff.net).toLowerCase().trim():'';
   const already=new Set([id]);
   const n=NODE[id]; if(n&&n.children)n.children.forEach(c=>already.add(c.id));
   (XLINK[id]||[]).forEach(x=>already.add(x));
@@ -2616,19 +2621,30 @@ function relatedNodes(id, max){
   const scored=[];
   orgIds.forEach(x=>{
     const tx=tagsFor(x); if(!tx) return;
-    let s=0;
     const sameNat = nationCodeFor(x)===myNat;
     const sameType = entityType(x)===myType;
     const domX=(tx.d||[]).filter(d=>d!=='xcut');
     const domShared = myDom.filter(d=>domX.includes(d)).length;
-    if(domShared) s += domShared*3;          // shared technology area is the strongest signal
-    if(sameType) s += 2;                       // same kind of body
-    if(sameNat) s += 2;                        // same country
-    if(sameNat && sameType) s += 1;            // both → likely a genuine peer
-    if(s>=4) scored.push([x,s]);               // threshold: avoid weak/noisy matches
+    const affX=(NODE[x].affiliation&&NODE[x].affiliation.net)?String(NODE[x].affiliation.net).toLowerCase().trim():'';
+    const sharedAff = !!myAff && affX===myAff;
+    // Require a genuine link: a shared network/family, OR ≥2 shared domains, OR a
+    // shared domain AND the same kind of body. A lone shared broad tag (e.g. just
+    // "software") between unlike bodies, or same-country/same-type with no shared
+    // domain at all, does NOT count — that was the "random selection" problem.
+    if(!(sharedAff || domShared>=2 || (domShared>=1 && sameType))) return;
+    let s=0;
+    if(sharedAff) s += 5;                     // same network / corporate family — a firm tie
+    if(domShared) s += domShared*3;           // shared capability area (stronger the more overlap)
+    if(sameType) s += 2;                      // same kind of body
+    if(sameNat) s += 1;                       // same country → rank domestic peers first
+    scored.push([x,s,sameNat]);
   });
   scored.sort((a,b)=> b[1]-a[1] || (NODE[a[0]].l<NODE[b[0]].l?-1:1));
-  return scored.slice(0,max).map(p=>p[0]);
+  // Fill with the strongest links, but cap cross-nation "comparable elsewhere" peers
+  // at 2 so a node isn't overloaded with foreign look-alikes.
+  const out=[]; let foreign=0;
+  for(const p of scored){ if(out.length>=max) break; if(!p[2]){ if(foreign>=2) continue; foreign++; } out.push(p[0]); }
+  return out;
 }
 
 /* ================= LENS ENGINE — view the same data by alliance/country or by technology ================= */
@@ -6033,7 +6049,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.11.0 (Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='September 2026 · v4.11.1 (Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
