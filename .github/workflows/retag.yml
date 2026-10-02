@@ -70,5 +70,12 @@ jobs:
             git config user.email "actions@users.noreply.github.com"
             git add data.json
             git commit -m "chore: taxonomy v2 retag — sync data.json ($(date -u +%Y-%m-%d))"
-            git push
+            # Push, rebasing onto any concurrent commit to main (survives a push race)
+            pushed=""
+            for attempt in 1 2 3 4 5; do
+              if git push; then pushed=1; break; fi
+              echo "push rejected (attempt $attempt) — rebasing onto remote main"
+              git pull --rebase origin main
+            done
+            if [ -z "$pushed" ]; then echo "ERROR: could not push after 5 attempts"; exit 1; fi
           fi
