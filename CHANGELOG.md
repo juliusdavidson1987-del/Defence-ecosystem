@@ -3,6 +3,15 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Defence-tech startups — batches 4 & 5 (2026-10-11)
+- **Batch 4 (5, non-US):** GalaxEye, Agnikul Cosmos, Skyroot Aerospace (India `pt_in`), constellr
+  (Germany `eu_de`), Reaction Dynamics (Canada `ca_grp`). `2026-10-11-startups-batch4.sql`.
+- **Batch 5 (7, US):** Sierra Space, Red 6, Machina Labs, Sedaro, Virtualitics, CX2, Istari (`us_dtech`).
+  `2026-10-11-startups-batch5.sql`.
+- Verification kept several *out*: Pixxel (already mapped), Sidereus (ceasing EU ops), Array Labs
+  (arraylabs.com is a web-dev firm, not the space company), plus Digantara/Spaceflux/TurbineOne/Obviant
+  (unresolved/placeholder domains — to re-source). **Running total ~50 verified new scaleups, batches 1–5.**
+
 ## Defence-tech startups — batch 3 (2026-10-11)
 - Added **11 more verified firms** (drones/maritime/counter-drone): Auterion, Darkhive, ThayerMahan,
   Terradepth, Fortem Technologies, Firehawk, Parry Labs, Havoc AI, Vatn Systems, Neros (all US, `us_dtech`)
