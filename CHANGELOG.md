@@ -6,11 +6,13 @@ aren't stamped here unless they change a version.
 ## v4.16.0 — Two more front-page tools (2026-10-11)
 - The welcome screen's "Pick how you'd like to start" grid had two empty slots after the Innovation
   pathway tile was promoted there. Filled them with two existing, fully-built tools so they're no longer
-  buried: **Ask the guide** (💬 — the conversational assistant, previously only reachable from the floating
-  button) and **One-page brief** (⎙ — generate a printable one-pager of the key doors for a nation + role).
-  The grid is now a clean two rows of three (Find your door · Explore · Search / Innovation pathway ·
-  Ask the guide · One-page brief). App-only change (`index.html`); both tiles reuse the existing
-  `guideBtn`/`openBrief` wiring. Version stamped v4.16.0 in `aver` + `DATA_AS_OF`.
+  buried: **Find a route** (⤳ — trace how one organisation connects to another through the mapped
+  relationships: accelerators, funders, corporate families, memberships) and **One-page brief** (⎙ —
+  generate a printable one-pager of the key doors for a nation + role). The grid is now a clean two rows of
+  three (Find your door · Explore · Search / Innovation pathway · Find a route · One-page brief). The
+  conversational **Ask the guide** assistant stays one tap away on its floating button, so it wasn't
+  duplicated on the grid. App-only change (`index.html`); both tiles reuse the existing
+  `openRoute`/`openBrief` wiring. Version stamped v4.16.0 in `aver` + `DATA_AS_OF`.
 
 ## Full chart reconcile — both Murray org-charts, line by line (2026-10-11)
 - On a direct re-scan of the two org-charts (the Sept 2026 "DoW Innovation Ecosystem" edition is far more
