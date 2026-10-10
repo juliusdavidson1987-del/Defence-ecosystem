@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US innovation-ecosystem gap-fill, batch 2 (2026-10-11)
+- 8 more verified gaps from the org-charts: software factories **Kessel Run** and **BESPIN** (`us_service`),
+  **STRIKEWERX** (`us_service`), MIIs **PowerAmerica** and **ARMI/BioFabUSA** (`us_ffrdc`), **TechLink** and
+  **Tradewind** (`us_acq`), and **TRMC** (`us_govagencies`). Deferred (no clean verified URL): Platform One,
+  Cloud One, Kobayashi Maru, Space CAMP, CyberWorx, ARCWERX, SOSSEC. `2026-10-11-us-innovation-gaps2.sql`.
+
 ## US innovation-ecosystem gap-fill (2026-10-11)
 - Cross-referenced Michael Murray's "Innovation Ecosystem 2026" org-charts (as a checklist, verified
   independently — not reproduced) against the map's US coverage. **The charts mostly overlap what's already
