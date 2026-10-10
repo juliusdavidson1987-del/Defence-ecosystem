@@ -236,6 +236,8 @@ browser-only config field, never committed.
   *Next phases, in order:* failed-search logging (aggregate, no PII — needs a small table); then the bigger
   structural pieces — typed relationship edges (the path-finding model), acquisition-phase tagging
   (CADMID/T, TEPIDOIL, NATO gates), and a coverage dashboard.
+  Failed-search logging shipped too (2026-10-10): the `events` logger now captures `search_empty`
+  (top-search), `finder_empty` and `finder_noexact` — coverage-gap signal, no PII, reuses `events`.
 
 
 
