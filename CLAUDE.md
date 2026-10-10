@@ -77,7 +77,10 @@ the *app itself* (a feature, layout, or the version stamp) changes.
   writes service-role only, audit trigger → history. Types: funds, accelerates, part_of, subsidiary_of,
   member_of, partners_with, contracts_with, sponsors, delivers_to, unclassified. "Current" = valid_to
   null/future AND last_verified within 12 months. Schema `2026-10-10-relationships-schema.sql`; backfill
-  from affiliations via `scripts/backfill-relationships.mjs` (unresolved → `relationships-review.csv`).
+  from affiliations via `scripts/backfill-relationships.mjs` (unresolved → `relationships-review.csv`),
+  plus ~34 more from classifying that review (`migrations/2026-10-10-relationships-review-classified.sql`:
+  20 CoEs→nato_coe, 6 FFRDCs→us_ffrdc, SAMI, Nammo, + two new verified parent nodes kr_hanwhagroup &
+  no_kongsberggruppen). Still open for manual review: Hyundai (two groups), US UARCs, Damen, pure descriptors.
   Stage C shipped (v4.13.0): a deterministic JS path-finder (`findPaths` over the `EDGES` adjacency,
   bounded + cycle-prevented) and the "Find a route between two orgs" modal (`#route`, menu → Tools);
   `sync-datajson.mjs` exports `data.relationships` (tolerant if the table is absent) and the app ingests

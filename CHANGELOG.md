@@ -11,6 +11,16 @@ aren't stamped here unless they change a version.
   candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid.
 - App-only (no data change). Trust programme — the "coverage dashboard" item.
 
+## Relationship review classified (2026-10-10)
+- Turned the resolvable part of `relationships-review.csv` into **~34 more edges**
+  (`migrations/2026-10-10-relationships-review-classified.sql`): 20 NATO Centres of Excellence →
+  `member_of` the CoE programme node, 6 US FFRDCs → `member_of us_ffrdc`, SAMI-AEC → its existing SAMI
+  parent, Nammo's Finnish operations → the Norwegian entry, and the **Hanwha** and **Kongsberg** families →
+  **two new web-verified parent nodes** (Hanwha Group, Kongsberg Gruppen). Edges marked verified.
+- Deliberately left for manual review (not forced): **Hyundai** (spans HD Hyundai vs Hyundai Motor Group),
+  the US **UARCs** (no umbrella node), **Damen** (single arm), and the pure descriptor nets ("UK",
+  "national champion", joint-venture labels).
+
 ## v4.13.0 (stage D) — path-finding RPC for UNITI (2026-10-10)
 - **`find_paths()` Postgres RPC** — a server-side twin of the app's JS path-finder (recursive CTE,
   undirected, cycle-prevented, bounded; ranked shortest-first then most-verified), callable with the
