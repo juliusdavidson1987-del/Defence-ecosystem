@@ -3,6 +3,19 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.13.0 (stage A+B) — Relationship edges: data layer (2026-10-10)
+- **New `relationships` + `relationships_history` tables.** Typed, dated, evidenced links between
+  organisations (member_of, subsidiary_of, funds, accelerates, contracts_with, …) with directedness,
+  validity dates, evidence status/origin and a jsonb attributes bag. Public-read; writes service-role
+  only; an audit trigger logs every insert/update/delete. Schema: `2026-10-10-relationships-schema.sql`.
+- **Backfilled 91 edges deterministically from the 188 affiliations** (47 member_of, 44 subsidiary_of)
+  via `scripts/backfill-relationships.mjs` → `2026-10-10-relationships-backfill.sql`. The 97 it could not
+  resolve deterministically (categories like "NATO-accredited"/"UK"/"US FFRDC", or parent companies not
+  present as their own node) are in `relationships-review.csv` for manual classification — nothing is
+  guessed into the DB.
+- Deterministic (SQL + plain JS, no AI), additive only. Stage C (recursive-CTE path RPC + JS mirror +
+  parity test + the "Find a route" UI) follows and is where this becomes user-visible.
+
 ## Learn from failed searches (2026-10-10)
 - **Coverage-gap capture completed.** The privacy-respecting `events` logger already recorded empty
   searches from the Explore list view; it now also records them from the **main top-search bar**

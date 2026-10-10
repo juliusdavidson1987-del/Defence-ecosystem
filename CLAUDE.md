@@ -71,6 +71,14 @@ the *app itself* (a feature, layout, or the version stamp) changes.
   Migration `migrations/2026-10-10-org-lifecycles.sql`. (In-place renames keep the same node + add a
   former name; `successor_id` is for a separate old→new pointer, e.g. a merge.)
 - App reads `published_nodes?select=*` (a view of published rows) and `reference?select=key,value`.
+- **`relationships` + `relationships_history` (v4.13.0):** typed edges between nodes
+  (`source_node_id`,`target_node_id`,`relationship_type`,`directed`,`valid_from/to`,`last_verified_at`,
+  `verified_by`,`source_url`,`evidence_note`,`evidence_status`,`origin`,`attributes` jsonb). Public-read,
+  writes service-role only, audit trigger → history. Types: funds, accelerates, part_of, subsidiary_of,
+  member_of, partners_with, contracts_with, sponsors, delivers_to, unclassified. "Current" = valid_to
+  null/future AND last_verified within 12 months. Schema `2026-10-10-relationships-schema.sql`; backfill
+  from affiliations via `scripts/backfill-relationships.mjs` (unresolved → `relationships-review.csv`).
+  Stage C (path RPC + JS mirror + "Find a route" UI) not yet built.
 - **"Max rows" must stay 5000** (default was 1000 and silently clipped nodes — a real past bug).
 - The **anon key READS only.** Inserts need the service-role key (server-side) or SQL editor.
 

@@ -1,0 +1,98 @@
+source_id,source_label,net,role,note,reason,suggested_target
+ae_abudhabishipbuildingad,UAE — Abu Dhabi Ship Building (ADSB),EDGE Group,naval (ADSB),"the UAE’s EDGE Group — including NIMR (land), ADSB (naval) and HALCON (guided weapons)",net did not resolve to a node,
+ae_edgegroup,UAE — EDGE Group,EDGE Group,parent conglomerate (~25 entities),"the UAE’s EDGE Group — including NIMR (land), ADSB (naval) and HALCON (guided weapons)",net did not resolve to a node,
+ae_halcon,UAE — HALCON,EDGE Group,guided weapons (HALCON),"the UAE’s EDGE Group — including NIMR (land), ADSB (naval) and HALCON (guided weapons)",net did not resolve to a node,
+ae_nimrautomotive,UAE — NIMR Automotive,EDGE Group,land systems (NIMR),"the UAE’s EDGE Group — including NIMR (land), ADSB (naval) and HALCON (guided weapons)",net did not resolve to a node,
+aerospace,The Aerospace Corporation,US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
+airbus_cis,Connected Intelligence,Airbus Defence & Space,Connected Intelligence,a division of Airbus Defence & Space — see its sister divisions under the Airbus Defence & Space node,role did not map to a type,airbus_grp
+au_bae,BAE Systems Australia,BAE Systems,Australia,"the BAE Systems group, including Hägglunds and Bofors in Sweden and BAE Systems Australia",role did not map to a type,bae
+bab_marine,Babcock Marine,Babcock International,Babcock Marine,a division of Babcock International — see its sister divisions under the Babcock International node,role did not map to a type,babcock
+bae,BAE Systems,BAE Systems,UK parent,"the BAE Systems group, including Hägglunds and Bofors in Sweden and BAE Systems Australia",net resolved to itself,
+c_hvmc,High Value Manufacturing Catapult (HVMC),UK,Catapult,"an independent innovation centre in the UK Catapult Network, overseen by Innovate UK",net did not resolve to a node,
+coe_cbrn,Joint CBRN Defence CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_ccdcoe,Cooperative Cyber Defence CoE (CCDCOE),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_ccoe,Civil-Military Cooperation CoE (CCOE),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_cied,Counter-IED CoE (C-IED),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_climate,Climate Change & Security CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_csw,Confined & Shallow Waters CoE (CSW),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_cwo,Cold Weather Operations CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_dat,Defence Against Terrorism CoE (DAT),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_ensec,Energy Security CoE (ENSEC),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_eod,Explosive Ordnance Disposal CoE (EOD),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_iamd,Integrated Air & Missile Defence CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_japcc,Joint Air Power Competence Centre (JAPCC),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_marsec,Maritime Security CoE (MARSEC),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_mileng,Military Engineering CoE (MILENG),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_milmed,Military Medicine CoE (MILMED),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_ms,Modelling & Simulation CoE (M&S),NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_mw,Mountain Warfare CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_nmw,Naval Mine Warfare CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_space,Space CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+coe_stratcom,Strategic Communications CoE,NATO-accredited,Centre of Excellence,"a nationally-funded independent institution accredited by NATO, not part of the command structure",net did not resolve to a node,
+cpc,Connected Places Catapult,UK,Catapult,"an independent innovation centre in the UK Catapult Network, overseen by Innovate UK",net did not resolve to a node,
+csac,Compound Semiconductor Applications Catapult,UK,Catapult,"an independent innovation centre in the UK Catapult Network, overseen by Innovate UK",net did not resolve to a node,
+cz_csg,Czechia — Czechoslovak Group (CSG),Czechoslovak Group (CSG),Czech parent,"the CSG group, spanning Czech and Slovak ammunition and vehicle companies",net did not resolve to a node,
+de_fraunhofer,Fraunhofer VVS (defence institutes),Fraunhofer,defence institutes,"independent institutes within the Fraunhofer-Gesellschaft, Europe’s largest applied-research organisation",net did not resolve to a node,
+de_tkms,thyssenkrupp Marine Systems (TKMS),German naval champion,submarines & surface ships,thyssenkrupp Marine Systems — Germany's submarine and naval-ship builder,net did not resolve to a node,
+digicat,Digital Catapult,UK,Catapult,"an independent innovation centre in the UK Catapult Network, overseen by Innovate UK",net did not resolve to a node,
+es_navantia,Spain — Navantia,Spanish national champion,state naval prime,Spain's state-owned naval shipbuilder,net did not resolve to a node,
+fi_nammo,Finland — Nammo (Finnish stake),Nammo,Finnish operations,"the Nordic ammunition group, jointly owned by Norway and Patria/Finland",net did not resolve to a node,
+fi_patria,Finland — Patria,Finnish national champion,land systems & support,Finland's state-majority-owned defence prime; co-owns Nammo with Norway,net did not resolve to a node,
+fr_isl,ISL — French-German Research Institute of Saint-Louis,Franco-German,joint institute,run by France (AID/DGA) & Germany (BAAINBw),net did not resolve to a node,
+fr_naval,Naval Group,Naviris (with Fincantieri),French naval prime,France's state-controlled naval prime; co-owns the Naviris JV with Italy's Fincantieri,net did not resolve to a node,
+gd_electricboat,Electric Boat,General Dynamics,Electric Boat,a division of General Dynamics — see its sister divisions under the General Dynamics node,role did not map to a type,gd
+gd_git,GDIT,General Dynamics,GDIT,a division of General Dynamics — see its sister divisions under the General Dynamics node,role did not map to a type,gd
+hu_rheinmetall,Hungary — Rheinmetall Hungary,Rheinmetall,Hungary,"the Rheinmetall group, with subsidiaries and JVs in Germany, Italy, Hungary and the UK",role did not map to a type,rheinmetall
+hu_rheinmetallhungarymuni,Hungary — Rheinmetall Hungary Munitions (Várpalota),Rheinmetall,"Hungary (Munitions, Várpalota)","the Rheinmetall group, with subsidiaries and JVs in Germany, Italy, Hungary and the UK",role did not map to a type,rheinmetall
+ida,Institute for Defense Analyses (IDA),US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
+il_elbit,Elbit Systems,Israeli primes,largest private prime,"Israel's largest private defence company, with the state-owned IAI and Rafael",net did not resolve to a node,
+il_iai,Israel Aerospace Industries (IAI),Israeli primes,state-owned aerospace,one of Israel's three major primes with Rafael and Elbit; parent of Greece's Intracom Defense,net did not resolve to a node,
+il_rafael,Rafael,Israeli primes,state-owned missiles & systems,"one of Israel's three major primes, with IAI and Elbit",net did not resolve to a node,
+in_bharatforgekalyanistra,India — Bharat Forge / Kalyani Strategic Systems,Kalyani Group,defence arm,"the defence arm of Bharat Forge, with the Kalyani-Rafael (KRAS) missile joint venture",net did not resolve to a node,
+in_brahmosaerospace,India — BrahMos Aerospace,India–Russia joint venture,,a JV between India’s DRDO and Russia’s NPO Mashinostroyeniya producing the BrahMos missile,net did not resolve to a node,
+it_fincantieri,Fincantieri,Naviris (with Naval Group),Italian shipbuilder,Italy's state-controlled shipbuilder; co-owns the Naviris JV with France's Naval Group,net did not resolve to a node,
+it_rwm,RWM Italia (Rheinmetall),Rheinmetall,Italy (RWM Italia),"the Rheinmetall group, with subsidiaries and JVs in Germany, Italy, Hungary and the UK",role did not map to a type,rheinmetall
+jhuapl,Johns Hopkins Applied Physics Laboratory (APL),US University-Affiliated Research Center,,an independent university research center sponsored by the US DoD (UARC),net did not resolve to a node,
+kmw,KNDS (KMW + Nexter),KNDS,KMW + Nexter,"the Franco-German KNDS group, formed from Nexter (France) and Krauss-Maffei Wegmann (Germany)",net resolved to itself,
+kr_hanwha,Hanwha Aerospace,Hanwha Group,Aerospace,"the Korean Hanwha group — Aerospace, Ocean and Systems",net did not resolve to a node,
+kr_hanwhaocean,Hanwha Ocean,Hanwha Group,Ocean (shipbuilding),"the Korean Hanwha group — Aerospace, Ocean and Systems",net did not resolve to a node,
+kr_hanwhasystems,Hanwha Systems,Hanwha Group,Systems (electronics),"the Korean Hanwha group — Aerospace, Ocean and Systems",net did not resolve to a node,
+kr_hyundaihi,HD Hyundai Heavy Industries,Hyundai (defence),HD Hyundai Heavy Industries (naval),"Hyundai’s defence-active companies — Rotem, HD Hyundai Heavy Industries and WIA",net did not resolve to a node,
+kr_rotem,Hyundai Rotem,Hyundai (defence),Hyundai Rotem (land/rail),"Hyundai’s defence-active companies — Rotem, HD Hyundai Heavy Industries and WIA",net did not resolve to a node,
+kr_wia,Hyundai WIA,Hyundai (defence),Hyundai WIA (artillery),"Hyundai’s defence-active companies — Rotem, HD Hyundai Heavy Industries and WIA",net did not resolve to a node,
+leo_cyber,Leonardo Cyber & Security,Leonardo,Cyber & Security,a division of Leonardo — see its sister divisions under the Leonardo node,role did not map to a type,leonardo
+leo_electronics,Leonardo Electronics,Leonardo,Electronics,a division of Leonardo — see its sister divisions under the Leonardo node,role did not map to a type,leonardo
+leonardo,Leonardo UK,Leonardo,UK arm,"the Leonardo group, with major arms in Italy, the UK and the US (Leonardo DRS)",net resolved to itself,
+lincoln,MIT Lincoln Laboratory,US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
+lmt_aero,Lockheed Martin Aeronautics,Lockheed Martin,Aeronautics,a division of Lockheed Martin — see its sister divisions under the Lockheed Martin node,role did not map to a type,lmt
+lmt_mfc,Missiles & Fire Control (MFC),Lockheed Martin,Missiles & Fire Control (MFC),a division of Lockheed Martin — see its sister divisions under the Lockheed Martin node,role did not map to a type,lmt
+lmt_space,Lockheed Martin Space,Lockheed Martin,Space,a division of Lockheed Martin — see its sister divisions under the Lockheed Martin node,role did not map to a type,lmt
+mbda,MBDA (UK),MBDA,UK arm,"the European missile group, with national arms in France, the UK, Germany and Italy",net resolved to itself,
+mitre,MITRE,US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
+nl_damen,Damen Naval,Damen Shipyards Group,naval arm,the naval division of the Dutch family-owned Damen Shipyards Group,net did not resolve to a node,
+no_kongsberg,Norway — Kongsberg Defence & Aerospace,Kongsberg Gruppen,Defence & Aerospace (KDA),"the Norwegian Kongsberg group — Defence & Aerospace, Maritime and Satellite Services (KSAT)",net did not resolve to a node,
+no_kongsbergmaritime,Norway — Kongsberg Maritime,Kongsberg Gruppen,Maritime,"the Norwegian Kongsberg group — Defence & Aerospace, Maritime and Satellite Services (KSAT)",net did not resolve to a node,
+no_kongsbergsatelliteserv,Norway — Kongsberg Satellite Services (KSAT),Kongsberg Gruppen,Satellite Services (KSAT),"the Norwegian Kongsberg group — Defence & Aerospace, Maritime and Satellite Services (KSAT)",net did not resolve to a node,
+no_nammo,Norway — Nammo,Nammo,Norwegian operations,"the Nordic ammunition group, jointly owned by Norway and Patria/Finland",net did not resolve to a node,
+pl_pgz,Poland — PGZ (Polska Grupa Zbrojeniowa),Polish national champion,state defence group,"Poland's PGZ state defence holding, uniting 50+ companies including the naval shipyard",net did not resolve to a node,
+pl_stocznia,Poland — PGZ Stocznia Wojenna,PGZ,naval shipyard,the naval shipyard within Poland's PGZ state defence group,net did not resolve to a node,
+rbsl,RBSL (Rheinmetall BAE Systems Land),BAE Systems,UK JV with Rheinmetall (RBSL),"the BAE Systems group, including Hägglunds and Bofors in Sweden and BAE Systems Australia",role did not map to a type,bae
+rtx_collins,Collins Aerospace,RTX,Collins Aerospace,a division of RTX — see its sister divisions under the RTX node,role did not map to a type,rtx
+rtx_pw,Pratt & Whitney,RTX,Pratt & Whitney,a division of RTX — see its sister divisions under the RTX node,role did not map to a type,rtx
+rtx_raytheon,Raytheon,RTX,Raytheon,a division of RTX — see its sister divisions under the RTX node,role did not map to a type,rtx
+sa_advancedelectronicscom,Saudi Arabia — Advanced Electronics Company (SAMI-AEC),SAMI (Saudi Arabian Military Industries),defence electronics (SAMI-AEC),"the Saudi SAMI group, including its Advanced Electronics Company (SAMI-AEC)",net did not resolve to a node,
+sa_saudiarabianmilitaryin,Saudi Arabia — Saudi Arabian Military Industries (SAMI),SAMI (Saudi Arabian Military Industries),parent (PIF-owned),"the Saudi SAMI group, including its Advanced Electronics Company (SAMI-AEC)",net did not resolve to a node,
+sandia,Sandia National Laboratories (SNL),US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
+satcat,Satellite Applications Catapult,UK,Catapult,"an independent innovation centre in the UK Catapult Network, overseen by Innovate UK",net did not resolve to a node,
+se_bofors,Sweden — BAE Systems Bofors,BAE Systems,Sweden (Bofors),"the BAE Systems group, including Hägglunds and Bofors in Sweden and BAE Systems Australia",role did not map to a type,bae
+se_hagglunds,Sweden — BAE Systems Hägglunds,BAE Systems,Sweden (Hägglunds),"the BAE Systems group, including Hägglunds and Bofors in Sweden and BAE Systems Australia",role did not map to a type,bae
+se_kockums,Sweden — Saab Kockums,Saab AB,naval (Saab Kockums),"the Swedish Saab group, including Saab Kockums (submarines and naval)",role did not map to a type,saab_grp
+sk_msm,Slovakia — MSM Group (CSG),Czechoslovak Group (CSG),Slovakia (MSM Group),"the CSG group, spanning Czech and Slovak ammunition and vehicle companies",net did not resolve to a node,
+sk_zvs,Slovakia — ZVS Holding,Czechoslovak Group (CSG),Slovakia (ZVS Holding),"the CSG group, spanning Czech and Slovak ammunition and vehicle companies",net did not resolve to a node,
+thales,Thales UK,Thales Group,UK arm,"sister companies operate in France, the UK, the Netherlands, Belgium, Portugal and Australia",net resolved to itself,
+thales_cyber,Cyber & Digital,Thales,Cyber & Digital,a division of Thales — see its sister divisions under the Thales node,role did not map to a type,thales
+thales_space,Space (Thales Alenia Space),Thales,Space (Thales Alenia Space),a division of Thales — see its sister divisions under the Thales node,role did not map to a type,thales
+tr_tei,TEI (TUSAŞ Engine Industries),Turkish Aerospace (TUSAŞ),engine arm,TUSAŞ Engine Industries — the aero-engine company associated with Turkish Aerospace,net did not resolve to a node,
+us_draper,Draper Laboratory,Independent research laboratory,,a not-for-profit lab serving US government sponsors,net did not resolve to a node,
+us_gtri,Georgia Tech Research Institute (GTRI),US University-Affiliated Research Center,,an independent university research center sponsored by the US DoD (UARC),net did not resolve to a node,
+us_sei,"Software Engineering Institute (SEI, CMU)",US Federally Funded R&D Center,,an independent institution sponsored by a US federal agency (FFRDC),net did not resolve to a node,
