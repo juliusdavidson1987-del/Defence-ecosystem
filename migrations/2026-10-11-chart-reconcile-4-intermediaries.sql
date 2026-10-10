@@ -1,0 +1,55 @@
+-- ============================================================================
+-- Full chart reconcile, batch 4: NONPROFIT INTERMEDIARIES / PARTNERSHIP
+-- INTERMEDIARIES (PIAs) & regional innovation nonprofits. Web-verified 2026-10-11.
+-- Parent = us_acq. Idempotent. Deferred: NineTwelve (no verifiable defence org by
+-- that name), SciTechCONNECT (a DoD ASD(S&T) program run via ARI, not a standalone
+-- body), Indiana Innovation Institute / IN3 (no confirmed standalone URL).
+-- ============================================================================
+insert into public.nodes (id,label,parent,kind,does,entry,tags,status,origin,evidence_status,last_verified_at,verified_by,source) values
+ ('us_apexaccel','APEX Accelerators','us_acq','org',
+  'US nationwide network (DoD Office of Small Business Programs; formerly the PTACs) of ~90 centres giving businesses mostly-free help to find, bid for and perform government contracts.',
+  'apexaccelerators.us','{"w":["sme","startup"],"o":["advice","procurement"],"t":[1,9],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','apexaccelerators.us'),
+ ('us_tedco','TEDCO (Maryland Technology Development Corporation)','us_acq','org',
+  'US Maryland state technology-development body and partnership intermediary providing seed and venture funding, the Maryland Innovation Initiative and commercialisation support to startups.',
+  'tedco.md','{"w":["startup","sme","investor"],"o":["investment","grant","advice"],"t":[1,6],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','tedco.md'),
+ ('us_htdc','Hawaiʻi Technology Development Corporation (HTDC)','us_acq','org',
+  'US Hawaii state agency (under DBEDT) and partnership intermediary growing technology and innovation, connecting companies with defence and federal opportunities.',
+  'htdc.org','{"w":["startup","sme"],"o":["advice","grant"],"t":[1,6],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','htdc.org'),
+ ('us_scra','South Carolina Research Authority (SCRA)','us_acq','org',
+  'US public nonprofit (with investment arm SC Launch) funding and supporting technology startups, universities and industry partnerships, and acting as a defence partnership intermediary.',
+  'scra.org','{"w":["startup","sme","academic","investor"],"o":["investment","advice"],"t":[2,7],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','scra.org'),
+ ('us_vipc','Virginia Innovation Partnership Corporation (VIPC)','us_acq','org',
+  'US Virginia nonprofit (formerly the Center for Innovative Technology) providing commercialisation and seed funding to tech startups and serving as a defence partnership intermediary.',
+  'vipc.org','{"w":["startup","sme","investor"],"o":["investment","advice"],"t":[1,6],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','vipc.org'),
+ ('us_oai','Ohio Aerospace Institute (OAI)','us_acq','org',
+  'US nonprofit (joint with NASA Glenn, AFRL and Ohio universities; affiliated with Parallax Advanced Research) advancing aerospace research, technology development and workforce.',
+  'oai.org','{"w":["academic","sme","govmil"],"o":["research","advice"],"t":[2,7],"d":["air","space"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','oai.org'),
+ ('us_nystec','NYSTEC','us_acq','org',
+  'US independent nonprofit technology-consulting company (born from the Rome Laboratory / AFRL) advising government on technology and cyber programmes.',
+  'nystec.com','{"w":["govmil","sme"],"o":["advice"],"t":[3,8],"d":["cyber","xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','nystec.com'),
+ ('us_purdueinnovates','Purdue Innovates','us_acq','org',
+  'US Purdue University IP-commercialisation and startup-creation network (technology transfer, incubator and startup foundry), a front door for Purdue-connected defence and dual-use ventures.',
+  'purdueinnovates.org','{"w":["academic","startup","sme"],"o":["advice","research"],"t":[2,7],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','purdueinnovates.org'),
+ ('us_rti','RTI International','us_acq','org',
+  'US independent nonprofit research institute (Research Triangle Park, NC) delivering science-based research and advisory services across engineering, security and the social and laboratory sciences.',
+  'rti.org','{"w":["govmil","academic","sme"],"o":["research","advice"],"t":[2,8],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','rti.org'),
+ ('us_tpp','The Patuxent Partnership (TPP)','us_acq','org',
+  'US nonprofit membership organisation (Southern Maryland) operating under a partnership intermediary agreement with NAWCAD, connecting government, industry and academia around naval aviation.',
+  'paxpartnership.org','{"w":["startup","sme","academic"],"o":["advice"],"t":[3,8],"d":["air"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','paxpartnership.org'),
+ ('us_mset','Mississippi Enterprise for Technology (MSET)','us_acq','org',
+  'US nonprofit at NASA Stennis Space Center (joint with the Mississippi Development Authority, NASA and state universities) matching small businesses with government agencies and tech-transfer.',
+  'mset.org','{"w":["startup","sme"],"o":["advice","procurement"],"t":[2,7],"d":["xcut"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','mset.org')
+on conflict (id) do update set label=excluded.label,parent=excluded.parent,does=excluded.does,entry=excluded.entry,
+  tags=excluded.tags,status='published',origin=excluded.origin,evidence_status=excluded.evidence_status,
+  last_verified_at=excluded.last_verified_at,verified_by=excluded.verified_by,source=excluded.source;
