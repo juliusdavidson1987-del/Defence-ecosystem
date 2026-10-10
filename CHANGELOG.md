@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.17.0 — "Benchmark a nation" tool (2026-10-11)
+- New home-screen **banner under the six tiles** (and a menu entry) opening a benchmark tool: pick any
+  nation and see how its innovation ecosystem compares to the field — the number of mapped bodies in each
+  of the eight innovation categories (ranked `#n/total`, with the leader named and a bar vs the leader),
+  plus the depth of its **funding & investor base** as a separate dimension. Headline cards show total
+  organisations and funding/investor bodies with their rank; a summary calls out the nation's strongest
+  categories and its thinnest/gap areas. Computed live from the loaded data (`computeBenchmark` /
+  `renderBenchmark` over `nationCodeFor` × `techForOrg`→category and `funcForOrg==='capital'`); reuses the
+  existing modal pattern. **Honest basis:** it compares *presence* (counts of bodies), not pounds invested
+  or deal volume — a structural view of ecosystem breadth, flagged as such in the tool. App-only change
+  (`index.html`); stamped v4.17.0 in `aver` + `DATA_AS_OF`.
+
 ## v4.16.0 — Two more front-page tools (2026-10-11)
 - The welcome screen's "Pick how you'd like to start" grid had two empty slots after the Innovation
   pathway tile was promoted there. Filled them with two existing, fully-built tools so they're no longer
