@@ -3,6 +3,13 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.4 — Fix: comparison cards full-width, never cramped (2026-10-11)
+- The previous `auto-fit` change packed the four "How we compare" cards into three narrow columns on wider
+  windows (too small) and still felt tight on narrow ones. Switched to **one full-width column by default,
+  two columns only at ≥900px**, and widened the modal (780→840px). Each comparison table is now large and
+  fully readable at every width — verified by DOM measurement (no row/card overflow at 399px or 1240px) and
+  a clean 2×2 at desktop width. App-only; stamped v4.18.4.
+
 ## v4.18.3 — Logo/wording is now a home button (2026-10-11)
 - The top-left brand (the logo mark **and** "The Defence Ecosystem" wording) is now a clickable home
   button — from anywhere on the map it returns to the welcome/home screen (the same `goHome` the menu's
