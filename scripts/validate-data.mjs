@@ -119,6 +119,17 @@ verifiedNoDate.length ? warn('Verified entries dated', `${verifiedNoDate.length}
 const provCount = nodes.filter(n => n.origin || n.evidenceStatus).length;
 pass('Provenance coverage', `${provCount}/${nodes.length} node(s) carry origin/evidence_status`);
 
+/* 13. life cycles (v4.12.2) — tolerant: only flags invalid present values. */
+const LC_OK = new Set(['active','renamed','merged','dissolved']);
+const badLC = nodes.filter(n => n.lifecycleStatus && !LC_OK.has(n.lifecycleStatus));
+badLC.length ? fail('Lifecycle status values', `${badLC.length} with unexpected lifecycle_status: ${[...new Set(badLC.map(n=>n.lifecycleStatus))].slice(0,6).join(', ')}`) : pass('Lifecycle status values');
+const danglSucc = nodes.filter(n => n.successorId && !ids.has(n.successorId));
+danglSucc.length ? warn('Successor links resolve', `${danglSucc.length} successor_id(s) point to a missing node (e.g. ${danglSucc.slice(0,5).map(n=>n.id+'→'+n.successorId).join(', ')})`) : pass('Successor links resolve');
+const badFormer = nodes.filter(n => n.formerNames && !(Array.isArray(n.formerNames) && n.formerNames.every(x => typeof x === 'string')));
+badFormer.length ? warn('Former-names shape', `${badFormer.length} malformed former_names (e.g. ${badFormer.slice(0,5).map(n=>n.id).join(', ')})`) : pass('Former-names shape');
+const lcCount = nodes.filter(n => n.lifecycleStatus || (n.formerNames && n.formerNames.length)).length;
+pass('Life-cycle coverage', `${lcCount} node(s) carry lifecycle/former-name data`);
+
 report();
 const failed = results.filter(r => !r.ok);
 process.exit(failed.length ? 1 : 0);

@@ -43,6 +43,10 @@ function rowToNode(r) {
   if (r.last_verified_at) n.lastVerifiedAt = r.last_verified_at;
   if (r.verified_by) n.verifiedBy = r.verified_by;
   if (r.evidence_note) n.evidenceNote = r.evidence_note;
+  // Life cycle (added v4.12.2) — only emitted when set.
+  if (r.lifecycle_status) n.lifecycleStatus = r.lifecycle_status;
+  if (r.successor_id) n.successorId = r.successor_id;
+  if (r.former_names) n.formerNames = r.former_names;
   return n;
 }
 

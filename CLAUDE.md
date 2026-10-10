@@ -64,6 +64,12 @@ the *app itself* (a feature, layout, or the version stamp) changes.
   nothing extra (so the whole map isn't flagged). `verifiedDate()` prefers `last_verified_at` when set.
   Migration `migrations/2026-10-10-node-provenance.sql`. **The `published_nodes` view is an explicit column
   list (NOT `select *`) — any new node column must be added to the view too**, or it won't reach the app/sync.
+- **Life-cycle columns (v4.12.2, additive):** `lifecycle_status` (`active|renamed|merged|dissolved`),
+  `successor_id` (the node that supersedes this one, clickable in the panel), `former_names` (jsonb array
+  of prior names). Old names resolve in search (`scoreNodeQuery` checks `LIFECYCLE[id].former`); the panel
+  shows a life-cycle line. `former_names` was backfilled from "(formerly …)" labels.
+  Migration `migrations/2026-10-10-org-lifecycles.sql`. (In-place renames keep the same node + add a
+  former name; `successor_id` is for a separate old→new pointer, e.g. a merge.)
 - App reads `published_nodes?select=*` (a view of published rows) and `reference?select=key,value`.
 - **"Max rows" must stay 5000** (default was 1000 and silently clipped nodes — a real past bug).
 - The **anon key READS only.** Inserts need the service-role key (server-side) or SQL editor.
@@ -224,11 +230,12 @@ browser-only config field, never committed.
   `evidence_status` / `last_verified_at` / `verified_by` / `evidence_note` columns + evidence badge in the
   detail panel, so an AI-drafted or unverified entry is distinguishable from a verified one (the
   pollution-effect defence, now that the auto-maintainer writes daily). See the Supabase schema note above.
-  *Next phases, in order:* Edge-Function origin-stamping (insert-node/auto-maintain mark `ai_drafted`);
-  organisation life cycles (status active/renamed/merged/dissolved + predecessor/successor, old-name search);
-  finder "why this matched / no exact fit" + failed-search logging; then the bigger structural pieces —
-  typed relationship edges (the path-finding model), acquisition-phase tagging (CADMID/T, TEPIDOIL, NATO
-  gates), and a coverage dashboard.
+  **Shipped since:** phase 1b Edge-Function origin-stamping (insert-node/auto-maintain mark `ai_drafted`,
+  v4.12.0); phase 2a finder "which criteria matched / no exact fit" + explicit non-endorsement authority
+  line (v4.12.1); phase 2b organisation life cycles (status + successor + former-name search, v4.12.2).
+  *Next phases, in order:* failed-search logging (aggregate, no PII — needs a small table); then the bigger
+  structural pieces — typed relationship edges (the path-finding model), acquisition-phase tagging
+  (CADMID/T, TEPIDOIL, NATO gates), and a coverage dashboard.
 
 
 

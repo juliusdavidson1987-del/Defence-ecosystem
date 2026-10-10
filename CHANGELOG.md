@@ -3,6 +3,20 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.12.2 — Organisation life cycles (2026-10-10)
+- **Renames, mergers and dissolutions are now data, not just label text.** New additive columns on
+  `nodes`: `lifecycle_status` (active / renamed / merged / dissolved), `successor_id` (the body that
+  supersedes this one), and `former_names` (prior names/aliases).
+- **Old names resolve in search.** A search for a former name (e.g. "Improbable Defence", "DSME") now
+  finds the current body (Skyral, Hanwha Ocean). `former_names` was **backfilled deterministically** from
+  the existing "(formerly …)" labels in the migration.
+- **Panel life-cycle line.** A node can now show "Formerly: …", "⤷ Renamed — now <successor>" / "⤷ Merged
+  into <successor>" (the successor is clickable), or "⚠ Dissolved / no longer operating" — so history
+  survives and a renamed body isn't silently lost.
+- Pipeline: `sync-datajson.mjs` exports the fields; `validate-data.mjs` adds tolerant checks (valid
+  status, resolvable successor links, former-names shape, a coverage count). View recreated to expose the
+  columns. Migration: `migrations/2026-10-10-org-lifecycles.sql` (idempotent; run in Supabase, then sync).
+
 ## v4.12.1 — Finder transparency + non-endorsement (2026-10-10)
 - **Finder explains itself.** Each result now shows **which of the criteria you selected it matches and
   which are gaps** ("Matches 3/4 of your criteria · gap: region" / "✓ Matches all 4"), so the Exact / Close /

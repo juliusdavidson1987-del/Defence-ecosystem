@@ -1056,7 +1056,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.12.1 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.12.2 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1227,7 +1227,7 @@ function applyData(data){
   if(!newTree) return false;
   TREE = newTree;
   // Repopulate the per-org maps from the merged records.
-  const T={},AFF={},EP={},OP={},FU={},ET={},SRC={},EV={};
+  const T={},AFF={},EP={},OP={},FU={},ET={},SRC={},EV={},LC={};
   data.nodes.forEach(n=>{
     if(n.tags) T[n.id]=n.tags;
     if(n.affiliation) AFF[n.id]=n.affiliation;
@@ -1238,8 +1238,10 @@ function applyData(data){
     if(n.source) SRC[n.id]=n.source;
     if(n.origin||n.evidenceStatus||n.lastVerifiedAt||n.verifiedBy||n.evidenceNote)
       EV[n.id]={ origin:n.origin||'', status:n.evidenceStatus||'', lastVerifiedAt:n.lastVerifiedAt||'', verifiedBy:n.verifiedBy||'', note:n.evidenceNote||'' };
+    if(n.lifecycleStatus||n.successorId||(Array.isArray(n.formerNames)&&n.formerNames.length))
+      LC[n.id]={ status:n.lifecycleStatus||'', successor:n.successorId||'', former:(Array.isArray(n.formerNames)?n.formerNames:[]) };
   });
-  TAGS=T; AFFILIATIONS=AFF; ENTRY_POINTS=EP; OPPS=OP; FUNDING=FU; ETYPE_OVERRIDES=ET; SOURCES=SRC; EVIDENCE=EV;
+  TAGS=T; AFFILIATIONS=AFF; ENTRY_POINTS=EP; OPPS=OP; FUNDING=FU; ETYPE_OVERRIDES=ET; SOURCES=SRC; EVIDENCE=EV; LIFECYCLE=LC;
   // Rebuild captures that were taken at parse time from the hardcoded TREE, so they reflect the
   // freshly-loaded tree (branch colours, original-children snapshot, original parent index).
   try{
@@ -1303,7 +1305,9 @@ function rowToNode(r){
     entityTypeOverride:r.entity_type_override||undefined, source:r.source||undefined,
     origin:r.origin||undefined, evidenceStatus:r.evidence_status||undefined,
     lastVerifiedAt:r.last_verified_at||undefined, verifiedBy:r.verified_by||undefined,
-    evidenceNote:r.evidence_note||undefined
+    evidenceNote:r.evidence_note||undefined,
+    lifecycleStatus:r.lifecycle_status||undefined, successorId:r.successor_id||undefined,
+    formerNames:r.former_names||undefined
   };
 }
 async function loadFromSupabase(){
@@ -3876,6 +3880,11 @@ function scoreNodeQuery(n,v){
   else if(wordRe.test(lab)) s=90;                     // whole-word / acronym in the name, e.g. "(Dstl)"
   else if(lab.startsWith(v)) s=85;
   else if(lab.includes(v)) s=70;                      // substring in the name
+  // Former names: a search for the OLD name still finds the renamed body (e.g. "Improbable Defence" -> Skyral).
+  if(s<88){ const fn=(LIFECYCLE[n.id]&&LIFECYCLE[n.id].former)||[];
+    for(const old of fn){ const o=String(old||'').toLowerCase(); if(!o) continue;
+      if(o===v){ s=Math.max(s,88); break; }
+      if(v.length>=3 && o.includes(v)) s=Math.max(s,66); } }
   if(s<50 && entry.includes(v)) s=Math.max(s,50);     // in the website/handle
   if(s<42 && does.includes(v)) s=Math.max(s,42);      // in the description
   if(s===0){                                          // fall back to synonyms only if nothing direct matched
@@ -6067,7 +6076,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.12.1 (Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.12.2 (Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6142,6 +6151,10 @@ let SOURCES={
    loaded from Supabase/data.json by applyData. Distinct from CRM.verified, which is the
    viewer's own local "I checked this" marker. Empty until the provenance migration + sync run. */
 let EVIDENCE={};
+/* Organisation life cycle per node: { status:'active|renamed|merged|dissolved', successor:<id>,
+   former:[old names] }. Drives search resolution of old names and the panel life-cycle line.
+   Empty until the org-lifecycles migration + sync run. */
+let LIFECYCLE={};
 /* ---- themes ---- */
 const THEMES=['dark','light','hc']; let themeIdx=0;
 function applyTheme(){ const t=THEMES[themeIdx]; document.documentElement.setAttribute('data-theme',t);
@@ -6182,6 +6195,22 @@ function evidenceBadge(id){
   if(origin==='community')
     return `<div class="evbadge" style="${box};border:1px solid var(--line)"><span style="color:var(--faint)">◇ Community-submitted, maintainer-reviewed.</span></div>`;
   return '';
+}
+// Organisation life cycle: notes a rename/merge (with a clickable successor) or a
+// dissolution, and lists former names so the reader knows what it used to be called.
+function lifecycleLine(id){
+  const lc=LIFECYCLE[id]; if(!lc) return '';
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const succName = lc.successor ? (NODE[lc.successor] ? NODE[lc.successor].l : lc.successor) : '';
+  const succHtml = lc.successor
+    ? (NODE[lc.successor] ? `<a href="#" class="lclink" data-lcid="${esc(lc.successor)}" style="color:var(--phos)">${esc(succName)}</a>` : esc(succName))
+    : '';
+  const parts=[];
+  if(lc.status==='merged')      parts.push(`<span style="color:#E3A24B">⤷ Merged into</span>${succHtml?(' '+succHtml):''}`);
+  else if(lc.status==='renamed') parts.push(`<span style="color:#E3A24B">⤷ Renamed</span>${succHtml?(' — now '+succHtml):''}`);
+  else if(lc.status==='dissolved') parts.push(`<span style="color:#E36C6C">⚠ Dissolved / no longer operating</span>`);
+  if(lc.former && lc.former.length) parts.push(`<span style="color:var(--faint)">Formerly: ${lc.former.map(esc).join(', ')}</span>`);
+  return parts.length ? `<div class="lcline" style="margin-top:6px;font-size:11.5px;color:var(--mut)">${parts.join(' · ')}</div>` : '';
 }
 function verifiedLine(id){ const uv=(CRM.verified||{})[id];
   const vd=verifiedDate(id);
@@ -6244,7 +6273,8 @@ function renderPanelExtras(id){
   else { const d=deriveSourceFromEntry(id); if(d && domainVerified(d)){ srcHtml=`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Official site</span> ${linkifyProse(d)}`; } }
   document.getElementById('psource').innerHTML = srcHtml;
   { const aff=affiliationLine(id);
-    document.getElementById('pverify').innerHTML = (aff?`<div class="paffil">${aff}</div>`:'') + evidenceBadge(id) + verifiedLine(id); }
+    document.getElementById('pverify').innerHTML = (aff?`<div class="paffil">${aff}</div>`:'') + lifecycleLine(id) + evidenceBadge(id) + verifiedLine(id);
+    document.querySelectorAll('#pverify .lclink').forEach(a=>a.onclick=e=>{ e.preventDefault(); const t=a.dataset.lcid; if(t&&NODE[t]) focusNode(t); }); }
   const ff=freshnessFlag(id);
   const pflag=document.getElementById('pfreshness');
   if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }
