@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Defence-tech startups — batch 1 (2026-10-11)
+- Added **16 web-verified US defence-tech scaleups** from the Crustdata "Defense Tech Market Map Q4 2026"
+  (Elroy Air, AEVEX, Overland AI, Seasats, Hidden Level, X-Bow Systems, Shift5, Stoke Space, Albedo,
+  Onebrief, QuSecure, Relativity Space, Varda, Impulse Space, Vast, LeoLabs) under `us_dtech`. Each deduped
+  against the map (none present) and verified against its official site (origin=curated,
+  evidence_status=verified, 2026-10-11). Migration `2026-10-11-startups-batch1.sql`.
+  First of several batches; the two government org-charts (Murray) are a later gap-check, not bulk-added.
+
 ## Admin drafter: draft-from-source reliability (2026-10-10)
 - **Fix — flaky drafting.** "Draft node from feedback" (`draft-from-source`) does a web-search multi-turn
   that occasionally hit a transient timeout/overload, so it failed and you had to click a few times. Now:
