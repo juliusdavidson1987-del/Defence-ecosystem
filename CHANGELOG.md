@@ -3,6 +3,15 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Image-additions final pass (2026-10-11)
+- Re-sourced the deferred items and added the 6 that checked out: **Platform One**, **Space CAMP**
+  (`us_service`), **TurbineOne** (`us_dtech`), **SOSSEC** (`us_acq`), **Digantara** (India `pt_in`),
+  **Spaceflux** (UK `c_space`). `2026-10-11-final-pass.sql`. Still deferred (no clean standalone official
+  site): Kobayashi Maru, CyberWorx, ARCWERX, Cloud One, Obviant.
+- **Image-additions complete.** Across the three source images (Crustdata startup map + two Murray
+  org-charts): **~73 new verified entries** added in total — ~56 defence-tech firms and ~17 US
+  innovation/government bodies — every one deduped and verified against its official site.
+
 ## US innovation-ecosystem gap-fill, batch 2 (2026-10-11)
 - 8 more verified gaps from the org-charts: software factories **Kessel Run** and **BESPIN** (`us_service`),
   **STRIKEWERX** (`us_service`), MIIs **PowerAmerica** and **ARMI/BioFabUSA** (`us_ffrdc`), **TechLink** and
