@@ -3,6 +3,15 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.2 — Benchmark polish: fluid cards + no UK default (2026-10-11)
+- The "How we compare with other nations" cards were being clipped on narrower windows. Made the whole
+  section fluid: cards reflow with `auto-fit`, each row uses shrink-safe columns (`minmax(0,…)` + a
+  `max-content` value column) so figures are never cut off, source lines wrap, and the "YOU" badge sits in
+  a flex cell so it survives name truncation. Modal widened slightly (700→780px).
+- The benchmark no longer defaults to the **UK** — it opens on the viewer's chosen home nation, falling
+  back to the largest ecosystem (US) rather than the UK, so it reads as nation-neutral for a multinational
+  audience. The panel heading is dynamic ("How &lt;nation&gt; compares…"). App-only; stamped v4.18.2.
+
 ## v4.18.1 — Fix: partner nations (India/Singapore/Saudi/UAE) were dropped from the map (2026-10-11)
 - **Significant fix.** While wiring the benchmark's nation selector, discovered that India, Singapore,
   Saudi Arabia and the UAE — ~82 organisations added to Supabase — **never appeared anywhere on the map**.
