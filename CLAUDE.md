@@ -251,7 +251,11 @@ browser-only config field, never committed.
   line (v4.12.1); phase 2b organisation life cycles (status + successor + former-name search, v4.12.2).
   *Next phases, in order:* failed-search logging (aggregate, no PII — needs a small table); then the bigger
   structural pieces — ~~typed relationship edges (the path-finding model)~~ (shipped v4.13.0 — "Find a
-  route"), acquisition-phase tagging (CADMID/T, TEPIDOIL, NATO gates), and a coverage dashboard.
+  route"), ~~acquisition-phase tagging~~ (shipped v4.14.0 as a **runtime "Acquisition stage" lens**:
+  `phaseForOrg()`/`PHASE_META` derive Concept/Develop/Demonstrate/Procure/In-service from `tags.o`+`tags.d`,
+  surfaced as a finder facet + panel chips — no stored tag, like the other lenses; full hand-tagging of
+  CADMID/TEPIDOIL deferred as unneeded given TRL already covers maturity), and ~~a coverage dashboard~~
+  (shipped v4.13.1). **The whole first-wave trust programme from the review is now delivered.**
   Failed-search logging shipped too (2026-10-10): the `events` logger now captures `search_empty`
   (top-search), `finder_empty` and `finder_noexact` — coverage-gap signal, no PII, reuses `events`.
 

@@ -3,6 +3,19 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.14.0 — Acquisition-stage lens (2026-10-10)
+- **Lightweight acquisition-phase tagging, derived at runtime.** A new **"Acquisition stage"** finder
+  facet (Concept · Develop · Demonstrate · Procure · In-service) and a stage line on each pipeline body's
+  detail panel, so you can ask "who's at the prototype stage?". Derived live from each body's offers/domains
+  (research/grant → concept+develop, investment → develop, test → demonstrate, procurement/contract →
+  procure, logistics → in-service), exactly like the Alliance and Technology lenses — **no new stored tag,
+  no migration**. It lights up only for pipeline bodies (funding, innovation, research, test, procurement,
+  logistics), not product suppliers or advice-only bodies, and it's a first-class finder filter (drives
+  results on its own: `scoreNode` scores phase; `phaseForOrg` / `PHASE_META` in index.html).
+- Why not full CADMID/TEPIDOIL tagging of ~2,000 nodes by hand: TRL (`tags.t`, the "Maturity" facet)
+  already covers the maturity axis; this adds the procurement-stage framing UNITI's Route/Procure needs for
+  a fraction of the effort. App-only, no data change.
+
 ## v4.13.1 — Coverage & data-quality dashboard (2026-10-10)
 - **New "Coverage & data quality" panel** (menu → Reference). Computed live from the loaded data, it shows
   headline counts (orgs, nations, relationships, affiliations), the provenance/verification breakdown
