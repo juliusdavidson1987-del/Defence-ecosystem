@@ -445,10 +445,10 @@
   header{flex-wrap:nowrap;overflow-x:auto;overflow-y:visible}
   header::-webkit-scrollbar{height:0}
   /* ================= v2: list / explore view ================= */
-  #listview,#compare,#correct,#feedback,#reconcile,#route{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
-  #listview.open,#compare.open,#correct.open,#feedback.open,#reconcile.open,#route.open{display:flex}
+  #listview,#compare,#correct,#feedback,#reconcile,#route,#coverage{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #listview.open,#compare.open,#correct.open,#feedback.open,#reconcile.open,#route.open,#coverage.open{display:flex}
   #listview .lvcard,#compare .lvcard{width:min(1180px,97vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative}
-  #listview .aclose,#compare .aclose,#correct .aclose,#feedback .aclose,#reconcile .aclose,#route .aclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--txt);cursor:pointer;font-size:16px;z-index:3}
+  #listview .aclose,#compare .aclose,#correct .aclose,#feedback .aclose,#reconcile .aclose,#route .aclose,#coverage .aclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--txt);cursor:pointer;font-size:16px;z-index:3}
   .lvfilters{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
   .lvftoggle{display:none;align-items:center;gap:8px;width:100%;margin:8px 0 0;padding:9px 12px;background:var(--ink2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer}
   .lvftoggle .lvftcount{color:var(--phos);font-weight:600}
@@ -810,6 +810,7 @@
       <div class="msgroup">
         <div class="msh">Reference</div>
         <button class="msitem" id="upcomingBtn">📅 Events &amp; what's coming up</button>
+        <button class="msitem" id="coverageBtn">📊 Coverage &amp; data quality</button>
         <button class="msitem" id="glossaryBtn">🔤 Acronym glossary</button>
       </div>
       <div class="msgroup">
@@ -1057,7 +1058,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.13.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.13.1 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1205,6 +1206,13 @@
   <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);margin:8px 0 2px"><input type="checkbox" id="route_current"> Current links only (hide expired or known-stale links)</label>
   <div class="frow"><button class="fgo" id="route_go">⇢ Find route</button><button class="freset" id="route_cancel">Cancel</button></div>
   <div id="routeResults" style="margin-top:12px"></div>
+</div></div>
+
+<div id="coverage" role="dialog" aria-modal="true" aria-label="Coverage and data quality"><div class="acard" style="max-width:660px;max-height:85vh;overflow:auto">
+  <button class="aclose" id="covClose" aria-label="Close">×</button>
+  <div class="ak">📊 Coverage &amp; data quality</div>
+  <h2>Coverage &amp; data quality</h2>
+  <div id="coverageBody"></div>
 </div></div>
 
 <a id="supportBtn" href="https://www.buymeacoffee.com/juliusdavit" target="_blank" rel="noopener noreferrer" aria-label="Support The Defence Ecosystem — buy me a coffee" title="Free & independent — support running costs">☕ Support</a>
@@ -5797,6 +5805,10 @@ document.getElementById('route_go').onclick=runRoute;
 document.getElementById('route').addEventListener('click',e=>{ if(e.target.id==='route')closeRoute(); });
 document.getElementById('route_from').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('route_to').focus(); } });
 document.getElementById('route_to').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runRoute(); } });
+/* Coverage dashboard wiring */
+document.getElementById('coverageBtn').onclick=openCoverage;
+document.getElementById('covClose').onclick=closeCoverage;
+document.getElementById('coverage').addEventListener('click',e=>{ if(e.target.id==='coverage')closeCoverage(); });
 
 /* ============ CRM + custom nodes ============ */
 let CRM={contacts:{},custom:[],favs:[],saved:[],verified:{},usersources:{},corrections:[]};
@@ -6123,7 +6135,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.13.0 (Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.13.1 (Coverage & data quality — a new panel (menu → "Coverage & data quality") openly shows what the map covers and where it is thin: counts, provenance and verification state, organisation life cycles, and coverage by technology area and by nation, with the thinnest nations flagged as candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid · Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6312,6 +6324,55 @@ function renderRoute(from,to,paths,currentOnly){
   });
   return html;
 }
+/* ---- coverage & data-quality dashboard (v4.13.0) ---- */
+const NAT_NAMES={uk:'United Kingdom',us:'United States',fr:'France',de:'Germany',it:'Italy',nl:'Netherlands',es:'Spain',pt:'Portugal',be:'Belgium',no:'Norway',se:'Sweden',fi:'Finland',dk:'Denmark',pl:'Poland',cz:'Czechia',sk:'Slovakia',hu:'Hungary',ro:'Romania',bg:'Bulgaria',gr:'Greece',hr:'Croatia',si:'Slovenia',ee:'Estonia',lv:'Latvia',lt:'Lithuania',tr:'Türkiye',ua:'Ukraine',ca:'Canada',au:'Australia',nz:'New Zealand',kr:'South Korea',jp:'Japan',il:'Israel',in:'India',sg:'Singapore',ae:'UAE',sa:'Saudi Arabia',nato:'NATO (multinational)',eu:'EU (institutions)',eu_inst:'EU (institutions)',multi:'Multinational'};
+const natName=c=>NAT_NAMES[c]||String(c||'?').toUpperCase();
+function computeCoverage(){
+  const orgs=Object.values(NODE).filter(n=>n&&n._kind==='org');
+  const byNat={},byCat={},origin={},estat={}; let verifiedRecent=0,withProv=0,renamed=0,merged=0,dissolved=0,former=0;
+  orgs.forEach(n=>{ const id=n.id;
+    const nat=nationCodeFor(id)||'?'; byNat[nat]=(byNat[nat]||0)+1;
+    const cat=SUBCAT[techForOrg(id)]||'xfunc'; byCat[cat]=(byCat[cat]||0)+1;
+    const ev=EVIDENCE[id];
+    if(ev){ withProv++; origin[ev.origin||'(none)']=(origin[ev.origin||'(none)']||0)+1; estat[ev.status||'(none)']=(estat[ev.status||'(none)']||0)+1;
+      if(ev.lastVerifiedAt){ const t=Date.parse(ev.lastVerifiedAt); if(!isNaN(t)&&(Date.now()-t)/2.6298e9<=12) verifiedRecent++; } }
+    else origin['(none)']=(origin['(none)']||0)+1;
+    const lc=LIFECYCLE[id]; if(lc){ if(lc.status==='renamed')renamed++; if(lc.status==='merged')merged++; if(lc.status==='dissolved')dissolved++; if(lc.former&&lc.former.length)former++; }
+  });
+  return {nOrg:orgs.length,byNat,byCat,origin,estat,verifiedRecent,withProv,renamed,merged,dissolved,former,
+    rels:(RELATIONSHIPS||[]).length, affs:Object.keys(AFFILIATIONS||{}).length};
+}
+function covBar(n,max,col){ const pct=max?Math.round(n/max*100):0; return `<span style="display:inline-block;height:8px;width:${Math.max(2,pct)}%;background:${col||'var(--phos)'};border-radius:4px;vertical-align:middle"></span>`; }
+function renderCoverage(){
+  const c=computeCoverage(); const e=s=>finderEsc(s);
+  const nats=Object.entries(c.byNat).sort((a,b)=>b[1]-a[1]);
+  const thin=nats.filter(([,v])=>v<4).sort((a,b)=>a[1]-b[1]);
+  const maxNat=nats.length?nats[0][1]:1;
+  const cats=TECH_TAX.map(cat=>[cat.l,cat.c,c.byCat[cat.key]||0]).sort((a,b)=>b[2]-a[2]);
+  const maxCat=cats.length?cats[0][2]:1;
+  let h=`<p class="pintro">Open about what the map does and doesn't yet cover — because a navigational aid is only useful if you can see its gaps. Computed live from the loaded data.</p>`;
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin:4px 0 14px">
+    ${[['Organisations',c.nOrg],['Nations',nats.length],['Relationships',c.rels],['Affiliations',c.affs]].map(([k,v])=>`<div style="border:1px solid var(--line);border-radius:9px;padding:9px 11px"><div style="font-size:19px;font-weight:600">${v}</div><div style="font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.8px">${k}</div></div>`).join('')}</div>`;
+  // provenance
+  const ori=Object.entries(c.origin).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${e(k)}: <b>${v}</b>`).join(' · ');
+  h+=`<div class="covsec"><h3 style="font-size:13px;margin:12px 0 5px">Provenance & verification</h3>
+    <div style="font-size:11.5px;color:var(--mut);line-height:1.6">Origin — ${ori}.<br>Independently verified within 12 months: <b>${c.verifiedRecent}</b> of ${c.nOrg} (${Math.round(c.verifiedRecent/Math.max(1,c.nOrg)*100)}%). The rest are maintainer-curated from open sources, not individually date-stamped — <span style="color:var(--faint)">honest baseline, not a quality flaw</span>.</div></div>`;
+  // lifecycle
+  h+=`<div class="covsec"><h3 style="font-size:13px;margin:14px 0 5px">Organisation life cycles</h3>
+    <div style="font-size:11.5px;color:var(--mut)">Former names recorded: <b>${c.former}</b> · renamed <b>${c.renamed}</b> · merged <b>${c.merged}</b> · dissolved <b>${c.dissolved}</b></div></div>`;
+  // by category
+  h+=`<div class="covsec"><h3 style="font-size:13px;margin:14px 0 6px">Coverage by technology area</h3>`;
+  cats.forEach(([l,col,v])=>{ h+=`<div style="display:grid;grid-template-columns:180px 1fr 40px;align-items:center;gap:8px;margin-bottom:4px;font-size:11px"><span style="color:var(--mut)">${e(l)}</span>${covBar(v,maxCat,col)}<span style="text-align:right;color:var(--faint)">${v}</span></div>`; });
+  h+=`</div>`;
+  // by nation
+  h+=`<div class="covsec"><h3 style="font-size:13px;margin:14px 0 6px">Coverage by nation (top 12)</h3>`;
+  nats.slice(0,12).forEach(([code,v])=>{ h+=`<div style="display:grid;grid-template-columns:180px 1fr 40px;align-items:center;gap:8px;margin-bottom:4px;font-size:11px"><span style="color:var(--mut)">${e(natName(code))}</span>${covBar(v,maxNat)}<span style="text-align:right;color:var(--faint)">${v}</span></div>`; });
+  if(thin.length) h+=`<div style="margin-top:9px;font-size:11px;color:#E3A24B">⚠ Thinnest coverage (under 4 orgs): ${thin.slice(0,10).map(([code,v])=>e(natName(code))+' ('+v+')').join(', ')} — candidates to deepen.</div>`;
+  h+=`</div>`;
+  return h;
+}
+function openCoverage(){ const r=document.getElementById('coverageBody'); if(r) r.innerHTML=renderCoverage(); const m=document.getElementById('coverage'); if(m) m.classList.add('open'); }
+function closeCoverage(){ const m=document.getElementById('coverage'); if(m) m.classList.remove('open'); }
 /* ---- themes ---- */
 const THEMES=['dark','light','hc']; let themeIdx=0;
 function applyTheme(){ const t=THEMES[themeIdx]; document.documentElement.setAttribute('data-theme',t);

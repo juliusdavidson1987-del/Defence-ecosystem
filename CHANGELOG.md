@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.13.1 — Coverage & data-quality dashboard (2026-10-10)
+- **New "Coverage & data quality" panel** (menu → Reference). Computed live from the loaded data, it shows
+  headline counts (orgs, nations, relationships, affiliations), the provenance/verification breakdown
+  (origin mix, % independently verified within 12 months — honest baseline), organisation life-cycle
+  counts, and coverage bars **by technology area** and **by nation**, with the thinnest nations flagged as
+  candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid.
+- App-only (no data change). Trust programme — the "coverage dashboard" item.
+
 ## v4.13.0 — Find a route (relationship path-finder, stage C) (2026-10-10)
 - **"Find a route between two orgs"** (menu → Tools). Pick a start and a destination and see how they
   connect through the mapped relationships — e.g. an SME → its accelerator → the buyer — with each hop's
