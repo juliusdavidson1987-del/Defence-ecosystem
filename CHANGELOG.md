@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US innovation-ecosystem gap-fill (2026-10-11)
+- Cross-referenced Michael Murray's "Innovation Ecosystem 2026" org-charts (as a checklist, verified
+  independently — not reproduced) against the map's US coverage. **The charts mostly overlap what's already
+  there** (DIU, DARPA, SCO, MDA, FFRDCs, UARCs, software/WERX, DEVCOM, warfare centres, CDAO, CNA, MxD…),
+  which validates the US build. Added the **9 genuine gaps**: LIFT, NIIMBL, BioMADE, AIM Photonics (MIIs →
+  `us_ffrdc`); DEFENSEWERX, Doolittle Institute, Griffiss Institute, Catalyst Campus (`us_service`);
+  Advanced Technology International (`us_acq`). Migration `2026-10-11-us-innovation-gaps.sql`.
+
 ## Defence-tech startups — batches 4 & 5 (2026-10-11)
 - **Batch 4 (5, non-US):** GalaxEye, Agnikul Cosmos, Skyroot Aerospace (India `pt_in`), constellr
   (Germany `eu_de`), Reaction Dynamics (Canada `ca_grp`). `2026-10-11-startups-batch4.sql`.
