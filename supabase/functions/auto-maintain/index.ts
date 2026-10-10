@@ -345,8 +345,16 @@ async function procWebFinds(client: Anthropic, sb: SupabaseClient, report: Repor
       auto_assessed_at: now(),
       auto_action: canPublish ? "publish" : "stage",
       auto_reason: `${canPublish ? "auto-published" : "staged"} from web find — ${d.note}`,
+      // Provenance (v4.12.0): a brand-new machine-authored org — flag it ai_drafted
+      // so the detail panel shows ⚠ until a human verifies, even if auto-published.
+      origin: "auto_maintainer", evidence_status: "ai_drafted",
     };
-    const { error } = await sb.from("nodes").upsert(row, { onConflict: "id" });
+    let { error } = await sb.from("nodes").upsert(row, { onConflict: "id" });
+    if (error && /(origin|evidence_status)/i.test(error.message) && /(column|schema cache|does not exist)/i.test(error.message)) {
+      // Provenance columns not present yet (migration not run) — insert without them.
+      const { origin: _o, evidence_status: _e, ...bare } = row as Record<string, unknown>;
+      ({ error } = await sb.from("nodes").upsert(bare, { onConflict: "id" }));
+    }
     if (error) { await holdRow(sb, "web_finds", w.id, "review", `verified but node insert failed: ${error.message}`); report.held.push({ queue: "webfind", id: String(w.id), label, action: "review", reason: "verified but node insert failed" }); continue; }
     await sb.from("web_finds").update({ status: "added", auto_assessed_at: now(), auto_action: canPublish ? "publish" : "stage", auto_reason: d.note }).eq("id", w.id);
     corpus.push({ id, label: String(node.label || ""), entry: String(node.entry || "") });

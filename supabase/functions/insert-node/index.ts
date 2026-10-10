@@ -21,6 +21,9 @@ import { isSynthetic, safeParent } from "../_shared/parent.ts";
 type NodeIn = {
   id?: string; label?: string; parent?: string; kind?: string;
   does?: string; entry?: string; tags?: unknown; status?: string;
+  // Provenance (v4.12.0) — all optional; the caller may override the defaults.
+  origin?: string; evidence_status?: string; last_verified_at?: string;
+  verified_by?: string; evidence_note?: string;
 };
 
 // A tags object is only valid if it's a plain object with a `d` array. Anything
@@ -77,7 +80,26 @@ Deno.serve(async (req: Request) => {
     status: node.status === "pending" ? "pending" : "published",
   };
 
-  const { error } = await supabase.from("nodes").upsert(row, { onConflict: "id" });
+  // Provenance (v4.12.0). A staged (pending) node is an AI/web draft unless the
+  // caller says otherwise; a direct insert is a maintainer action. The caller may
+  // override any field (e.g. mark verified with a date on review).
+  const prov: Record<string, unknown> = {
+    origin: (typeof node.origin === "string" && node.origin) ? node.origin
+      : (row.status === "pending" ? "ai_drafted" : "manual"),
+  };
+  if (typeof node.evidence_status === "string" && node.evidence_status) prov.evidence_status = node.evidence_status;
+  else if (row.status === "pending") prov.evidence_status = "ai_drafted";
+  if (typeof node.last_verified_at === "string" && node.last_verified_at) prov.last_verified_at = node.last_verified_at;
+  if (typeof node.verified_by === "string" && node.verified_by) prov.verified_by = node.verified_by;
+  if (typeof node.evidence_note === "string" && node.evidence_note) prov.evidence_note = node.evidence_note;
+
+  // Try with provenance; if those columns aren't present yet (migration not run),
+  // fall back to the base row so the insert path keeps working either way.
+  let { error } = await supabase.from("nodes").upsert({ ...row, ...prov }, { onConflict: "id" });
+  if (error && /(origin|evidence_status|last_verified_at|verified_by|evidence_note)/i.test(error.message)
+            && /(column|schema cache|does not exist)/i.test(error.message)) {
+    ({ error } = await supabase.from("nodes").upsert(row, { onConflict: "id" }));
+  }
   if (error) return json({ error: error.message }, 502);
   return json({ ok: true });
 });
