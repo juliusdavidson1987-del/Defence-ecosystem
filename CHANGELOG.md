@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Admin drafter: feedback-split drafts get an id (2026-10-10)
+- **Fix.** When one feedback was split into several node drafts (`draft-from-source` multi-item), each
+  **new-org** draft loaded into Step 3 with a **blank id**, so it couldn't build/insert/deploy. Step 3 now
+  **auto-generates the id** for new orgs exactly as `drafter-engine.makeId()` does — prefix from `tags.g`
+  (none for UK), slug of the label, uniquified against existing ids (and against other drafts from the same
+  feedback) — and shows it in the Step 3 note. Verified to produce ids identical to `makeId`. Corrections
+  with no matched existing node still load blank by design (you pick the node). Admin tool only.
+
 ## v4.15.0 — Innovation pathway by nation (2026-10-10)
 - The **Innovation pathway** tool ("Crossing the valley of death") is now **country-selectable**: pick any
   nation and get the same five-stage readout (Concept → Develop → Demonstrate → Procure → In-service),

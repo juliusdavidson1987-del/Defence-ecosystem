@@ -512,14 +512,23 @@ window.viewAttachment=async(id)=>{
   catch(e){ toast('error — see console'); console.error(e); }
 };
 window._dfsItems={};
+// Generate a node id for a NEW org the same way drafter-engine makeId() does
+// (prefix from tags.g unless UK; slug of the label; uniquified against existing ids),
+// so a feedback-split new-org draft always has an id and can build/insert. Without
+// this, split drafts loaded blank and the insert couldn't build.
+function _dslug(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/&/g,'and').replace(/[^a-z0-9]+/g,'').slice(0,22); }
+function draftNodeId(label,tags){ const g=(tags&&tags.g)?String(tags.g).toLowerCase():'uk'; const base=(g&&g!=='uk')?g+'_'+_dslug(label):_dslug(label); let id=base,k=2; while(IDS&&IDS.has(id)){ id=base+k; k++; } return id; }
 // Load one drafted item into Step 3 for review/insert.
 window.loadDraftIntoStep3=(d,meta)=>{
-  $('f_id').value=d.id||''; $('f_parent').value=d.parent||''; $('f_label').value=d.label||''; $('f_does').value=d.does||''; $('f_entry').value=d.entry||''; $('f_tags').value=JSON.stringify(d.tags||{});
+  let id=d.id||'', autogen=false;
+  if(!id && d.action!=='correct' && d.label){ id=draftNodeId(d.label,d.tags); try{ IDS.add(id); }catch(_){} autogen=true; }
+  $('f_id').value=id; $('f_parent').value=d.parent||''; $('f_label').value=d.label||''; $('f_does').value=d.does||''; $('f_entry').value=d.entry||''; $('f_tags').value=JSON.stringify(d.tags||{});
   const m=meta||{}; const act=d.action==='correct'?'✎ correction to an existing org':'＋ new org';
-  $('parentNote').textContent='🧩 Drafted ('+act+') from '+(m.attachment||'feedback')+(m.source_url?(' + '+m.source_url):'')+' — '+(d.note||'review the fields')+(d.id?'':'. New org: set an id in Step 3.')+' Then ⚡ Insert (or Stage). Resolve the feedback once every item is handled.';
+  const idNote = autogen ? (' · id auto-generated as “'+id+'” (edit if you prefer)') : (id?'':'. Set an id in Step 3.');
+  $('parentNote').textContent='🧩 Drafted ('+act+') from '+(m.attachment||'feedback')+(m.source_url?(' + '+m.source_url):'')+' — '+(d.note||'review the fields')+idNote+' Then ⚡ Insert (or Stage). Resolve the feedback once every item is handled.';
   if(typeof validate==='function') validate();
   window.scrollTo(0,0);
-  toast('🧩 Loaded into Step 3 — review, then Insert or Stage');
+  toast('🧩 Loaded into Step 3'+(autogen?(' as “'+id+'”'):'')+' — review, then Insert or Stage');
 };
 window.draftFromSource=async(id)=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
