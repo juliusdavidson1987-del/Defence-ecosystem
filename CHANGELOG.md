@@ -3,6 +3,24 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.12.0 — Node provenance (2026-10-10)
+- **New — evidence record on every organisation.** Phase 1 of a trustworthiness programme (prompted by
+  an external review against *The Correctness Problem*). Additive, nullable columns on `nodes`:
+  `origin` (curated / community / ai_drafted / auto_maintainer / manual), `evidence_status`
+  (verified / unverified / ai_drafted), `last_verified_at`, `verified_by`, `evidence_note`. The existing
+  `source` column is reused as the source URL.
+- **UI.** The detail panel shows an evidence badge: **⚠ AI-drafted** (not yet independently verified),
+  **✓ Verified** with date & reviewer, or **◇ Community-submitted**. Legacy maintainer-curated entries show
+  nothing extra, so the whole map isn't blanket-flagged. `verifiedDate()` now prefers the authoritative
+  `last_verified_at` over the area-sweep heuristic.
+- **Pipeline.** `sync-datajson.mjs` exports the new fields (only when present, so data.json is unchanged
+  for nodes without provenance); `validate-data.mjs` adds tolerant checks (valid evidence_status/origin,
+  parseable dates, a provenance-coverage count) that never fail on *absence*, so pre-migration syncs stay
+  green. The `published_nodes` view is recreated to expose the columns (it's an explicit column list, not
+  `select *`). Why it matters: the auto-maintainer now writes daily, so a drafted node that slips through
+  must be visibly distinguishable from a verified one — the pollution-effect defence.
+- Migration: `migrations/2026-10-10-node-provenance.sql` (idempotent; run in Supabase, then sync).
+
 ## v4.11.1 — "Related organisations" needs a real link (2026-09-26)
 - **Fix.** The node "Related organisations" panel could show a **random-looking** selection: the old
   scoring let an org qualify on *same country + same entity type with zero shared technology* (2+2 =

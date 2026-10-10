@@ -1056,7 +1056,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.11.1 · updated September 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.12.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1227,7 +1227,7 @@ function applyData(data){
   if(!newTree) return false;
   TREE = newTree;
   // Repopulate the per-org maps from the merged records.
-  const T={},AFF={},EP={},OP={},FU={},ET={},SRC={};
+  const T={},AFF={},EP={},OP={},FU={},ET={},SRC={},EV={};
   data.nodes.forEach(n=>{
     if(n.tags) T[n.id]=n.tags;
     if(n.affiliation) AFF[n.id]=n.affiliation;
@@ -1236,8 +1236,10 @@ function applyData(data){
     if(n.funding) FU[n.id]=n.funding;
     if(n.entityTypeOverride) ET[n.id]=n.entityTypeOverride;
     if(n.source) SRC[n.id]=n.source;
+    if(n.origin||n.evidenceStatus||n.lastVerifiedAt||n.verifiedBy||n.evidenceNote)
+      EV[n.id]={ origin:n.origin||'', status:n.evidenceStatus||'', lastVerifiedAt:n.lastVerifiedAt||'', verifiedBy:n.verifiedBy||'', note:n.evidenceNote||'' };
   });
-  TAGS=T; AFFILIATIONS=AFF; ENTRY_POINTS=EP; OPPS=OP; FUNDING=FU; ETYPE_OVERRIDES=ET; SOURCES=SRC;
+  TAGS=T; AFFILIATIONS=AFF; ENTRY_POINTS=EP; OPPS=OP; FUNDING=FU; ETYPE_OVERRIDES=ET; SOURCES=SRC; EVIDENCE=EV;
   // Rebuild captures that were taken at parse time from the hardcoded TREE, so they reflect the
   // freshly-loaded tree (branch colours, original-children snapshot, original parent index).
   try{
@@ -1298,7 +1300,10 @@ function rowToNode(r){
     entry:r.entry||'', does:r.does||'',
     tags:r.tags||undefined, affiliation:r.affiliation||undefined, entryPoint:r.entry_point||undefined,
     oppsOverride:r.opps_override||undefined, funding:r.funding||undefined,
-    entityTypeOverride:r.entity_type_override||undefined, source:r.source||undefined
+    entityTypeOverride:r.entity_type_override||undefined, source:r.source||undefined,
+    origin:r.origin||undefined, evidenceStatus:r.evidence_status||undefined,
+    lastVerifiedAt:r.last_verified_at||undefined, verifiedBy:r.verified_by||undefined,
+    evidenceNote:r.evidence_note||undefined
   };
 }
 async function loadFromSupabase(){
@@ -6049,7 +6054,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='September 2026 · v4.11.1 (Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.12.0 (Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6074,6 +6079,8 @@ const VERIFIED_OVERRIDES={
   al_kado:'Aug 2026', me_mod:'Aug 2026', is_dir:'Aug 2026', lu_govsat:'Aug 2026'
 };
 function verifiedDate(id){
+  // Authoritative per-node last-verified date from the dataset wins over the sweep heuristic.
+  if(EVIDENCE[id] && EVIDENCE[id].lastVerifiedAt) return EVIDENCE[id].lastVerifiedAt;
   if(VERIFIED_OVERRIDES[id]) return VERIFIED_OVERRIDES[id];
   const m=String(id).match(/^([a-z]{2})_/);
   if(m && VERIFIED_BATCHES[m[1]]) return VERIFIED_BATCHES[m[1]];
@@ -6118,6 +6125,10 @@ let SOURCES={
  tr_ssb:'https://www.ssb.gov.tr', kr_dapa:'https://www.dapa.go.kr', jp_atla:'https://www.mod.go.jp/atla',
  il_mafat:'https://www.mod.gov.il'
 };
+/* Dataset-level provenance per node (origin, evidence status, last-verified date & reviewer),
+   loaded from Supabase/data.json by applyData. Distinct from CRM.verified, which is the
+   viewer's own local "I checked this" marker. Empty until the provenance migration + sync run. */
+let EVIDENCE={};
 /* ---- themes ---- */
 const THEMES=['dark','light','hc']; let themeIdx=0;
 function applyTheme(){ const t=THEMES[themeIdx]; document.documentElement.setAttribute('data-theme',t);
@@ -6140,6 +6151,24 @@ function freshnessFlag(id){
   if(br==='b_strategy'||String(id).startsWith('str_')||/_str_/.test(String(id))) return {cls:'stale-note',txt:'⏱ Strategy documents are periodically replaced — check you\'re reading the current edition.'};
   if(br==='b_finance') return {cls:'stale-note',txt:'⏱ Defence-finance is fast-moving — details may have changed.'};
   return null;
+}
+// Dataset-level provenance chip: flags AI-drafted entries, shows a maintainer verification,
+// or notes community origin. Legacy maintainer-curated entries show nothing extra (the
+// "last reviewed" line already covers them) so we don't slap a warning on the whole map.
+function evidenceBadge(id){
+  const ev=EVIDENCE[id]; if(!ev) return '';
+  const origin=String(ev.origin||'').toLowerCase(), status=String(ev.status||'').toLowerCase();
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const box='margin-top:7px;padding:5px 8px;border-radius:6px;font-size:11.5px';
+  if(status==='ai_drafted' || origin==='ai_drafted' || origin==='auto_maintainer')
+    return `<div class="evbadge" style="${box};border:1px solid #E36C6C55;background:#E36C6C14"><span style="color:#E3A24B">⚠ AI-drafted entry</span> <span style="color:var(--faint)">— drafted automatically and not yet independently verified by the maintainer; verify on the organisation's own site before relying on it.</span></div>`;
+  if(status==='verified'){
+    const who=ev.verifiedBy?(' by '+esc(ev.verifiedBy)):'', when=ev.lastVerifiedAt?(' on '+esc(ev.lastVerifiedAt)):'';
+    return `<div class="evbadge" style="${box};border:1px solid #57D9A355;background:#57D9A314"><span style="color:#57D9A3">✓ Verified${when}${who}</span>${ev.note?(' <span style="color:var(--faint)">— '+esc(ev.note)+'</span>'):''}</div>`;
+  }
+  if(origin==='community')
+    return `<div class="evbadge" style="${box};border:1px solid var(--line)"><span style="color:var(--faint)">◇ Community-submitted, maintainer-reviewed.</span></div>`;
+  return '';
 }
 function verifiedLine(id){ const uv=(CRM.verified||{})[id];
   const vd=verifiedDate(id);
@@ -6202,7 +6231,7 @@ function renderPanelExtras(id){
   else { const d=deriveSourceFromEntry(id); if(d && domainVerified(d)){ srcHtml=`<span class="lab" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint)">Official site</span> ${linkifyProse(d)}`; } }
   document.getElementById('psource').innerHTML = srcHtml;
   { const aff=affiliationLine(id);
-    document.getElementById('pverify').innerHTML = (aff?`<div class="paffil">${aff}</div>`:'') + verifiedLine(id); }
+    document.getElementById('pverify').innerHTML = (aff?`<div class="paffil">${aff}</div>`:'') + evidenceBadge(id) + verifiedLine(id); }
   const ff=freshnessFlag(id);
   const pflag=document.getElementById('pfreshness');
   if(pflag){ pflag.innerHTML = ff?`<span class="${ff.cls}">${ff.txt}</span>`:''; pflag.style.display = ff?'block':'none'; }

@@ -36,6 +36,13 @@ function rowToNode(r) {
   if (r.funding) n.funding = r.funding;
   if (r.entity_type_override) n.entityTypeOverride = r.entity_type_override;
   if (r.source) n.source = r.source;
+  // Provenance (added v4.12.0). Only emitted when the columns carry a value, so data.json
+  // stays identical for nodes without provenance and the fallback loader needn't change.
+  if (r.origin) n.origin = r.origin;
+  if (r.evidence_status) n.evidenceStatus = r.evidence_status;
+  if (r.last_verified_at) n.lastVerifiedAt = r.last_verified_at;
+  if (r.verified_by) n.verifiedBy = r.verified_by;
+  if (r.evidence_note) n.evidenceNote = r.evidence_note;
   return n;
 }
 

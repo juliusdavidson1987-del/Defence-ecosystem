@@ -104,6 +104,21 @@ badAff.length ? fail('Affiliation shape', `${badAff.length} malformed: ${badAff.
 /* 10. affiliation floor */
 affNodes.length >= MIN_AFF ? pass('Affiliation-count floor', `${affNodes.length} ≥ ${MIN_AFF}`) : warn('Affiliation-count floor', `${affNodes.length} < ${MIN_AFF} — did an affiliation set get dropped?`);
 
+/* 12. provenance (v4.12.0) — tolerant: only flags INVALID values that are present, never
+   their absence, so a dataset synced before the provenance migration still passes clean. */
+const ES_OK = new Set(['verified','unverified','ai_drafted']);
+const ORIGIN_OK = new Set(['curated','manual','community','ai_drafted','auto_maintainer']);
+const badES = nodes.filter(n => n.evidenceStatus && !ES_OK.has(n.evidenceStatus));
+badES.length ? fail('Evidence status values', `${badES.length} with unexpected evidence_status: ${[...new Set(badES.map(n=>n.evidenceStatus))].slice(0,6).join(', ')}`) : pass('Evidence status values');
+const badOrigin = nodes.filter(n => n.origin && !ORIGIN_OK.has(n.origin));
+badOrigin.length ? warn('Origin values', `${badOrigin.length} with unexpected origin: ${[...new Set(badOrigin.map(n=>n.origin))].slice(0,6).join(', ')}`) : pass('Origin values');
+const badDate = nodes.filter(n => n.lastVerifiedAt && isNaN(Date.parse(n.lastVerifiedAt)));
+badDate.length ? fail('Last-verified dates parse', `${badDate.length}: ${badDate.slice(0,6).map(n=>n.id).join(', ')}`) : pass('Last-verified dates parse');
+const verifiedNoDate = nodes.filter(n => n.evidenceStatus === 'verified' && !n.lastVerifiedAt);
+verifiedNoDate.length ? warn('Verified entries dated', `${verifiedNoDate.length} marked verified with no last_verified_at (e.g. ${verifiedNoDate.slice(0,5).map(n=>n.id).join(', ')})`) : pass('Verified entries dated');
+const provCount = nodes.filter(n => n.origin || n.evidenceStatus).length;
+pass('Provenance coverage', `${provCount}/${nodes.length} node(s) carry origin/evidence_status`);
+
 report();
 const failed = results.filter(r => !r.ok);
 process.exit(failed.length ? 1 : 0);

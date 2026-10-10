@@ -57,6 +57,13 @@ the *app itself* (a feature, layout, or the version stamp) changes.
 - anon key (public, already in the client): `sb_publishable_Z2z6XuJERV6eosZsnnFnAA_AiBfHkyf`
 - Table: `public.nodes(id, label, parent, kind, does, entry, tags jsonb, status, affiliation jsonb)`
   plus snake_case extras `entry_point, opps_override, entity_type_override, source`.
+- **Provenance columns (v4.12.0, additive):** `origin` (`curated|community|ai_drafted|auto_maintainer|manual`),
+  `evidence_status` (`verified|unverified|ai_drafted`), `last_verified_at date`, `verified_by`, `evidence_note`.
+  All nullable; `source` is reused as the source/official URL (not duplicated). The detail panel shows an
+  evidence badge — ⚠ for `ai_drafted`, ✓+date for `verified`, ◇ for `community`; legacy curated entries show
+  nothing extra (so the whole map isn't flagged). `verifiedDate()` prefers `last_verified_at` when set.
+  Migration `migrations/2026-10-10-node-provenance.sql`. **The `published_nodes` view is an explicit column
+  list (NOT `select *`) — any new node column must be added to the view too**, or it won't reach the app/sync.
 - App reads `published_nodes?select=*` (a view of published rows) and `reference?select=key,value`.
 - **"Max rows" must stay 5000** (default was 1000 and silently clipped nodes — a real past bug).
 - The **anon key READS only.** Inserts need the service-role key (server-side) or SQL editor.
@@ -209,7 +216,21 @@ browser-only config field, never committed.
 
 ---
 
-## Current state (v4.10.0, Sep 2026)
+## Current state (v4.12.0, Oct 2026)
+
+- **Trust/provenance programme (started v4.12.0, Oct 2026):** acting on an external review mapping the map
+  against *The Correctness Problem* (and our own "accuracy over speed" principle), a sequence of
+  trustworthiness upgrades. **Phase 1 — node provenance (shipped v4.12.0):** additive `origin` /
+  `evidence_status` / `last_verified_at` / `verified_by` / `evidence_note` columns + evidence badge in the
+  detail panel, so an AI-drafted or unverified entry is distinguishable from a verified one (the
+  pollution-effect defence, now that the auto-maintainer writes daily). See the Supabase schema note above.
+  *Next phases, in order:* Edge-Function origin-stamping (insert-node/auto-maintain mark `ai_drafted`);
+  organisation life cycles (status active/renamed/merged/dissolved + predecessor/successor, old-name search);
+  finder "why this matched / no exact fit" + failed-search logging; then the bigger structural pieces —
+  typed relationship edges (the path-finding model), acquisition-phase tagging (CADMID/T, TEPIDOIL, NATO
+  gates), and a coverage dashboard.
+
+
 
 - ~**1,990+ nodes** (grown via the coverage sweep + auto-maintainer since v4.9.0),
   **187 affiliations**, **40 nations**.
