@@ -3,6 +3,34 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Full chart reconcile — both Murray org-charts, line by line (2026-10-11)
+- On a direct re-scan of the two org-charts (the Sept 2026 "DoW Innovation Ecosystem" edition is far more
+  granular than the earlier taxonomy audit), transcribed the full visible roster and ran a deterministic
+  presence-check against the live map **plus** all pending migrations. Surfaced ~95 genuinely-missing,
+  in-scope bodies and added the **83 verifiable ones** across six batches (each web-verified; parents all
+  pre-exist):
+  - **1 — software factories (9, us_service):** Marine Corps Software Factory, Tesseract, The Forge,
+    Overmatch Software Armory, Kobayashi Maru, Black Label, Unified Platform, Wavelength, Cloud One.
+  - **2 — innovation hubs / WERX (6, us_service):** EagleWerx, ERDCWERX, ARCWERX, NewSpace Nexus,
+    SDA TAP Lab, FATHOMWERX.
+  - **3 — OTA consortia (16, us_acq):** National Spectrum, National Armaments, Vertical Lift, MCDC, MTEC,
+    S2MARTS, UCAH, Space Enterprise, NAMC, AMTC, American Metalcasting, Defense Electronics (USPAE),
+    Cornerstone, DATC, JDEC, AEDC Velocity Alliance.
+  - **4 — nonprofit intermediaries / PIAs (11, us_acq):** APEX Accelerators, TEDCO, HTDC, SCRA, VIPC,
+    Ohio Aerospace Institute, NYSTEC, Purdue Innovates, RTI International, The Patuxent Partnership, MSET.
+  - **5 — UARCs & FFRDC institutes (12, us_ffrdc):** ISN (MIT), ICB (UCSB), ICT (USC), SDL (Utah State),
+    RITA (Howard), NSRI (Nebraska), AIRC (Stevens), ARL Penn State, ARL:UT, APL-UW, NCMS, CyManII.
+  - **6a — warfare-centre divisions / microelec hubs / ManTech (20):** 6 more NSWC divisions + NUWC
+    Keyport (us_labs); all 8 Microelectronics Commons hubs (us_microcommons); CNM, EOC, CMTC, EMTC,
+    Battery Innovation Center (us_labs).
+  - **6b — Army / cyber / Marine (9):** ERDC, ARI, Energetics Technology Center, SMDC Technical Center
+    (us_labs), FirePoint, Shadows Edge, Marine Innovation Unit (us_service), NJII (us_acq), JWAC (us_cyber).
+  - Migrations `2026-10-11-chart-reconcile-1..6b.sql`. Deferred (no clean standalone URL / defunct / a
+    command rather than a door / already represented): Mach5, Kobayashi-era Section 31, Rogue Squadron,
+    Overwatch, Corsair Ranch, CyberWorx, FLEETWERX, MGMWERX, AFRL Southwest, Supply Chain Consortium,
+    NineTwelve, SciTechCONNECT, IN3, Maneuver Battle Lab, TRADOC, CFIC, Technology Advancement Center,
+    NavalX tech bridges (already covered by the `navalx` node).
+
 ## US innovation-ecosystem gap-fill, batch 3 — residual tail closed (2026-10-11)
 - Re-audited the whole live map against the full DoW/DoD innovation-ecosystem taxonomy those two org-charts
   depict (~79 core bodies), correcting fuzzy-match false positives and counting the un-synced migrations.
