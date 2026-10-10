@@ -3,6 +3,17 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## US innovation-ecosystem gap-fill, batch 3 — residual tail closed (2026-10-11)
+- Re-audited the whole live map against the full DoW/DoD innovation-ecosystem taxonomy those two org-charts
+  depict (~79 core bodies), correcting fuzzy-match false positives and counting the un-synced migrations.
+  **Coverage confirmed strong** (the OSD + service-innovation + FFRDC/UARC spine is present); residual tail
+  identified and the 7 verifiable ones added: **CESMII**, **AFFOA** (Manufacturing USA institutes →
+  `us_ffrdc`); **ARLIS**, **STPI** (UARC / FFRDC → `us_ffrdc`); **NIWC Atlantic**, **NIWC Pacific**
+  (NAVWAR information-warfare centres → `us_navwar`); **Army Software Factory** (`us_service`).
+  `2026-10-11-us-innovation-gaps3.sql`. Still deferred (no clean standalone URL / status unclear):
+  Kobayashi Maru, Cloud One, Section 31, LevelUP, Rogue Squadron (DIU→DDS, no current trace), Overwatch,
+  CyberWorx, ARCWERX, MGMWERX, CyManII.
+
 ## Image-additions final pass (2026-10-11)
 - Re-sourced the deferred items and added the 6 that checked out: **Platform One**, **Space CAMP**
   (`us_service`), **TurbineOne** (`us_dtech`), **SOSSEC** (`us_acq`), **Digantara** (India `pt_in`),
