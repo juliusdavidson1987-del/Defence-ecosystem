@@ -3,6 +3,20 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.0 — Benchmark: cross-nation open-data comparison (2026-10-11)
+- Extended the Benchmark tool with a **"How we compare with other nations"** panel (modelled on UNITI's
+  country-comparison view): a *COMPARE WITH* multi-select of countries and four cited open-data cards —
+  **Global Innovation Index** (score + global rank), **R&D spending** (% GDP), **Defence expenditure**
+  ($bn) and **Defence spend vs GDP** (%) — each a set of ranked bars with the selected nation highlighted
+  (YOU) and the source + year printed. Sits below the map-derived ecosystem-breadth view in the same modal.
+- Figures are an embedded, cited reference set (`BENCH_DATA` / `BENCH_META`, ~36 nations incl. non-map
+  baselines like China/Russia): **WIPO Global Innovation Index 2025**, **World Bank / OECD** R&D (latest
+  2020–2024), **SIPRI 2025** defence — cross-checked against UNITI's own figures (e.g. GII US 61.7/#3,
+  UK 59.1/#6; SIPRI 2025 US $954bn/3.1%, China $336bn/1.7%, UK $89bn/2.4%). Missing values render as "—".
+  Footer carries the "indicative open-source figures — check the cited source before using in a decision"
+  caveat. App-only change (`index.html`); stamped v4.18.0. (Figures can later move to the Supabase
+  reference layer so updates don't need a redeploy.)
+
 ## v4.17.0 — "Benchmark a nation" tool (2026-10-11)
 - New home-screen **banner under the six tiles** (and a menu entry) opening a benchmark tool: pick any
   nation and see how its innovation ecosystem compares to the field — the number of mapped bodies in each

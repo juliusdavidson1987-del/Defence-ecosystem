@@ -270,6 +270,27 @@
   #welcome .wbanner:hover .wt{color:var(--phos)}
   #welcome .wbanner .wd{font-size:11.5px;color:var(--mut);line-height:1.5}
   #welcome .wbanner .wba{margin-left:auto;flex:0 0 auto;color:var(--phos);font-size:19px}
+  #benchmark .bmbadge{font-size:9px;font-family:"IBM Plex Mono",monospace;letter-spacing:1px;color:var(--phos);border:1px solid color-mix(in srgb,var(--phos) 45%,var(--line));border-radius:5px;padding:1px 5px;vertical-align:middle}
+  #benchmark .bmchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  #benchmark .bmchip{background:rgba(12,20,36,.7);border:1px solid var(--line);color:var(--mut);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:.12s}
+  #benchmark .bmchip:hover{border-color:color-mix(in srgb,var(--phos) 45%,transparent);color:var(--txt)}
+  #benchmark .bmchip.on{border-color:var(--phos);color:#fff;background:color-mix(in srgb,var(--phos) 16%,transparent)}
+  #benchmark .bmcards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+  #benchmark .bmcard{border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:rgba(12,20,36,.4)}
+  #benchmark .bmcardh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  #benchmark .bmcardt{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:12.5px}
+  #benchmark .bmcardu{font-size:9.5px;color:var(--faint);font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+  #benchmark .bmcardd{font-size:10px;color:var(--mut);line-height:1.45;margin:3px 0 9px}
+  #benchmark .bmrow{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:7px;margin-bottom:4px;font-size:10.5px}
+  #benchmark .bmn{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #benchmark .bmn.you{color:var(--txt);font-weight:600}
+  #benchmark .bmyou{font-size:8px;background:#f0a060;color:#1a1200;border-radius:3px;padding:0 3px;font-weight:700;vertical-align:middle;letter-spacing:.5px}
+  #benchmark .bmbarw{height:9px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+  #benchmark .bmbar{display:block;height:100%;background:#4a6a90;border-radius:4px}
+  #benchmark .bmbar.you{background:#f0a060}
+  #benchmark .bmv{text-align:right;color:var(--faint);white-space:nowrap;font-size:10px}
+  #benchmark .bmsrc{font-size:9px;color:var(--faint);font-family:"IBM Plex Mono",monospace;letter-spacing:.5px;margin-top:7px;text-transform:uppercase}
+  @media(max-width:640px){#benchmark .bmcards{grid-template-columns:1fr}#benchmark .bmrow{grid-template-columns:84px 1fr auto}}
   #welcome .wbtns{display:flex;gap:14px;align-items:center}
   #welcome .whome{margin:0 0 20px;padding:14px 15px;background:rgba(12,20,36,.55);border:1px solid var(--line);border-radius:13px}
   #welcome .whomeq{font-size:12px;color:var(--txt);margin-bottom:11px;font-weight:500}
@@ -1086,7 +1107,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.17.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.18.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -6237,7 +6258,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.17.0 (New "Benchmark a nation" tool — a banner on the home screen (and in the menu) showing how any nation\'s innovation ecosystem compares to its allies: the number of mapped bodies in each innovation category and the depth of its funding and investor base, each ranked against the field. A structural view of ecosystem breadth, not pounds invested or deal volume · Two more tools on the welcome screen — "Find a route" (trace how one organisation connects to another through the mapped relationships — accelerators, funders, corporate families and memberships) and "One-page brief" (a printable one-pager of the key doors for a nation and role) now sit on the home grid alongside Find your door, Explore, Search and the Innovation pathway (the conversational "Ask the guide" assistant stays one tap away on its floating button) · The Innovation pathway is now a headline tool — reachable from a button beside "Find your door" in the header and a card on the welcome screen, not buried in the menu · Innovation pathway by nation — the "Innovation pathway" tool (Crossing the valley of death) now lets you choose any nation and get the same stage-by-stage readout (Concept → Develop → Demonstrate → Procure → In-service), each body carrying a confidence score from its verification status and freshness; any stage with no mapped body for that nation is flagged as a possible gap with a one-click web search to surface candidates. Built on the acquisition-stage lens · Acquisition stage — the finder gains an optional "Acquisition stage" filter (Concept · Develop · Demonstrate · Procure · In-service) and each pipeline body\'s detail panel shows which stages it serves, so you can ask "I\'m at the prototype stage — who do I talk to?". Derived live from each body\'s offers and domains (no change to the data), lighting up only for funding, innovation, research, test, procurement and logistics bodies — not product suppliers · Coverage & data quality — a new panel (menu → "Coverage & data quality") openly shows what the map covers and where it is thin: counts, provenance and verification state, organisation life cycles, and coverage by technology area and by nation, with the thinnest nations flagged as candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid · Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.18.0 (The "Benchmark a nation" tool now also compares nations on cited open data — a "How we compare with other nations" panel with the Global Innovation Index, R&D intensity, defence expenditure and defence spend vs GDP, shown as ranked bars (your nation highlighted) against a multi-select set of comparison countries. Sources: WIPO GII 2025, World Bank / OECD, SIPRI 2025. It sits alongside the map-derived ecosystem-breadth view · New "Benchmark a nation" tool — a banner on the home screen (and in the menu) showing how any nation\'s innovation ecosystem compares to its allies: the number of mapped bodies in each innovation category and the depth of its funding and investor base, each ranked against the field. A structural view of ecosystem breadth, not pounds invested or deal volume · Two more tools on the welcome screen — "Find a route" (trace how one organisation connects to another through the mapped relationships — accelerators, funders, corporate families and memberships) and "One-page brief" (a printable one-pager of the key doors for a nation and role) now sit on the home grid alongside Find your door, Explore, Search and the Innovation pathway (the conversational "Ask the guide" assistant stays one tap away on its floating button) · The Innovation pathway is now a headline tool — reachable from a button beside "Find your door" in the header and a card on the welcome screen, not buried in the menu · Innovation pathway by nation — the "Innovation pathway" tool (Crossing the valley of death) now lets you choose any nation and get the same stage-by-stage readout (Concept → Develop → Demonstrate → Procure → In-service), each body carrying a confidence score from its verification status and freshness; any stage with no mapped body for that nation is flagged as a possible gap with a one-click web search to surface candidates. Built on the acquisition-stage lens · Acquisition stage — the finder gains an optional "Acquisition stage" filter (Concept · Develop · Demonstrate · Procure · In-service) and each pipeline body\'s detail panel shows which stages it serves, so you can ask "I\'m at the prototype stage — who do I talk to?". Derived live from each body\'s offers and domains (no change to the data), lighting up only for funding, innovation, research, test, procurement and logistics bodies — not product suppliers · Coverage & data quality — a new panel (menu → "Coverage & data quality") openly shows what the map covers and where it is thin: counts, provenance and verification state, organisation life cycles, and coverage by technology area and by nation, with the thinnest nations flagged as candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid · Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6481,6 +6502,80 @@ function closeCoverage(){ const m=document.getElementById('coverage'); if(m) m.c
 /* ---- Nation benchmark (v4.17.0): structural comparison across innovation categories + investment base.
    Counts mapped bodies per nation x category and funding/investor bodies per nation — presence, not £. ---- */
 let _bmNation='';
+let _bmCompare=new Set();
+/* External open-data macro metrics (cited). GII: WIPO Global Innovation Index 2025.
+   R&D: World Bank / OECD latest (2020-2024). Defence: SIPRI 2025. Figures are
+   indicative open-source baselines — see the cited source/year before relying on them. */
+const BENCH_META=[
+ {key:'gii',l:'Global Innovation Index',unit:'score /100',rank:true,desc:'A composite of innovation inputs and outputs across ~139 economies. Higher is stronger.',src:'WIPO Global Innovation Index',yr:'2025'},
+ {key:'rnd',l:'R&D spending',unit:'% of GDP',desc:'Total research and development as a share of the economy — how hard a nation invests in new technology.',src:'World Bank / OECD',yr:'latest 2020-2024'},
+ {key:'defexp',l:'Defence expenditure',unit:'US$ bn',desc:'Total military spending — the scale at which a nation funds and fields capability.',src:'SIPRI',yr:'2025'},
+ {key:'defgdp',l:'Defence spend vs the economy',unit:'% of GDP',desc:'Military spending as a share of GDP — how far a nation prioritises defence.',src:'SIPRI',yr:'2025'}
+];
+const BENCH_DATA={
+ us:{nm:'United States',gii:61.7,giir:3,rnd:3.45,defexp:954.0,defgdp:3.1},
+ cn:{nm:'China',gii:56.6,giir:10,rnd:2.58,defexp:336.0,defgdp:1.7},
+ uk:{nm:'United Kingdom',gii:59.1,giir:6,rnd:2.68,defexp:89.0,defgdp:2.4},
+ fr:{nm:'France',gii:53.4,giir:13,rnd:2.18,defexp:68.0,defgdp:2.0},
+ de:{nm:'Germany',gii:55.5,giir:11,rnd:3.15,defexp:114.0,defgdp:2.3},
+ it:{nm:'Italy',gii:44.9,giir:28,rnd:1.38,defexp:48.1,defgdp:1.9},
+ nl:{nm:'Netherlands',gii:57.0,giir:8,rnd:2.27,defexp:28.9,defgdp:2.2},
+ es:{nm:'Spain',gii:44.6,giir:29,rnd:1.49,defexp:40.2,defgdp:2.1},
+ se:{nm:'Sweden',gii:62.6,giir:2,rnd:3.60,defexp:16.5,defgdp:2.5},
+ no:{nm:'Norway',gii:49.2,giir:20,rnd:1.85,defexp:17.0,defgdp:3.3},
+ fi:{nm:'Finland',gii:57.7,giir:7,rnd:3.09,defexp:8.1,defgdp:2.6},
+ dk:{nm:'Denmark',gii:56.9,giir:9,rnd:3.05,defexp:14.9,defgdp:3.3},
+ pl:{nm:'Poland',gii:37.7,giir:39,rnd:1.56,defexp:46.8,defgdp:4.5},
+ be:{nm:'Belgium',gii:48.5,giir:21,rnd:3.27},
+ ee:{nm:'Estonia',gii:51.1,giir:16},
+ lt:{nm:'Lithuania',gii:40.8,giir:33},
+ lv:{nm:'Latvia',gii:37.5,giir:41},
+ bg:{nm:'Bulgaria',gii:39.1,giir:37},
+ gr:{nm:'Greece',gii:37.4,giir:42},
+ pt:{nm:'Portugal',gii:43.9,giir:31},
+ hr:{nm:'Croatia',gii:37.7,giir:40},
+ is:{nm:'Iceland',gii:47.0,giir:24},
+ lu:{nm:'Luxembourg',gii:47.3,giir:23},
+ ca:{nm:'Canada',gii:51.1,giir:17,rnd:1.79,defexp:37.5,defgdp:1.6},
+ au:{nm:'Australia',gii:48.0,giir:22,rnd:1.83,defexp:35.3,defgdp:1.9},
+ nz:{nm:'New Zealand',gii:45.5,giir:26,rnd:1.55},
+ kr:{nm:'South Korea',gii:60.0,giir:4,rnd:4.94,defexp:47.8,defgdp:2.6},
+ jp:{nm:'Japan',gii:53.6,giir:12,rnd:3.44,defexp:62.2,defgdp:1.4},
+ il:{nm:'Israel',gii:52.3,giir:14,rnd:6.35,defexp:48.3,defgdp:7.8},
+ in:{nm:'India',gii:38.2,giir:38,rnd:0.65,defexp:92.1,defgdp:2.3},
+ sg:{nm:'Singapore',gii:59.9,giir:5,rnd:1.81,defexp:17.4,defgdp:3.0},
+ sa:{nm:'Saudi Arabia',gii:36.0,giir:46,rnd:0.64,defexp:83.2,defgdp:6.5},
+ ae:{nm:'United Arab Emirates',gii:44.2,giir:30,rnd:1.49},
+ tr:{nm:'Türkiye',gii:37.2,giir:43,rnd:2.42,defexp:30.0,defgdp:1.9},
+ ru:{nm:'Russia',gii:30.3,giir:60,rnd:0.94,defexp:190.0,defgdp:7.5},
+ ua:{nm:'Ukraine',gii:29.7,giir:66,defexp:84.1,defgdp:40.0},
+ ch:{nm:'Switzerland',gii:66.0,giir:1}
+};
+const BENCH_CHIPS=['us','cn','de','fr','uk','kr','jp','il','in','au','it','nl','ca','es','se','pl','sa','ae','sg','tr','ru','ua','no','fi','dk','be'];
+function benchName(code){ return (BENCH_DATA[code]&&BENCH_DATA[code].nm)||(typeof natName==='function'?natName(code):code); }
+function renderBenchCard(m,set,you){ const e=s=>finderEsc(s);
+  const rows=set.map(c=>({c,v:(BENCH_DATA[c]&&typeof BENCH_DATA[c][m.key]==='number')?BENCH_DATA[c][m.key]:null}));
+  const have=rows.filter(r=>r.v!=null).sort((a,b)=>b.v-a.v); const miss=rows.filter(r=>r.v==null);
+  const max=have.length?have[0].v:1;
+  let h='<div class="bmcard"><div class="bmcardh"><span class="bmcardt">'+e(m.l)+'</span><span class="bmcardu">'+e(m.unit)+'</span></div><div class="bmcardd">'+e(m.desc)+'</div>';
+  have.forEach(r=>{ const y=r.c===you; const pct=Math.max(3,Math.round(r.v/Math.max(0.0001,max)*100));
+    const val=m.key==='defexp'?('$'+r.v+'bn'):(m.key==='gii'?r.v.toFixed(1):(r.v+'%'));
+    const rk=(m.rank&&BENCH_DATA[r.c]&&BENCH_DATA[r.c].giir)?(' · #'+BENCH_DATA[r.c].giir):'';
+    h+='<div class="bmrow"><span class="bmn'+(y?' you':'')+'">'+e(benchName(r.c))+(y?' <span class="bmyou">YOU</span>':'')+'</span><span class="bmbarw"><span class="bmbar'+(y?' you':'')+'" style="width:'+pct+'%"></span></span><span class="bmv">'+val+rk+'</span></div>'; });
+  miss.forEach(r=>{ const y=r.c===you; h+='<div class="bmrow"><span class="bmn'+(y?' you':'')+'">'+e(benchName(r.c))+(y?' <span class="bmyou">YOU</span>':'')+'</span><span class="bmbarw"></span><span class="bmv" style="color:var(--faint)">—</span></div>'; });
+  h+='<div class="bmsrc">SOURCE · '+e(m.src)+' · '+e(m.yr)+'</div></div>'; return h;
+}
+function renderBenchMacro(you){ const e=s=>finderEsc(s);
+  const cmp=[...(_bmCompare||[])].filter(c=>c!==you); const set=[you].concat(cmp);
+  const chips=BENCH_CHIPS.filter(c=>c!==you).map(c=>'<button class="bmchip'+(_bmCompare.has(c)?' on':'')+'" data-c="'+c+'">'+e(benchName(c))+'</button>').join('');
+  let h='<div class="covsec" style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">';
+  h+='<h3 style="font-size:13.5px;margin:2px 0 4px">How '+e(benchName(you))+' compares with other nations <span class="bmbadge">OPEN DATA</span></h3>';
+  h+='<p style="font-size:11px;color:var(--mut);margin:0 0 10px;line-height:1.5">The hard outside baseline — innovation strength, R&D intensity and defence spend, from cited open data. Pick who to compare with; every figure is sourced.</p>';
+  h+='<div style="font-size:9.5px;letter-spacing:1px;color:var(--faint);text-transform:uppercase;margin:0 0 6px">Compare with</div><div class="bmchips">'+chips+'</div>';
+  h+='<div class="bmcards">'; BENCH_META.forEach(m=>{ h+=renderBenchCard(m,set,you); }); h+='</div>';
+  h+='<div style="font-size:10px;color:var(--faint);margin-top:2px;font-style:italic">Indicative open-source figures for orientation — check the cited source and year before using any number in a decision.</div>';
+  h+='</div>'; return h;
+}
 function computeBenchmark(){
   const orgs=Object.values(NODE).filter(n=>n&&n._kind==='org');
   const cats=TECH_TAX.filter(c=>c.key!=='xfunc');
@@ -6540,8 +6635,12 @@ function renderBenchmark(sel){
 }
 function bmNationList(){ const b=computeBenchmark(); return Object.keys(b.tot).map(c=>[c,natName(c),b.tot[c]]).sort((a,c)=>String(a[1]).localeCompare(String(c[1]))); }
 function populateBmNations(){ const sel=document.getElementById('bmNation'); if(!sel)return; sel.innerHTML=bmNationList().map(([c,nm,t])=>'<option value="'+c+'">'+finderEsc(nm)+' ('+t+')</option>').join(''); }
-function renderBmBody(){ const sel=document.getElementById('bmNation'); const code=(sel&&sel.value)||_bmNation||homeKey()||'uk'; _bmNation=code; const body=document.getElementById('bmBody'); if(body) body.innerHTML=renderBenchmark(code); }
-function openBenchmark(){ populateBmNations(); _bmNation=homeKey()||'uk'; const sel=document.getElementById('bmNation'); if(sel){ if([...sel.options].some(o=>o.value===_bmNation)) sel.value=_bmNation; else _bmNation=sel.value; } renderBmBody(); const m=document.getElementById('benchmark'); if(m) m.classList.add('open'); }
+function renderBmBody(){ const sel=document.getElementById('bmNation'); const code=(sel&&sel.value)||_bmNation||homeKey()||'uk'; _bmNation=code; const body=document.getElementById('bmBody'); if(!body) return;
+  body.innerHTML=renderBenchmark(code)+renderBenchMacro(code);
+  body.querySelectorAll('.bmchip').forEach(ch=>ch.onclick=()=>{ const c=ch.dataset.c; if(_bmCompare.has(c)) _bmCompare.delete(c); else _bmCompare.add(c); renderBmBody(); }); }
+function openBenchmark(){ populateBmNations(); _bmNation=homeKey()||'uk'; const sel=document.getElementById('bmNation'); if(sel){ if([...sel.options].some(o=>o.value===_bmNation)) sel.value=_bmNation; else _bmNation=sel.value; }
+  if(!_bmCompare||!_bmCompare.size){ _bmCompare=new Set(['us','cn','fr'].filter(c=>c!==_bmNation)); if(!_bmCompare.size) _bmCompare=new Set(['cn','fr','de']); }
+  renderBmBody(); const m=document.getElementById('benchmark'); if(m) m.classList.add('open'); }
 function closeBenchmark(){ const m=document.getElementById('benchmark'); if(m) m.classList.remove('open'); }
 { const _bc=document.getElementById('bmClose'); if(_bc) _bc.onclick=closeBenchmark; }
 { const _bn=document.getElementById('bmNation'); if(_bn) _bn.onchange=renderBmBody; }
