@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Defence-tech startups — batch 2 (2026-10-11)
+- Added **11 more web-verified US scaleups** (AI/software/EW + space) under `us_dtech`: Modern Intelligence,
+  Defense Unicorns, Aalyria, Picogrid, Nominal, Gravitics, Turion Space, Muon Space, Slingshot Aerospace,
+  Two Six Technologies, Vulcan Elements. Deduped (True Anomaly, K2 Space, Apex already mapped). Migration
+  `2026-10-11-startups-batch2.sql`.
+
 ## Defence-tech startups — batch 1 (2026-10-11)
 - Added **16 web-verified US defence-tech scaleups** from the Crustdata "Defense Tech Market Map Q4 2026"
   (Elroy Air, AEVEX, Overland AI, Seasats, Hidden Level, X-Bow Systems, Shift5, Stoke Space, Albedo,
