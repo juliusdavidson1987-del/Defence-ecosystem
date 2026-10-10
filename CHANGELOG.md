@@ -8,11 +8,13 @@ aren't stamped here unless they change a version.
   organisations (member_of, subsidiary_of, funds, accelerates, contracts_with, …) with directedness,
   validity dates, evidence status/origin and a jsonb attributes bag. Public-read; writes service-role
   only; an audit trigger logs every insert/update/delete. Schema: `2026-10-10-relationships-schema.sql`.
-- **Backfilled 91 edges deterministically from the 188 affiliations** (47 member_of, 44 subsidiary_of)
-  via `scripts/backfill-relationships.mjs` → `2026-10-10-relationships-backfill.sql`. The 97 it could not
-  resolve deterministically (categories like "NATO-accredited"/"UK"/"US FFRDC", or parent companies not
-  present as their own node) are in `relationships-review.csv` for manual classification — nothing is
-  guessed into the DB.
+- **Backfilled 120 edges deterministically from the 188 affiliations** (73 subsidiary_of, 47 member_of)
+  via `scripts/backfill-relationships.mjs` → `2026-10-10-relationships-backfill.sql`. Uses a hand-verified
+  alias map for families whose parent is in the map under a different label (EDGE Group→ae_edgegroup,
+  CSG→cz_csg, PGZ→pl_pgz, Turkish Aerospace→tr_tusas, Kalyani→…) and a net-kind fallback for rows whose
+  role didn't map (network→member_of, corporate→subsidiary_of). The remaining 68 (categories like
+  "NATO-accredited"/"UK"/"US FFRDC", or families like Hanwha/Kongsberg with no parent node yet) are in
+  `relationships-review.csv` — nothing guessed into the DB. SQL is idempotent (on conflict do nothing).
 - Deterministic (SQL + plain JS, no AI), additive only. Stage C (recursive-CTE path RPC + JS mirror +
   parity test + the "Find a route" UI) follows and is where this becomes user-visible.
 

@@ -39,13 +39,29 @@ nodes.forEach(n => {
   if (!k) return;
   (normLabel.get(k) || normLabel.set(k, []).get(k)).push(n.id);
 });
+// Hand-verified aliases: a `net` whose parent organisation IS in the map but under a
+// differently-formatted label (checked against the node list, single clear target only).
+const NET_ALIAS = {
+  'edge': 'ae_edgegroup',                     // "EDGE Group" -> UAE — EDGE Group
+  'czechoslovak': 'cz_csg',                   // "Czechoslovak Group (CSG)"
+  'kalyani': 'in_bharatforgekalyanistra',     // "Kalyani Group"
+  'pgz': 'pl_pgz',                            // "PGZ"
+  'turkish aerospace': 'tr_tusas'             // "Turkish Aerospace (TUSAŞ)"
+};
 function resolveNet(net){
   const k = norm(net);
   if (!k) return null;
   if (byId.has(k.replace(/ /g, '_'))) return k.replace(/ /g, '_'); // e.g. "nssif" -> id nssif
   const hit = normLabel.get(k);
   if (hit && hit.length === 1) return hit[0];      // unique label match only
+  if (NET_ALIAS[k] && byId.has(NET_ALIAS[k])) return NET_ALIAS[k];
   return null;                                     // ambiguous or none -> review
+}
+// When the role doesn't map to a type but the net DID resolve to a node, fall back to
+// the kind of net: a membership network -> member_of, otherwise a corporate parent -> subsidiary_of.
+function netKindType(net){
+  return /diana|nssif|catapult|accredit|excellence|\bcoe\b|fund|network|consortium|alliance/i.test(net || '')
+    ? 'member_of' : 'subsidiary_of';
 }
 
 // ---- role -> relationship_type (membership vs corporate family) ------------
@@ -66,19 +82,16 @@ nodes.forEach(n => {
   const a = n.affiliation;
   if (!a || !a.net) return;
   const target = resolveNet(a.net);
-  const type = classify(a.role) || 'unclassified';
   if (!target) {                                   // couldn't place the net -> review
-    review.push({ id: n.id, label: n.label, net: a.net, role: a.role || '', note: a.note || '', reason: 'net did not resolve to a node' });
+    review.push({ id: n.id, label: n.label, net: a.net, role: a.role || '', note: a.note || '', reason: 'net did not resolve to a node (category or absent parent)' });
     return;
   }
   if (target === n.id) {                           // self-loop guard
-    review.push({ id: n.id, label: n.label, net: a.net, role: a.role || '', note: a.note || '', reason: 'net resolved to itself' });
+    review.push({ id: n.id, label: n.label, net: a.net, role: a.role || '', note: a.note || '', reason: 'net resolved to itself (parent node is this node)' });
     return;
   }
-  if (type === 'unclassified') {
-    review.push({ id: n.id, label: n.label, net: a.net, role: a.role || '', note: a.note || '', reason: 'role did not map to a type', target });
-    return;
-  }
+  // role -> type; if the role doesn't map but the net resolved, use the net-kind fallback.
+  const type = classify(a.role) || netKindType(a.net);
   edges.push({ src: n.id, tgt: target, type, role: a.role || '', note: a.note || '' });
   counts[type] = (counts[type] || 0) + 1;
 });
