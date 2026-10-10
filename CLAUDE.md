@@ -78,7 +78,11 @@ the *app itself* (a feature, layout, or the version stamp) changes.
   member_of, partners_with, contracts_with, sponsors, delivers_to, unclassified. "Current" = valid_to
   null/future AND last_verified within 12 months. Schema `2026-10-10-relationships-schema.sql`; backfill
   from affiliations via `scripts/backfill-relationships.mjs` (unresolved → `relationships-review.csv`).
-  Stage C (path RPC + JS mirror + "Find a route" UI) not yet built.
+  Stage C shipped (v4.13.0): a deterministic JS path-finder (`findPaths` over the `EDGES` adjacency,
+  bounded + cycle-prevented) and the "Find a route between two orgs" modal (`#route`, menu → Tools);
+  `sync-datajson.mjs` exports `data.relationships` (tolerant if the table is absent) and the app ingests
+  it in `applyData`. Stage D (a Postgres recursive-CTE RPC + a JS-parity test, for UNITI/external
+  consumers) is the only remaining optional piece.
 - **"Max rows" must stay 5000** (default was 1000 and silently clipped nodes — a real past bug).
 - The **anon key READS only.** Inserts need the service-role key (server-side) or SQL editor.
 
@@ -242,8 +246,8 @@ browser-only config field, never committed.
   v4.12.0); phase 2a finder "which criteria matched / no exact fit" + explicit non-endorsement authority
   line (v4.12.1); phase 2b organisation life cycles (status + successor + former-name search, v4.12.2).
   *Next phases, in order:* failed-search logging (aggregate, no PII — needs a small table); then the bigger
-  structural pieces — typed relationship edges (the path-finding model), acquisition-phase tagging
-  (CADMID/T, TEPIDOIL, NATO gates), and a coverage dashboard.
+  structural pieces — ~~typed relationship edges (the path-finding model)~~ (shipped v4.13.0 — "Find a
+  route"), acquisition-phase tagging (CADMID/T, TEPIDOIL, NATO gates), and a coverage dashboard.
   Failed-search logging shipped too (2026-10-10): the `events` logger now captures `search_empty`
   (top-search), `finder_empty` and `finder_noexact` — coverage-gap signal, no PII, reuses `events`.
 

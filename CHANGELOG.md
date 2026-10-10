@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.13.0 — Find a route (relationship path-finder, stage C) (2026-10-10)
+- **"Find a route between two orgs"** (menu → Tools). Pick a start and a destination and see how they
+  connect through the mapped relationships — e.g. an SME → its accelerator → the buyer — with each hop's
+  relationship type, direction and currency (✓ verified / unverified / ⚠ expired or ageing). Routes are
+  ranked shortest-first, fully-verified above partly-verified.
+- **Gap, not guess.** When no mapped route exists it says so plainly and invites a correction — nothing is
+  invented to connect two bodies. An optional "current links only" toggle hides expired/known-stale edges.
+- Deterministic JS over the edge set (bounded, cycle-prevented); works from Supabase live and the
+  data.json fallback alike. `sync-datajson.mjs` now exports `relationships` into data.json (tolerant if the
+  table is absent); `validate-data.mjs` checks edge types/endpoints/dates. Stage D (a Postgres
+  recursive-CTE RPC + a JS-parity test, for external/UNITI consumption) remains as an optional follow-up.
+
 ## v4.13.0 (stage A+B) — Relationship edges: data layer (2026-10-10)
 - **New `relationships` + `relationships_history` tables.** Typed, dated, evidenced links between
   organisations (member_of, subsidiary_of, funds, accelerates, contracts_with, …) with directedness,

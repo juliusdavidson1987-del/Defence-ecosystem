@@ -64,6 +64,33 @@ async function fetchAllNodes() {
   return all;
 }
 
+async function fetchRelationships() {
+  // Tolerant: if the relationships table doesn't exist yet (pre-migration) the first
+  // request 404s and we return [] — the sync must never break for that.
+  const all = [];
+  const cols = 'source_node_id,target_node_id,relationship_type,directed,valid_from,valid_to,last_verified_at,evidence_status,origin,attributes';
+  for (let offset = 0; ; offset += PAGE) {
+    const url = `${URL}/rest/v1/relationships?select=${cols}&order=source_node_id.asc&limit=${PAGE}&offset=${offset}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return all;                       // table absent or unreadable — skip quietly
+    const rows = await res.json();
+    all.push(...rows);
+    if (rows.length < PAGE) break;
+    if (offset > 200000) break;
+  }
+  return all;
+}
+function relToEdge(r) {
+  const e = { source: r.source_node_id, target: r.target_node_id, type: r.relationship_type, directed: r.directed !== false };
+  if (r.valid_from) e.validFrom = r.valid_from;
+  if (r.valid_to) e.validTo = r.valid_to;
+  if (r.last_verified_at) e.lastVerifiedAt = r.last_verified_at;
+  if (r.evidence_status) e.evidenceStatus = r.evidence_status;
+  if (r.origin) e.origin = r.origin;
+  if (r.attributes && r.attributes.role) e.role = String(r.attributes.role);
+  return e;
+}
+
 async function fetchReference() {
   const res = await fetch(`${URL}/rest/v1/reference?select=key,value`, { headers });
   if (!res.ok) return {};                        // reference is optional
@@ -75,12 +102,15 @@ async function fetchReference() {
 
 (async () => {
   try {
-    const [rows, reference] = await Promise.all([fetchAllNodes(), fetchReference()]);
+    const [rows, reference, rels] = await Promise.all([fetchAllNodes(), fetchReference(), fetchRelationships()]);
     if (!rows.length) throw new Error('published_nodes returned 0 rows — refusing to overwrite data.json');
 
     const nodes = rows.map(rowToNode);
     const orgs = nodes.filter(n => n.kind === 'org').length;
     const branches = nodes.filter(n => n.kind === 'branch').length;
+    // Only keep edges whose endpoints both exist as nodes (defensive; FK already enforces it).
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const relationships = rels.map(relToEdge).filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
 
     // preserve semantic meta from the existing file where present
     let prevMeta = {};
@@ -94,14 +124,15 @@ async function fetchReference() {
         asOf: prevMeta.asOf || null,
         generated: new Date().toISOString().slice(0, 10),
         source: 'supabase-sync',
-        counts: { total_nodes: nodes.length, organisations: orgs, branches: branches }
+        counts: { total_nodes: nodes.length, organisations: orgs, branches: branches, relationships: relationships.length }
       },
       nodes,
-      reference
+      reference,
+      relationships
     };
 
     fs.writeFileSync(OUT, JSON.stringify(data));
-    console.error(`✓ synced ${nodes.length} nodes (${orgs} orgs, ${branches} branches), ${Object.keys(reference).length} reference tables → ${OUT}`);
+    console.error(`✓ synced ${nodes.length} nodes (${orgs} orgs, ${branches} branches), ${relationships.length} relationships, ${Object.keys(reference).length} reference tables → ${OUT}`);
   } catch (e) {
     console.error('✗ sync failed:', e.message);
     process.exit(1);

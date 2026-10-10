@@ -130,6 +130,24 @@ badFormer.length ? warn('Former-names shape', `${badFormer.length} malformed for
 const lcCount = nodes.filter(n => n.lifecycleStatus || (n.formerNames && n.formerNames.length)).length;
 pass('Life-cycle coverage', `${lcCount} node(s) carry lifecycle/former-name data`);
 
+/* 14. relationships (v4.13.0) — tolerant: only checks edges that are present, so a
+   dataset synced before the relationships table exists still passes. */
+const rels = Array.isArray(data.relationships) ? data.relationships : [];
+if (rels.length) {
+  const REL_OK = new Set(['funds','accelerates','part_of','subsidiary_of','member_of','partners_with','contracts_with','sponsors','delivers_to','unclassified']);
+  const badType = rels.filter(e => e.type && !REL_OK.has(e.type));
+  badType.length ? fail('Relationship types', `${badType.length} with unexpected type: ${[...new Set(badType.map(e=>e.type))].slice(0,6).join(', ')}`) : pass('Relationship types');
+  const badEnds = rels.filter(e => !e.source || !e.target || !ids.has(e.source) || !ids.has(e.target));
+  badEnds.length ? fail('Relationship endpoints exist', `${badEnds.length} edge(s) reference a missing node (e.g. ${badEnds.slice(0,4).map(e=>e.source+'→'+e.target).join(', ')})`) : pass('Relationship endpoints exist');
+  const selfLoops = rels.filter(e => e.source && e.source === e.target);
+  selfLoops.length ? fail('No self-loop edges', `${selfLoops.length}`) : pass('No self-loop edges');
+  const badDates = rels.filter(e => (e.validFrom && isNaN(Date.parse(e.validFrom))) || (e.validTo && isNaN(Date.parse(e.validTo))) || (e.validFrom && e.validTo && Date.parse(e.validTo) <= Date.parse(e.validFrom)));
+  badDates.length ? warn('Relationship dates', `${badDates.length} with unparseable or out-of-order dates`) : pass('Relationship dates');
+  pass('Relationship count', `${rels.length} edge(s)`);
+} else {
+  pass('Relationships', 'none in dataset (table new/empty, or synced pre-migration)');
+}
+
 report();
 const failed = results.filter(r => !r.ok);
 process.exit(failed.length ? 1 : 0);

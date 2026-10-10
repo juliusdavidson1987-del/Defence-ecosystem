@@ -445,10 +445,10 @@
   header{flex-wrap:nowrap;overflow-x:auto;overflow-y:visible}
   header::-webkit-scrollbar{height:0}
   /* ================= v2: list / explore view ================= */
-  #listview,#compare,#correct,#feedback,#reconcile{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
-  #listview.open,#compare.open,#correct.open,#feedback.open,#reconcile.open{display:flex}
+  #listview,#compare,#correct,#feedback,#reconcile,#route{position:fixed;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(6,10,18,.82);backdrop-filter:blur(7px)}
+  #listview.open,#compare.open,#correct.open,#feedback.open,#reconcile.open,#route.open{display:flex}
   #listview .lvcard,#compare .lvcard{width:min(1180px,97vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#0E1A2E,#0A1220);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative}
-  #listview .aclose,#compare .aclose,#correct .aclose,#feedback .aclose,#reconcile .aclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--txt);cursor:pointer;font-size:16px;z-index:3}
+  #listview .aclose,#compare .aclose,#correct .aclose,#feedback .aclose,#reconcile .aclose,#route .aclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--ink2);color:var(--txt);cursor:pointer;font-size:16px;z-index:3}
   .lvfilters{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
   .lvftoggle{display:none;align-items:center;gap:8px;width:100%;margin:8px 0 0;padding:9px 12px;background:var(--ink2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer}
   .lvftoggle .lvftcount{color:var(--phos);font-weight:600}
@@ -805,6 +805,7 @@
         <button class="msitem" id="crmBtn">◱ My CRM <span class="crmbadge" id="crmBadge"></span></button>
         <button class="msitem" id="briefBtn">⎙ One-page brief</button>
         <button class="msitem" id="pathwayBtn">⇢ Innovation pathway</button>
+        <button class="msitem" id="routeBtn">⇢ Find a route between two orgs</button>
       </div>
       <div class="msgroup">
         <div class="msh">Reference</div>
@@ -1056,7 +1057,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.12.2 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.13.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1193,6 +1194,19 @@
   <p class="corlic">Submitted under the project licence (data CC BY 4.0 · code MIT). Please share your own words.</p>
 </div></div>
 
+<div id="route" role="dialog" aria-modal="true" aria-label="Find a route"><div class="acard">
+  <button class="aclose" id="routeClose" aria-label="Close">×</button>
+  <div class="ak">⇢ Find a route</div>
+  <h2>Find a route between two organisations</h2>
+  <p class="pintro">See how one body connects to another through the mapped relationships — accelerators, funders, corporate families, memberships. A missing route is shown as a gap, never invented.</p>
+  <label class="anlab">From</label><input class="finput" id="route_from" list="routeOrgs" placeholder="Start organisation…" autocomplete="off">
+  <label class="anlab">To</label><input class="finput" id="route_to" list="routeOrgs" placeholder="Destination organisation…" autocomplete="off">
+  <datalist id="routeOrgs"></datalist>
+  <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);margin:8px 0 2px"><input type="checkbox" id="route_current"> Current links only (hide expired or known-stale links)</label>
+  <div class="frow"><button class="fgo" id="route_go">⇢ Find route</button><button class="freset" id="route_cancel">Cancel</button></div>
+  <div id="routeResults" style="margin-top:12px"></div>
+</div></div>
+
 <a id="supportBtn" href="https://www.buymeacoffee.com/juliusdavit" target="_blank" rel="noopener noreferrer" aria-label="Support The Defence Ecosystem — buy me a coffee" title="Free & independent — support running costs">☕ Support</a>
 <button id="guideBtn" aria-label="Ask the guide">💬 Ask the guide</button>
 <div id="guide" role="dialog" aria-modal="true" aria-label="Ask the guide"><div class="gcard">
@@ -1260,6 +1274,9 @@ function applyData(data){
     if(data.reference.search_synonyms) SEARCH_SYNONYMS=data.reference.search_synonyms;
     if(data.reference.event_next) EVENT_NEXT=data.reference.event_next;
   }
+  // Relationship edges (v4.13.0) → adjacency the path-finder walks.
+  RELATIONSHIPS = Array.isArray(data.relationships) ? data.relationships : [];
+  buildEdges();
   return true;
 }
 // Attempt to load the external living dataset; returns a promise that resolves true if applied.
@@ -1310,22 +1327,36 @@ function rowToNode(r){
     formerNames:r.former_names||undefined
   };
 }
+// Convert a relationships row (snake_case) to the compact edge shape applyData expects.
+function relRowToEdge(r){
+  const e={ source:r.source_node_id, target:r.target_node_id, type:r.relationship_type, directed:r.directed!==false };
+  if(r.valid_from) e.validFrom=r.valid_from;
+  if(r.valid_to) e.validTo=r.valid_to;
+  if(r.last_verified_at) e.lastVerifiedAt=r.last_verified_at;
+  if(r.evidence_status) e.evidenceStatus=r.evidence_status;
+  if(r.origin) e.origin=r.origin;
+  if(r.attributes&&r.attributes.role) e.role=String(r.attributes.role);
+  return e;
+}
 async function loadFromSupabase(){
   if(!supabaseConfigured()) return false;
   try{
     const base=SUPABASE.url.replace(/\/+$/,'')+'/rest/v1';
     const headers={ apikey:SUPABASE.anonKey, Authorization:'Bearer '+SUPABASE.anonKey };
     // published_nodes view returns only published rows in the app's shape
-    const [nRes,rRes]=await Promise.all([
+    const [nRes,rRes,relRes]=await Promise.all([
       fetch(base+'/published_nodes?select=*', {headers}),
-      fetch(base+'/reference?select=key,value', {headers})
+      fetch(base+'/reference?select=key,value', {headers}),
+      fetch(base+'/relationships?select=source_node_id,target_node_id,relationship_type,directed,valid_from,valid_to,last_verified_at,evidence_status,origin,attributes&limit=5000', {headers})
     ]);
     if(!nRes.ok) return false;
     const rows=await nRes.json();
     if(!Array.isArray(rows)||!rows.length) return false;
     const reference={};
     if(rRes.ok){ (await rRes.json()).forEach(x=>{ reference[x.key]=x.value; }); }
-    const data={ nodes:rows.map(rowToNode), reference, meta:{ source:'supabase', counts:{ nodes:rows.length } } };
+    let relationships=[];
+    if(relRes && relRes.ok){ try{ const rr=await relRes.json(); if(Array.isArray(rr)) relationships=rr.map(relRowToEdge); }catch(_){} }
+    const data={ nodes:rows.map(rowToNode), reference, relationships, meta:{ source:'supabase', counts:{ nodes:rows.length } } };
     const ok=applyData(data);
     if(ok) try{ console.info('Loaded from Supabase:', rows.length, 'nodes'); }catch(_){}
     return ok;
@@ -5758,6 +5789,14 @@ function closePathway(){ document.getElementById('pathway').classList.remove('op
 document.getElementById('pathwayBtn').onclick=openPathway;
 document.getElementById('pwClose').onclick=closePathway;
 document.getElementById('pathway').addEventListener('click',e=>{ if(e.target.id==='pathway')closePathway(); });
+/* Find-a-route wiring (mirrors the pathway modal) */
+document.getElementById('routeBtn').onclick=()=>openRoute();
+document.getElementById('routeClose').onclick=closeRoute;
+document.getElementById('route_cancel').onclick=closeRoute;
+document.getElementById('route_go').onclick=runRoute;
+document.getElementById('route').addEventListener('click',e=>{ if(e.target.id==='route')closeRoute(); });
+document.getElementById('route_from').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('route_to').focus(); } });
+document.getElementById('route_to').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runRoute(); } });
 
 /* ============ CRM + custom nodes ============ */
 let CRM={contacts:{},custom:[],favs:[],saved:[],verified:{},usersources:{},corrections:[]};
@@ -6084,7 +6123,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.12.2 (Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.13.0 (Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
@@ -6163,6 +6202,116 @@ let EVIDENCE={};
    former:[old names] }. Drives search resolution of old names and the panel life-cycle line.
    Empty until the org-lifecycles migration + sync run. */
 let LIFECYCLE={};
+/* Typed relationship edges (v4.13.0) and the adjacency index the path-finder walks.
+   RELATIONSHIPS = [{source,target,type,directed,validFrom,validTo,lastVerifiedAt,evidenceStatus,origin,role}],
+   EDGES = { nodeId: [{to, via:<edge>, dir:'out'|'in'}] } (undirected traversal, direction recorded).
+   Empty until the relationships schema + backfill + sync have run. */
+let RELATIONSHIPS=[], EDGES={};
+function buildEdges(){
+  EDGES={};
+  (RELATIONSHIPS||[]).forEach(e=>{ if(!e||!e.source||!e.target||e.source===e.target) return;
+    (EDGES[e.source]||(EDGES[e.source]=[])).push({to:e.target, via:e, dir:'out'});
+    (EDGES[e.target]||(EDGES[e.target]=[])).push({to:e.source, via:e, dir:'in'});
+  });
+}
+/* ---- path-finder (v4.13.0): deterministic walk over the relationship edges ---- */
+const REL_LABEL={funds:'funds',accelerates:'accelerates',part_of:'part of',subsidiary_of:'subsidiary of',member_of:'member of',partners_with:'partners with',contracts_with:'contracts with',sponsors:'sponsors',delivers_to:'delivers to',unclassified:'linked to'};
+function edgeIsExpired(e){ return !!(e.validTo && !isNaN(Date.parse(e.validTo)) && new Date(e.validTo) < new Date()); }
+function edgeIsStale(e){ if(!e.lastVerifiedAt) return false; const t=Date.parse(e.lastVerifiedAt); if(isNaN(t)) return false; return (Date.now()-t)/2.6298e9 > 12; } // >~12 months
+// All simple paths from `from` to `to`, up to maxHops, ranked shortest-first then
+// most-verified-first. Undirected traversal, cycle-prevented, bounded.
+function findPaths(from,to,opts){
+  opts=opts||{}; const maxHops=opts.maxHops||4, currentOnly=!!opts.currentOnly, allowed=opts.allowedTypes||null;
+  if(!from||!to||from===to||!NODE[from]||!NODE[to]) return [];
+  const results=[]; let explored=0; const EXPLORE_CAP=30000, RESULT_CAP=12;
+  const okEdge=e=>{ if(allowed&&allowed.length&&!allowed.includes(e.type)) return false; if(currentOnly&&(edgeIsExpired(e)||edgeIsStale(e))) return false; return true; };
+  (function dfs(node,seen,hops){
+    if(results.length>=RESULT_CAP || explored>EXPLORE_CAP || hops.length>=maxHops) return;
+    const adj=EDGES[node]||[];
+    for(const a of adj){
+      if(results.length>=RESULT_CAP || explored>EXPLORE_CAP) return;
+      explored++;
+      if(!okEdge(a.via) || seen.has(a.to)) continue;
+      const h=hops.concat([{from:node,to:a.to,edge:a.via,dir:a.dir}]);
+      if(a.to===to){ results.push(h); continue; }
+      seen.add(a.to); dfs(a.to,seen,h); seen.delete(a.to);
+    }
+  })(from,new Set([from]),[]);
+  results.sort((a,b)=>{ if(a.length!==b.length) return a.length-b.length;
+    const va=a.filter(h=>h.edge.evidenceStatus==='verified').length, vb=b.filter(h=>h.edge.evidenceStatus==='verified').length; return vb-va; });
+  return results.slice(0,RESULT_CAP);
+}
+// ---- Find-a-route UI ----
+let _routeOrgsBuilt=false, _routeLabelToId=null;
+function buildRouteOrgs(){
+  const dl=document.getElementById('routeOrgs'); if(!dl || _routeOrgsBuilt) return; _routeOrgsBuilt=true;
+  _routeLabelToId=new Map(); const frag=document.createDocumentFragment();
+  Object.values(NODE).forEach(n=>{ if(!n || n._kind!=='org') return;
+    let lab=n.l||n.id; const key=lab.toLowerCase();
+    if(_routeLabelToId.has(key)) lab=lab+' ['+n.id+']';   // disambiguate duplicate labels
+    _routeLabelToId.set(lab.toLowerCase(), n.id);
+    const o=document.createElement('option'); o.value=lab; frag.appendChild(o);
+  });
+  dl.appendChild(frag);
+}
+function resolveRouteInput(v){ if(!v) return null; const t=String(v).trim(); if(NODE[t]) return t;
+  const k=t.toLowerCase(); if(_routeLabelToId && _routeLabelToId.has(k)) return _routeLabelToId.get(k);
+  const m=t.match(/\[([a-z0-9_]+)\]\s*$/i); if(m && NODE[m[1]]) return m[1]; return null; }
+function openRoute(preFrom){
+  buildRouteOrgs();
+  const fromEl=document.getElementById('route_from'), toEl=document.getElementById('route_to');
+  if(preFrom && NODE[preFrom] && fromEl){ fromEl.value=NODE[preFrom].l||preFrom; }
+  const res=document.getElementById('routeResults'); if(res) res.innerHTML='';
+  const m=document.getElementById('route'); if(m) m.classList.add('open');
+  setTimeout(()=>{ (preFrom?toEl:fromEl)&&(preFrom?toEl:fromEl).focus(); },60);
+}
+function closeRoute(){ const m=document.getElementById('route'); if(m) m.classList.remove('open'); }
+function runRoute(){
+  const fromV=(document.getElementById('route_from')||{}).value, toV=(document.getElementById('route_to')||{}).value;
+  const from=resolveRouteInput(fromV), to=resolveRouteInput(toV);
+  const res=document.getElementById('routeResults'); if(!res) return;
+  if(!from){ res.innerHTML='<div class="fnone">Pick a start organisation from the list.</div>'; return; }
+  if(!to){ res.innerHTML='<div class="fnone">Pick a destination organisation from the list.</div>'; return; }
+  if(from===to){ res.innerHTML='<div class="fnone">Start and destination are the same organisation.</div>'; return; }
+  const currentOnly=!!(document.getElementById('route_current')||{}).checked;
+  if(!RELATIONSHIPS.length){ res.innerHTML='<div class="fnone">No relationship data is loaded yet — run the relationships migration + backfill and sync.</div>'; return; }
+  const paths=findPaths(from,to,{maxHops:4,currentOnly});
+  res.innerHTML=renderRoute(from,to,paths,currentOnly);
+  res.querySelectorAll('[data-rnode]').forEach(a=>a.onclick=e=>{ e.preventDefault(); const id=a.dataset.rnode; if(NODE[id]){ closeRoute(); focusNode(id); } });
+  try{ track(paths.length?'route_found':'route_none', from+'→'+to); }catch(_){}
+}
+function routeChip(id){ const n=NODE[id]; const nm=n?(n.l||id):id; const col=colorOf(id);
+  return `<a href="#" data-rnode="${id}" class="rpchip" style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid ${col}66;border-radius:14px;color:var(--txt);text-decoration:none;font-size:12px;white-space:nowrap"><span style="width:7px;height:7px;border-radius:50%;background:${col}"></span>${finderEsc(nm)}</a>`; }
+function hopConnector(h){
+  const e=h.edge, lab=REL_LABEL[e.type]||e.type.replace(/_/g,' ');
+  const arrow = h.dir==='out' ? '→' : '←';        // real edge direction relative to the walk
+  let flag='', col='var(--faint)';
+  if(e.evidenceStatus==='verified'){ flag='✓'; col='#57D9A3'; }
+  else if(e.evidenceStatus==='ai_drafted' || e.origin==='ai_drafted' || e.origin==='auto_maintainer'){ flag='⚠ AI'; col='#E3A24B'; }
+  else { flag='unverified'; col='var(--faint)'; }
+  if(edgeIsExpired(e)){ flag='⚠ expired'; col='#E36C6C'; }
+  else if(edgeIsStale(e)){ flag='⚠ ageing'; col='#E3A24B'; }
+  const when = e.validFrom ? (' · since '+finderEsc(e.validFrom)) : '';
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;margin:0 2px;font-size:10px;line-height:1.3">
+    <span style="color:var(--mut)">${arrow} ${finderEsc(lab)} ${arrow==='→'?'':''}</span>
+    <span style="color:${col}">${flag}${when}</span></span>`;
+}
+function renderRoute(from,to,paths,currentOnly){
+  if(!paths.length){
+    return `<div class="fnone" style="border-left:3px solid #E3A24B">No connecting route found between <b>${finderEsc(NODE[from].l)}</b> and <b>${finderEsc(NODE[to].l)}</b> in the mapped relationships${currentOnly?' (with "current links only" on — try turning it off)':''}.<br><br>That's a <b>gap, not a dead end</b>: the two may well connect through bodies whose link isn't mapped yet. Nothing is invented to fill it. If you know the link, use ✎ Suggest a correction on either organisation.</div>`;
+  }
+  let html=`<div class="rtsub" style="margin:4px 0 10px">${paths.length} route${paths.length>1?'s':''} found — shortest first; fully-verified links rank above unverified. Each hop shows the relationship, its direction, and how current it is.</div>`;
+  paths.forEach(p=>{
+    const hops=p.length, allVerified=p.every(h=>h.edge.evidenceStatus==='verified');
+    html+=`<div class="rpath" style="border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin-bottom:9px">
+      <div style="font-size:10.5px;color:var(--faint);margin-bottom:7px">${hops}-step route${allVerified?' · <span style="color:#57D9A3">fully verified</span>':' · <span style="color:var(--mut)">partly unverified — confirm before relying on it</span>'}</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px">`;
+    html+=routeChip(p[0].from);
+    p.forEach(h=>{ html+=hopConnector(h)+routeChip(h.to); });
+    html+=`</div></div>`;
+  });
+  return html;
+}
 /* ---- themes ---- */
 const THEMES=['dark','light','hc']; let themeIdx=0;
 function applyTheme(){ const t=THEMES[themeIdx]; document.documentElement.setAttribute('data-theme',t);
