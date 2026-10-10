@@ -1277,7 +1277,7 @@ function supabaseConfigured(){ return !!(SUPABASE.url && SUPABASE.anonKey); }
 /* Stage 4: lightweight, privacy-respecting analytics. Fire-and-forget inserts to the events
    table so the maintainer can see which orgs draw interest and — crucially — which searches
    found nothing (the gaps to fill). No personal data, no cookies, no identifiers. */
-let _trackQueue=[], _trackTimer=null, _lastSearchTerm='';
+let _trackQueue=[], _trackTimer=null, _lastSearchTerm='', _missTimer=null, _lastMiss='';
 function track(kind, ref, meta){
   if(!supabaseConfigured()) return;
   try{ _trackQueue.push({kind, ref:ref?String(ref).slice(0,120):null, meta:meta||null});
@@ -3902,6 +3902,12 @@ q.addEventListener('input',()=>{
   const scored=[];
   Object.values(NODE).forEach(n=>{ const s=scoreNodeQuery(n,v); if(s>0) scored.push({id:n.id,s}); });
   scored.sort((a,b)=>b.s-a.s);                        // best match first
+  // Learn from failed searches: if a settled query (user paused, ≥3 chars) found nothing,
+  // log it as a coverage gap. Debounced so we don't record every keystroke while typing.
+  clearTimeout(_missTimer);
+  if(v.length>=3 && scored.length===0){
+    _missTimer=setTimeout(()=>{ if(q.value.trim().toLowerCase()===v && v!==_lastMiss){ _lastMiss=v; track('search_empty', v, {src:'search'}); } }, 1400);
+  }
   const hits=scored.map(x=>x.id), hitSet=new Set(hits);
   // expand ancestors of hits
   hits.forEach(id=>{let cur=PARENT[id];while(cur!=null){collapsed.delete(cur);cur=PARENT[cur];}});
@@ -5185,7 +5191,8 @@ function renderFinderResults(sel){
   const scored=cands.map(n=>({id:n.id,...scoreNode(n.id,sel)})).filter(x=>x.s>2).sort((a,b)=>b.s-a.s);
   lastSel=sel;
   const box=document.getElementById('finderResults');
-  if(!scored.length){ box.innerHTML=`<div class="fnone">No strong match yet — try widening the region to <b>Any</b>, removing a domain, or selecting fewer needs. The general way in for most UK innovators is <b>UKDI / DASA</b>.</div>`; return; }
+  if(!scored.length){ box.innerHTML=`<div class="fnone">No strong match yet — try widening the region to <b>Any</b>, removing a domain, or selecting fewer needs. The general way in for most UK innovators is <b>UKDI / DASA</b>.</div>`;
+    try{ track('finder_empty', summariseSel(sel)); }catch(_){} return; }
   function cardHTML(r){ const n=NODE[r.id]; const t=tagsFor(r.id); const col=colorOf(r.id);
     const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
     const ac=ACCESSCOL[accessOf(r.id)], al=ACCESSLAB[accessOf(r.id)];
@@ -5231,6 +5238,7 @@ function renderFinderResults(sel){
   // letting the nearest partial match pose as a definitive result.
   if(!exact.length && (close.length||potential.length)){
     html+=`<div class="fnone" style="border-left:3px solid #E3A24B">No organisation matches <b>everything</b> you selected — there's no exact fit. The closest partial matches are below; treat them as leads to weigh, not a definitive answer.</div>`;
+    try{ track('finder_noexact', summariseSel(sel)); }catch(_){}
   }
   function section(cls,title,sub,arr){ if(!arr.length) return ''; return `<div class="rtier rtier-${cls}"><div class="rcount">${title} <span class="rtn">${arr.length}</span></div><div class="rtsub">${sub}</div>`+arr.map(cardHTML).join('')+`</div>`; }
   html+=section('exact','Exact fit','Remit closely matches everything you selected — start here.',exact);

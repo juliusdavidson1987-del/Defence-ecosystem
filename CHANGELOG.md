@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Learn from failed searches (2026-10-10)
+- **Coverage-gap capture completed.** The privacy-respecting `events` logger already recorded empty
+  searches from the Explore list view; it now also records them from the **main top-search bar**
+  (`search_empty`, debounced so only a settled ≥3-char query with zero hits is logged) and from the
+  **finder** (`finder_empty` when nothing matches, `finder_noexact` when nothing matches everything).
+  No personal data, no identifiers — just the query/selection, so the maintainer can see where coverage
+  is thin. No new table (reuses `events`); app-only, no version bump (invisible to users).
+
 ## v4.12.2 — Organisation life cycles (2026-10-10)
 - **Renames, mergers and dissolutions are now data, not just label text.** New additive columns on
   `nodes`: `lifecycle_status` (active / renamed / merged / dissolved), `successor_id` (the body that
