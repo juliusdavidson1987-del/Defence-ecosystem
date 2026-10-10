@@ -1,0 +1,55 @@
+-- ============================================================================
+-- Full chart reconcile, batch 7: bodies the owner opted to include despite not
+-- having a dedicated standalone URL (they use their official enterprise directory,
+-- operator, or parent-command site). Web-verified existence 2026-10-11. Idempotent.
+-- DAF software factories point at the official AF DevSecOps directory (software.af.mil)
+-- that catalogs each. Still excluded: Section 31 & Rogue Squadron (absorbed/defunct),
+-- Overwatch (ambiguous; Navy Overmatch already added), MGMWERX (no activity since
+-- 2021), AFRL Southwest (not a distinct named org), MXS (unclear identity),
+-- NineTwelve (could not verify as a real defence org), SciTechCONNECT (a DoD program,
+-- not a standalone body).
+-- ============================================================================
+insert into public.nodes (id,label,parent,kind,does,entry,tags,status,origin,evidence_status,last_verified_at,verified_by,source) values
+ ('us_mach5','Mach5','us_service','org',
+  'US Air Force low-code application-development software factory (an Appian-based platform run by AFLCMC Business and Enterprise Systems) for rapidly building Airman-facing apps.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_cloudworks','DAF CLOUDworks','us_service','org',
+  'US Department of the Air Force cloud-services software organisation (listed in the AF DevSecOps directory) providing managed cloud hosting and DevSecOps services.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software","cyber"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_orbitallabs','Orbital Labs','us_service','org',
+  'US Space Force / Department of the Air Force software factory (listed in the AF DevSecOps directory) building space-mission software.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software","space"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_corsairranch','Corsair Ranch','us_service','org',
+  'US Air Reserve Component software factory — the software division of ARCWERX (Tucson) and one of the official DAF software factories, modernising software engineering for the reserve component.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_emeraldcode','EmeraldCode','us_service','org',
+  'US Department of the Air Force software organisation listed in the official AF DevSecOps (software.af.mil) directory.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_rogueblue','Rogue Blue','us_service','org',
+  'US Department of the Air Force software organisation listed in the official AF DevSecOps (software.af.mil) directory.',
+  'software.af.mil','{"w":["govmil","sme"],"o":["advice","contract"],"t":[6,9],"d":["software"],"a":"restricted","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','software.af.mil'),
+ ('us_cyberworx','CyberWorx','us_service','org',
+  'US Air Force cyber design and innovation center at the US Air Force Academy (Fairchild Hall) running human-centred design sprints with industry, academia and cadets.',
+  'afcyberworx.org','{"w":["govmil","sme","startup","academic"],"o":["advice"],"t":[3,8],"d":["cyber"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','afcyberworx.org'),
+ ('us_fleetwerx','FLEETWERX','us_service','org',
+  'US innovation hub established (2023) by DEFENSEWERX and the Naval Postgraduate School, working on expeditionary logistics and distributed manufacturing (FLEET-X) with industry and the fleet.',
+  'defensewerx.org','{"w":["startup","sme","academic"],"o":["advice"],"t":[3,8],"d":["logistics","maritime"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','defensewerx.org'),
+ ('us_scci','Supply Chain Consortium Initiative (SCCI)','us_acq','org',
+  'US Air Force OTA consortium (448th Supply Chain Management Wing, Tinker AFB; managed by SOSSEC) for rapid prototyping of sustainment and supply-chain technologies.',
+  'tinker.af.mil/Home/429SCMS-SASPO','{"w":["sme","startup","prime"],"o":["procurement","contract"],"t":[3,9],"d":["logistics"],"a":"portal","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','tinker.af.mil/Home/429SCMS-SASPO'),
+ ('us_in3','Indiana Innovation Institute (IN3)','us_acq','org',
+  'US nonprofit national-security innovation institute (Indianapolis) linking government, military, industry and academia with NSWC Crane, and managing the NavalX Midwest Tech Bridge.',
+  'in3indiana.com','{"w":["startup","sme","academic","govmil"],"o":["advice","research"],"t":[3,8],"d":["microelec","hypersonic"],"a":"open","g":"us"}'::jsonb,
+  'published','curated','verified','2026-10-11','maintainer','in3indiana.com')
+on conflict (id) do update set label=excluded.label,parent=excluded.parent,does=excluded.does,entry=excluded.entry,
+  tags=excluded.tags,status='published',origin=excluded.origin,evidence_status=excluded.evidence_status,
+  last_verified_at=excluded.last_verified_at,verified_by=excluded.verified_by,source=excluded.source;

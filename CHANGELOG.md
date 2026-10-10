@@ -25,10 +25,16 @@ aren't stamped here unless they change a version.
     Battery Innovation Center (us_labs).
   - **6b — Army / cyber / Marine (9):** ERDC, ARI, Energetics Technology Center, SMDC Technical Center
     (us_labs), FirePoint, Shadows Edge, Marine Innovation Unit (us_service), NJII (us_acq), JWAC (us_cyber).
-  - Migrations `2026-10-11-chart-reconcile-1..6b.sql`. Deferred (no clean standalone URL / defunct / a
-    command rather than a door / already represented): Mach5, Kobayashi-era Section 31, Rogue Squadron,
-    Overwatch, Corsair Ranch, CyberWorx, FLEETWERX, MGMWERX, AFRL Southwest, Supply Chain Consortium,
-    NineTwelve, SciTechCONNECT, IN3, Maneuver Battle Lab, TRADOC, CFIC, Technology Advancement Center,
+  - Migrations `2026-10-11-chart-reconcile-1..6b.sql`.
+  - **Batch 7 (`-7-indirect.sql`, 10):** at the owner's direction, added bodies lacking a dedicated URL
+    (using their official directory / operator / parent-command site): Mach5, DAF CLOUDworks, Orbital Labs,
+    Corsair Ranch, EmeraldCode, Rogue Blue (software.af.mil); CyberWorx (afcyberworx.org); FLEETWERX
+    (defensewerx.org); Supply Chain Consortium Initiative / SCCI (tinker.af.mil SASPO); Indiana Innovation
+    Institute / IN3 (in3indiana.com). **Grand total: 93 new verified nodes from the two-chart reconcile.**
+  - Still excluded (identity/existence, not URL): Section 31 & Rogue Squadron (absorbed/defunct), Overwatch
+    (ambiguous; Navy Overmatch added), MGMWERX (dormant since 2021), AFRL Southwest (not a distinct org),
+    MXS (unclear identity), NineTwelve (unverifiable), SciTechCONNECT (a program), Maneuver Battle Lab (no
+    URL post Fort Moore→Benning rename), TRADOC (a command), CFIC, Technology Advancement Center, and the
     NavalX tech bridges (already covered by the `navalx` node).
 
 ## US innovation-ecosystem gap-fill, batch 3 — residual tail closed (2026-10-11)
