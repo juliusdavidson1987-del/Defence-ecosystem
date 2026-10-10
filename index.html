@@ -6258,7 +6258,10 @@ let _routeOrgsBuilt=false, _routeLabelToId=null;
 function buildRouteOrgs(){
   const dl=document.getElementById('routeOrgs'); if(!dl || _routeOrgsBuilt) return; _routeOrgsBuilt=true;
   _routeLabelToId=new Map(); const frag=document.createDocumentFragment();
-  Object.values(NODE).forEach(n=>{ if(!n || n._kind!=='org') return;
+  // Offer orgs AND any node that is an endpoint of a relationship (e.g. a corporate-group
+  // container like airbus_grp) — otherwise a valid route destination can't be picked.
+  Object.values(NODE).forEach(n=>{ if(!n) return;
+    if(n._kind!=='org' && !(EDGES[n.id] && EDGES[n.id].length)) return;
     let lab=n.l||n.id; const key=lab.toLowerCase();
     if(_routeLabelToId.has(key)) lab=lab+' ['+n.id+']';   // disambiguate duplicate labels
     _routeLabelToId.set(lab.toLowerCase(), n.id);
