@@ -11,6 +11,15 @@ aren't stamped here unless they change a version.
   candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid.
 - App-only (no data change). Trust programme — the "coverage dashboard" item.
 
+## v4.13.0 (stage D) — path-finding RPC for UNITI (2026-10-10)
+- **`find_paths()` Postgres RPC** — a server-side twin of the app's JS path-finder (recursive CTE,
+  undirected, cycle-prevented, bounded; ranked shortest-first then most-verified), callable with the
+  public anon key so UNITI or any client can query routes without the app. Semantics match the JS exactly.
+  Migration `2026-10-10-find-paths-rpc.sql` (run it, then it's live).
+- **Parity test** `scripts/path-parity-test.mjs` compares the RPC against a Node port of the JS walk on a
+  set of pairs (run after deploying the function; skips gracefully if it isn't deployed). This completes
+  the typed-relationship model from the original brief.
+
 ## v4.13.0 — Find a route (relationship path-finder, stage C) (2026-10-10)
 - **"Find a route between two orgs"** (menu → Tools). Pick a start and a destination and see how they
   connect through the mapped relationships — e.g. an SME → its accelerator → the buyer — with each hop's

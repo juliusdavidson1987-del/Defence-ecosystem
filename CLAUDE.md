@@ -81,8 +81,9 @@ the *app itself* (a feature, layout, or the version stamp) changes.
   Stage C shipped (v4.13.0): a deterministic JS path-finder (`findPaths` over the `EDGES` adjacency,
   bounded + cycle-prevented) and the "Find a route between two orgs" modal (`#route`, menu → Tools);
   `sync-datajson.mjs` exports `data.relationships` (tolerant if the table is absent) and the app ingests
-  it in `applyData`. Stage D (a Postgres recursive-CTE RPC + a JS-parity test, for UNITI/external
-  consumers) is the only remaining optional piece.
+  it in `applyData`. Stage D shipped too (v4.13.0): the `find_paths()` Postgres RPC
+  (`migrations/2026-10-10-find-paths-rpc.sql`, recursive CTE with semantics matched to the JS) + the
+  parity test `scripts/path-parity-test.mjs`. Deploy that migration to enable the RPC for UNITI.
 - **"Max rows" must stay 5000** (default was 1000 and silently clipped nodes — a real past bug).
 - The **anon key READS only.** Inserts need the service-role key (server-side) or SQL editor.
 
