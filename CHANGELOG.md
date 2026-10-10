@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.3 — Logo/wording is now a home button (2026-10-11)
+- The top-left brand (the logo mark **and** "The Defence Ecosystem" wording) is now a clickable home
+  button — from anywhere on the map it returns to the welcome/home screen (the same `goHome` the menu's
+  "⌂ Home screen" uses). Keyboard-accessible (`role="button"`, Enter/Space), with a hover highlight, a
+  tooltip, and a subtle "⌂ home" hint. App-only; stamped v4.18.3.
+
 ## v4.18.2 — Benchmark polish: fluid cards + no UK default (2026-10-11)
 - The "How we compare with other nations" cards were being clipped on narrower windows. Made the whole
   section fluid: cards reflow with `auto-fit`, each row uses shrink-safe columns (`minmax(0,…)` + a
