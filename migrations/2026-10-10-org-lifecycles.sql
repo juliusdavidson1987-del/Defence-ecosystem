@@ -29,11 +29,14 @@ begin
 end $$;
 
 -- 3. Backfill former_names deterministically from the "(formerly X)" labels.
---    Only touches rows that have that pattern and no former_names yet. Case-insensitive.
+--    Only touches rows with that pattern and no former_names yet. Matches "formerly"
+--    or "Formerly" via [Ff] (NOT the (?i) flag — Postgres substring() rejects it, which
+--    rolled the whole migration back the first time). WHERE and extraction use the same
+--    pattern so a matched row always yields a value.
 update public.nodes
-   set former_names = to_jsonb(array[ trim(substring(label from '(?i)\(formerly ([^)]+)\)')) ])
+   set former_names = to_jsonb(array[ trim(substring(label from '\([Ff]ormerly ([^)]+)\)')) ])
  where former_names is null
-   and label ~* '\(formerly [^)]+\)';
+   and label ~ '\([Ff]ormerly [^)]+\)';
 
 -- 4. Recreate published_nodes to expose the three new columns. Reproduces the
 --    CURRENT column list (confirmed against the live API 2026-10-10, incl. the
