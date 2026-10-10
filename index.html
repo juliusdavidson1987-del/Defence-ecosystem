@@ -1066,7 +1066,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.14.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.15.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -1100,7 +1100,12 @@
   <button class="pwclose" id="pwClose">×</button>
   <div class="ak">◎ Innovation pathway</div>
   <h2>Crossing the valley of death</h2>
-  <p class="pintro">The journey from idea to fielded capability — and where innovations stall. Each stage shows the organisations that operate there and the hand-off needed to progress. Click any organisation to jump to it on the map.</p>
+  <p class="pintro">The journey from idea to fielded capability — and where innovations stall. Pick a nation to see <b>its</b> bodies at each stage, each with a confidence score (from verification status and freshness); empty stages are flagged as possible gaps you can search the web to fill. Click any organisation to jump to it on the map.</p>
+  <div style="margin:0 0 16px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+    <label for="pwNation" style="font-size:12px;color:var(--mut)">Nation</label>
+    <select id="pwNation" class="finput" style="max-width:280px;width:auto"></select>
+    <span style="font-size:10.5px;color:var(--faint)">●●● high · ●●○ medium · ●○○ low confidence</span>
+  </div>
   <div class="prow" id="prow"></div>
   <div class="vcallout" id="vcallout"></div>
 </div></div>
@@ -5779,48 +5784,84 @@ document.getElementById('aClose').onclick=closeAbout;
 document.getElementById('about').addEventListener('click',e=>{ if(e.target.id==='about')closeAbout(); });
 document.getElementById('plink').onclick=()=>{ if(selected) shareHash('node='+selected); };
 
-/* ---- innovation pathway / valley of death ---- */
+/* ---- innovation pathway / valley of death (country-selectable, v4.15.0) ---- */
+// Stages aligned to the acquisition-stage lens so any nation gets the same readout,
+// populated at runtime from phaseForOrg() + nationCodeFor().
 const STAGES=[
- {n:'Idea & research', trl:'TRL 1–3', b:'Fundamental science and early concepts. Grants and research partners de-risk the idea.',
-   o:['cranfield','sheffield','bristol','dstl','udrc','turing','npl','innovateuk','ukri','darpa','onr','sbir','edf']},
- {n:'Concept & de-risk', trl:'TRL 3–6', b:'Prototype and prove it against a real defence problem through competitions and accelerators.',
-   o:['dasa','ukdi','daic','battlelab','digicat','satcat','mtc','csac','diana','us_diu','afwerx','ca_ideas','au_asca','dtep','ploughshare']},
- {n:'Pilot & trials', trl:'TRL 5–7', b:'Get a user. Front-line units and test ranges trial the prototype in a realistic setting.',
-   o:['jhub','dcto','lwc','rafrco','fcg','atec','hebrides','lulworth','dorsetpark','qinetiq','sofwerx']},
- {n:'Transition & scaling', trl:'TRL 6–8', b:'Crossing from a successful pilot into a funded programme. Most innovations stall here.', valley:true,
-   o:['fcg','des','nssif','natofund','osc','iqt','ofsbg','dijc','bae']},
- {n:'Procurement & production', trl:'TRL 7–9', b:'Adoption into a programme of record: a contract, a funding line, or integration by a prime. Exports open new markets.',
-   o:['des','sda','commercial','dip','bae','rr','babcock','leonardo','mbda','thales','rbsl','ukef','ode','nspa','ncia']},
- {n:'In-service & sustainment', trl:'In service', b:'Fielded capability, maintained and upgraded through life — with spiral routes back to earlier stages.',
-   o:['des','babcock','qinetiq','serco','kbr','leidosuk']}
+ {phase:'concept', n:'Concept & research', trl:'TRL 1–3', b:'Fundamental science and early concepts — grants and research partners de-risk the idea.'},
+ {phase:'develop', n:'Develop & de-risk', trl:'TRL 3–6', b:'Prototype and prove it against a real defence problem through competitions, accelerators and early investment.'},
+ {phase:'demonstrate', n:'Demonstrate & trial', trl:'TRL 5–7', b:'Get a user — front-line units and test & evaluation ranges trial the prototype in a realistic setting.'},
+ {phase:'procure', n:'Procure & field', trl:'TRL 7–9', b:'Cross into a programme of record — a contract, a funding line, or integration by a prime.'},
+ {phase:'insvc', n:'In-service & sustainment', trl:'In service', b:'Fielded capability, maintained and upgraded through life, with spiral routes back to earlier stages.'}
 ];
 const HANDOFFS=[
  'Win a funded competition or research grant; prove the concept.',
  'Secure a prototype contract and a user or command willing to trial it.',
- 'Get a front-line sponsor and trial evidence — the hand-off toward a programme.',
- 'Cross into a programme of record: a DE&S/SDA contract or DIP funding line, often bridged by investment and spiral development.',
+ 'Cross the valley of death: a front-line sponsor, transition funding and a route into a programme of record.',
  'Enter service with a through-life support arrangement.'
 ];
+const VALLEY_BEFORE=3;  // the valley of death sits between Demonstrate and Procure
+// Confidence 0–99 from provenance (verification status) + freshness — "verified by confidence score".
+function pathwayConfidence(id){
+  const ev=EVIDENCE[id]||{}; let score;
+  if(ev.status==='verified') score=90;
+  else if(ev.status==='ai_drafted'||ev.origin==='ai_drafted'||ev.origin==='auto_maintainer') score=38;
+  else if(ev.origin==='community') score=55;
+  else score=66;
+  try{ const days=(Date.now()-new Date(verifiedDate(id)).getTime())/86400000; if(!isNaN(days)){ if(days<=120)score+=8; else if(days>300)score-=14; } }catch(_){}
+  score=Math.max(12,Math.min(99,Math.round(score)));
+  return {score, lvl: score>=75?3:score>=50?2:1};
+}
+// Bodies in `nation` that serve `phase` (runtime, via the acquisition-stage lens), best confidence first.
+function pathwayBodiesFor(nation,phase){
+  const out=[];
+  Object.keys(NODE).forEach(id=>{ const nd=NODE[id]; if(!nd||nd._kind!=='org')return;
+    if(nationCodeFor(id)!==nation) return;
+    if(!phaseForOrg(id).includes(phase)) return;
+    out.push({id,c:pathwayConfidence(id)});
+  });
+  return out.sort((a,b)=> b.c.score-a.c.score || (NODE[a.id].l<NODE[b.id].l?-1:1));
+}
+let _pwNation=null,_pwNationsBuilt=false;
+function pwNatLabel(code){ const m=NATION_META[code]; return m? m.l.replace(/^[^A-Za-z]+/,'').trim() : String(code||'').toUpperCase(); }
+function populatePathwayNations(){ const sel=document.getElementById('pwNation'); if(!sel||_pwNationsBuilt)return; _pwNationsBuilt=true;
+  const groups=[['Alliances',['nato','eu_inst','multi']],['NATO members & Europe',['uk','us','fr','de','it','nl','be','se','no','fi','dk','ee','lv','lt','pl','cz','sk','hu','es','pt','gr','ro','bg','hr','si','tr']],['Ukraine',['ua']],['Five Eyes partners',['ca','au','nz']],['Indo-Pacific & other allies',['kr','jp','il','in','sg','ae','sa']]];
+  groups.forEach(([label,codes])=>{ const og=document.createElement('optgroup'); og.label=label; codes.forEach(c=>{ const m=NATION_META[c]; if(!m)return; const o=document.createElement('option'); o.value=c; o.textContent=m.l; og.appendChild(o); }); sel.appendChild(og); });
+  sel.onchange=()=>{ _pwNation=sel.value; renderPathway(); };
+}
 function renderPathway(){
-  const row=document.getElementById('prow'); const n=STAGES.length; let html='';
+  const nation=_pwNation||homeKey()||'uk'; _pwNation=nation;
+  const natLabel=pwNatLabel(nation);
+  const row=document.getElementById('prow'); const n=STAGES.length; let html=''; const gaps=[];
   STAGES.forEach((s,i)=>{
-    const hue = Math.round(198 - i*(198-34)/(n-1));
-    const sc = s.valley ? '#E36C6C' : hslToHex(hue,58,62);
-    const chips = s.o.filter(id=>NODE[id]).map(id=>`<button class="pchip" data-id="${id}">${NODE[id].l}</button>`).join('');
-    html += `<div class="pstage${s.valley?' valley':''}" style="--sc:${sc}">
-      ${s.valley?'<div class="vrib">⚠ Valley of death</div>':''}
-      <div class="ptrl">${s.trl}</div><div class="phead">${s.n}</div>
+    const isValley=(i===VALLEY_BEFORE);
+    const hue=Math.round(198 - i*(198-34)/(n-1)); const sc=isValley?'#E36C6C':hslToHex(hue,58,62);
+    const bodies=pathwayBodiesFor(nation,s.phase).slice(0,10);
+    if(!bodies.length) gaps.push(s.n);
+    const chips = bodies.length
+      ? bodies.map(o=>{ const d='●'.repeat(o.c.lvl)+'○'.repeat(3-o.c.lvl); const dc=o.c.lvl>=3?'#57D9A3':o.c.lvl>=2?'#E3A24B':'#E36C6C';
+          return `<button class="pchip" data-id="${o.id}" title="Confidence ${o.c.score}% — from verification status and freshness"><span style="font-size:8px;letter-spacing:1px;margin-right:5px;color:${dc}">${d}</span>${finderEsc(NODE[o.id].l)}</button>`; }).join('')
+      : `<div class="pwgap" data-stage="${finderEsc(s.n)}" style="font-size:11.5px;color:#E3A24B;border:1px dashed #E3A24B55;border-radius:8px;padding:8px 9px">⚠ No mapped ${finderEsc(natLabel)} body at this stage — a possible gap.<br><button class="rbtn pwgapbtn" style="margin-top:7px">🌐 Search the web</button><div class="pwgapres" style="margin-top:8px"></div></div>`;
+    html += `<div class="pstage${isValley?' valley':''}" style="--sc:${sc}">
+      ${isValley?'<div class="vrib">⚠ Valley of death</div>':''}
+      <div class="ptrl">${s.trl}</div><div class="phead">${finderEsc(s.n)}</div>
       <div class="pblurb">${s.b}</div><div class="porgs">${chips}</div></div>`;
     if(i<n-1) html += `<div class="phandoff"><div class="parrow">→</div><div class="phtext">${HANDOFFS[i]}</div></div>`;
   });
   row.innerHTML=html;
-  document.getElementById('vcallout').innerHTML =
-    `<div class="vtitle">⚠ Why good technology dies here — and what bridges it</div>`+
-    `<p>A successful trial rarely arrives with a budget line to buy at scale; the user who trialled it often isn't the buyer; and programmes of record are planned years ahead. Innovations that clear the science and prototype stages still stall for want of a funded route into procurement.</p>`+
-    `<p><b>What bridges the gap:</b> a front-line command sponsor with a committed requirement; transition funding (NSSIF, the NATO Innovation Fund, the DIP Modernisation Fund); a prime willing to integrate the capability; and spiral or iterative acquisition so it enters service in increments rather than waiting for a perfect end-state.</p>`;
-  row.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>{ document.getElementById('pathway').classList.remove('open'); focusNode(c.dataset.id); }));
+  const gapHtml = gaps.length
+    ? `<div class="vtitle">⚠ Coverage gaps for ${finderEsc(natLabel)}</div><p>No mapped body at: <b>${gaps.map(finderEsc).join(', ')}</b>. That is a gap in the map, not necessarily in the nation's pipeline — use the web search on a stage to surface candidates (they go to the maintainer to review).</p>`
+    : `<div class="vtitle">✓ ${finderEsc(natLabel)} has mapped bodies at every stage</div>`;
+  document.getElementById('vcallout').innerHTML = gapHtml
+    + `<div class="vtitle" style="margin-top:14px">⚠ Why good technology dies at the valley of death — and what bridges it</div>`
+    + `<p>A successful trial rarely arrives with a budget line to buy at scale; the user who trialled it often isn't the buyer; and programmes of record are planned years ahead.</p>`
+    + `<p><b>What bridges the gap:</b> a front-line sponsor with a committed requirement; transition funding (e.g. NSSIF, the NATO Innovation Fund); a prime willing to integrate; and spiral acquisition so it enters service in increments.</p>`;
+  row.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>{ closePathway(); focusNode(c.dataset.id); }));
+  row.querySelectorAll('.pwgap').forEach(g=>{ const btn=g.querySelector('.pwgapbtn'), res=g.querySelector('.pwgapres');
+    if(btn) btn.onclick=()=>{ const q=`${natLabel} defence organisations for the "${g.dataset.stage}" stage of the innovation pathway (crossing the valley of death)`; try{ finderWebSearch(q,[],res); }catch(e){ if(res) res.innerHTML='<div class="fnone">Web search unavailable right now.</div>'; } };
+  });
 }
-function openPathway(){ renderPathway(); document.getElementById('pathway').classList.add('open'); }
+function openPathway(){ populatePathwayNations(); _pwNation=homeKey()||'uk'; const sel=document.getElementById('pwNation'); if(sel){ sel.value=_pwNation; if(sel.value!==_pwNation){ _pwNation='uk'; sel.value='uk'; } } renderPathway(); document.getElementById('pathway').classList.add('open'); }
 function closePathway(){ document.getElementById('pathway').classList.remove('open'); }
 document.getElementById('pathwayBtn').onclick=openPathway;
 document.getElementById('pwClose').onclick=closePathway;
@@ -6163,7 +6204,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.14.0 (Acquisition stage — the finder gains an optional "Acquisition stage" filter (Concept · Develop · Demonstrate · Procure · In-service) and each pipeline body\'s detail panel shows which stages it serves, so you can ask "I\'m at the prototype stage — who do I talk to?". Derived live from each body\'s offers and domains (no change to the data), lighting up only for funding, innovation, research, test, procurement and logistics bodies — not product suppliers · Coverage & data quality — a new panel (menu → "Coverage & data quality") openly shows what the map covers and where it is thin: counts, provenance and verification state, organisation life cycles, and coverage by technology area and by nation, with the thinnest nations flagged as candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid · Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.15.0 (Innovation pathway by nation — the "Innovation pathway" tool (Crossing the valley of death) now lets you choose any nation and get the same stage-by-stage readout (Concept → Develop → Demonstrate → Procure → In-service), each body carrying a confidence score from its verification status and freshness; any stage with no mapped body for that nation is flagged as a possible gap with a one-click web search to surface candidates. Built on the acquisition-stage lens · Acquisition stage — the finder gains an optional "Acquisition stage" filter (Concept · Develop · Demonstrate · Procure · In-service) and each pipeline body\'s detail panel shows which stages it serves, so you can ask "I\'m at the prototype stage — who do I talk to?". Derived live from each body\'s offers and domains (no change to the data), lighting up only for funding, innovation, research, test, procurement and logistics bodies — not product suppliers · Coverage & data quality — a new panel (menu → "Coverage & data quality") openly shows what the map covers and where it is thin: counts, provenance and verification state, organisation life cycles, and coverage by technology area and by nation, with the thinnest nations flagged as candidates to deepen. Being open about the gaps is part of being a trustworthy navigational aid · Find a route — a new tool (menu → "Find a route between two orgs") shows how one organisation connects to another through the mapped relationships: accelerators, funders, corporate families and memberships. Each hop shows the relationship, its direction and how current it is; where there is no mapped link it says so plainly (a gap, never invented). Built on a new typed/dated/evidenced relationship layer backfilled from the affiliation data · Organisation life cycles — renames, mergers and dissolutions are now recorded as data, not just in the label: a search for an old name (e.g. "Improbable Defence") now resolves to the current body (Skyral), and a node can show "Formerly: …", "⤷ Merged into / Renamed — now …" (clickable) or "⚠ Dissolved" · Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.

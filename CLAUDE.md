@@ -256,6 +256,11 @@ browser-only config field, never committed.
   surfaced as a finder facet + panel chips — no stored tag, like the other lenses; full hand-tagging of
   CADMID/TEPIDOIL deferred as unneeded given TRL already covers maturity), and ~~a coverage dashboard~~
   (shipped v4.13.1). **The whole first-wave trust programme from the review is now delivered.**
+- **Innovation pathway by nation (v4.15.0):** the "Innovation pathway / Crossing the valley of death" tool
+  (`STAGES`/`renderPathway`/`pathwayBodiesFor`/`pathwayConfidence` in index.html, `#pathway` modal) is now
+  country-selectable and dynamic — five phase-aligned stages populated at runtime via `phaseForOrg()` +
+  `nationCodeFor()`, a confidence score per body (provenance + freshness), and empty stages flagged as gaps
+  with a `finderWebSearch` button. No stored data; change the stage→phase mapping in `STAGES`, not the data.
   Failed-search logging shipped too (2026-10-10): the `events` logger now captures `search_empty`
   (top-search), `finder_empty` and `finder_noexact` — coverage-gap signal, no PII, reuses `events`.
 

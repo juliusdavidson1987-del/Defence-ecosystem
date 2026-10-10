@@ -3,6 +3,20 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.15.0 — Innovation pathway by nation (2026-10-10)
+- The **Innovation pathway** tool ("Crossing the valley of death") is now **country-selectable**: pick any
+  nation and get the same five-stage readout (Concept → Develop → Demonstrate → Procure → In-service),
+  populated at runtime from the acquisition-stage lens + nationality — so the US, France, NZ, etc. get a
+  UK-style pipeline view instead of a hard-coded UK-only one.
+- **Confidence score per body** (from verification status + freshness) shown as ●●● / ●●○ / ●○○ with the %
+  on hover — "verified by confidence score".
+- **Gap finder:** any stage with no mapped body for the chosen nation is flagged as a possible gap, with a
+  one-click **web search** to surface candidate organisations (routed to the maintainer to review), plus a
+  per-nation gaps summary. Verified live: UK/US rich at every stage; New Zealand flags Demonstrate and
+  In-service as gaps.
+- App-only (runtime-derived, no data change). Builds on v4.14.0's acquisition-stage lens; the valley of
+  death sits at the Demonstrate → Procure hand-off.
+
 ## v4.14.0 — Acquisition-stage lens (2026-10-10)
 - **Lightweight acquisition-phase tagging, derived at runtime.** A new **"Acquisition stage"** finder
   facet (Concept · Develop · Demonstrate · Procure · In-service) and a stage line on each pipeline body's
