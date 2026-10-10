@@ -3,6 +3,20 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.1 — Fix: partner nations (India/Singapore/Saudi/UAE) were dropped from the map (2026-10-11)
+- **Significant fix.** While wiring the benchmark's nation selector, discovered that India, Singapore,
+  Saudi Arabia and the UAE — ~82 organisations added to Supabase — **never appeared anywhere on the map**.
+  Two gaps combined: (1) the nation resolver (`PREFIX_NATION`, `nationForOrg`, `nationCodeFor`) had
+  `kr/jp/il` but not `in/sg/sa/ae`, so those orgs resolved to "unknown"; and (2) the Alliance-lens nation
+  model (`NATION_ORDER`, `NATION_META`) had no entries for them, so the default view built no branch and
+  the whole `b_partners` subtree was silently discarded (confirmed: 2,210→2,292 orgs once fixed; the data
+  was always present in Supabase/data.json with a valid parent chain). Added the four codes to all of these,
+  so they now appear as nations in every lens, the finder geo, nation gateways and the benchmark.
+- Benchmark selector also now offers every nation that has open-data figures even if the map has no orgs
+  for it yet (graceful "no organisations mapped yet" note for the ecosystem view; the macro comparison
+  still works). Verified: India now loads 36 orgs, selectable as "India (36)" with a populated breakdown
+  (strongest Sensing/ISR/space #3, Weapons #5). App-only change (`index.html`); stamped v4.18.1.
+
 ## v4.18.0 — Benchmark: cross-nation open-data comparison (2026-10-11)
 - Extended the Benchmark tool with a **"How we compare with other nations"** panel (modelled on UNITI's
   country-comparison view): a *COMPARE WITH* multi-select of countries and four cited open-data cards —
