@@ -3,6 +3,15 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Admin drafter: draft-from-source reliability (2026-10-10)
+- **Fix — flaky drafting.** "Draft node from feedback" (`draft-from-source`) does a web-search multi-turn
+  that occasionally hit a transient timeout/overload, so it failed and you had to click a few times. Now:
+  the **client auto-retries up to 3× with backoff** (showing "retry 2/3"), and the **Edge Function** gives
+  the Anthropic SDK `maxRetries: 3` (backs off on 429/503/529), caps each request at 45s, runs a lighter
+  pass (web_search 5→4, max_tokens 8192→6144), and **reparses once** on an empty/malformed JSON reply.
+  Redeploy the function (`supabase functions deploy draft-from-source`) for the server-side half; the
+  client half is live on a hard-refresh of the drafter.
+
 ## Admin drafter: feedback-split drafts get an id (2026-10-10)
 - **Fix.** When one feedback was split into several node drafts (`draft-from-source` multi-item), each
   **new-org** draft loaded into Step 3 with a **blank id**, so it couldn't build/insert/deploy. Step 3 now

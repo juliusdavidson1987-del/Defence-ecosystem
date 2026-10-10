@@ -47,7 +47,10 @@ Deno.serve(async (req: Request) => {
   if (!supabaseUrl || !serviceKey) return json({ error: "Supabase env not configured" }, 500);
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY not configured" }, 500);
   const sb = createClient(supabaseUrl, serviceKey);
-  const client = new Anthropic({ apiKey });
+  // maxRetries: the SDK backs off and retries transient 429/500/503/529 (overloaded)
+  // itself, which is the usual cause of "failed, worked on the 3rd try". timeout caps a
+  // single hung request so a retry can fire within the function's wall-clock budget.
+  const client = new Anthropic({ apiKey, maxRetries: 3, timeout: 45000 });
 
   try {
     const { data: fb, error } = await sb.from("feedback").select("*").eq("id", body.feedback_id).maybeSingle();
@@ -116,16 +119,22 @@ ${parents}
 
 Extract every organisation the feedback is about and draft each. Verify on the web first.`;
 
-    const messages: Anthropic.MessageParam[] = [{ role: "user", content: [{ type: "text", text: userText }, ...contentBlocks] }];
-    const opts = () => ({
-      model: "claude-sonnet-5", max_tokens: 8192, output_config: { effort: "medium" as const },
-      system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 5 }], messages,
-    });
-    let resp = await client.messages.create(opts());
-    for (let i = 0; i < 5 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }
-
-    const parsed = parseJson(textOf(resp)) as { items?: Array<Record<string, unknown>> };
-    const rawItems = Array.isArray(parsed.items) ? parsed.items : [];
+    // One generation pass: web-search multi-turn, then parse the JSON out. Lighter than
+    // before (fewer web_search uses, smaller max_tokens) so it finishes well inside the
+    // function's wall-clock budget. `strict` re-asks for JSON-only on a reparse.
+    async function generate(strict: boolean): Promise<{ raw: Array<Record<string, unknown>>; text: string }> {
+      const messages: Anthropic.MessageParam[] = [{ role: "user", content: [{ type: "text", text: userText + (strict ? "\n\nReturn ONLY the minified JSON object described above — no prose, no markdown, no code fences." : "") }, ...contentBlocks] }];
+      const opts = () => ({
+        model: "claude-sonnet-5", max_tokens: 6144, output_config: { effort: "medium" as const },
+        system, tools: [{ type: "web_search_20260209" as const, name: "web_search", max_uses: 4 }], messages,
+      });
+      let resp = await client.messages.create(opts());
+      for (let i = 0; i < 4 && resp.stop_reason === "pause_turn"; i++) { messages.push({ role: "assistant", content: resp.content }); resp = await client.messages.create(opts()); }
+      const parsed = parseJson(textOf(resp)) as { items?: Array<Record<string, unknown>> };
+      return { raw: Array.isArray(parsed.items) ? parsed.items : [], text: textOf(resp) };
+    }
+    let { raw: rawItems, text: lastText } = await generate(false);
+    if (!rawItems.length) { const r2 = await generate(true); rawItems = r2.raw; lastText = r2.text; }  // one reparse on empty/malformed
     const items = rawItems.filter((r) => r && (r.label || r.does)).slice(0, 8).map((r) => ({
       action: r.action === "correct" ? "correct" : "new",
       id: (r.action === "correct" && typeof r.id === "string" && validId.has(r.id)) ? r.id : (fb.node_id || ""),
@@ -133,7 +142,7 @@ Extract every organisation the feedback is about and draft each. Verify on the w
       tags: (r.tags && typeof r.tags === "object" && Array.isArray((r.tags as { d?: unknown }).d)) ? r.tags : null,
       note: r.note ?? "",
     }));
-    if (!items.length) return json({ error: "no draft produced", raw: textOf(resp).slice(0, 300) }, 502);
+    if (!items.length) return json({ error: "no draft produced", raw: lastText.slice(0, 300) }, 502);
     // `draft` kept for backward-compat with older clients.
     return json({ items, draft: items[0], meta: { attachment: attachNote, source_url: fb.source_url || "", count: items.length } });
   } catch (e) {

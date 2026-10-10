@@ -533,25 +533,35 @@ window.loadDraftIntoStep3=(d,meta)=>{
 window.draftFromSource=async(id)=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
   await loadNodes();
-  const dbox=$('dfsbox_'+id); if(dbox) dbox.innerHTML='<div class="tiny">🧩 Reading the feedback & verifying on the web, up to a minute…</div>';
-  toast('🧩 Drafting from the feedback — reading & verifying on the web, up to a minute…');
-  try{
-    const r=await fetch(efUrl('draft-from-source'),{method:'POST',headers:efHeaders(),body:JSON.stringify({feedback_id:id})});
-    if(r.status===401){ toast('Unauthorised — check the shared secret'); if(dbox)dbox.innerHTML=''; return; }
-    const j=await r.json();
-    // New multi-item shape {items:[...]}; fall back to the old single {draft}.
-    const items=Array.isArray(j.items)&&j.items.length?j.items:(j.draft?[j.draft]:[]);
-    if(!items.length){ toast('Draft failed: '+(j.error||r.status)); if(dbox)dbox.innerHTML='<div class="chk bad tiny">Draft failed: '+esc(j.error||('HTTP '+r.status))+'</div>'; return; }
-    const m=j.meta||{}; window._dfsItems[id]={items,meta:m};
-    if(items.length===1){ if(dbox)dbox.innerHTML=''; loadDraftIntoStep3(items[0],m); return; }
-    // Multiple items — list them so the maintainer works through each into Step 3.
-    if(dbox){
-      dbox.innerHTML='<div class="tiny" style="margin-top:6px">🧩 <b>'+items.length+' items</b> found in this feedback — load each into Step 3, Insert (or Stage), then Resolve the feedback:</div>'+
-        items.map((d,i)=>`<div class="chk" style="display:block;margin-top:4px"><b>${esc(d.label||'(no label)')}</b> <span class="tiny">${d.action==='correct'?'✎ correction'+(d.id?(' · '+esc(d.id)):''):'＋ new org'}</span><br><span class="tiny">${esc(d.does||d.note||'')}</span>${d.entry?('<br><span class="tiny">'+esc(String(d.entry).replace(/^https?:\/\//,''))+'</span>'):''}<div style="margin-top:5px"><button class="dfsload primary" data-fid="${esc(id)}" data-i="${i}">Load into Step 3 →</button></div></div>`).join('');
-      dbox.querySelectorAll('.dfsload').forEach(b=>b.onclick=()=>{ const st=window._dfsItems[b.dataset.fid]; if(st) loadDraftIntoStep3(st.items[+b.dataset.i],st.meta); });
-    }
-    toast('🧩 '+items.length+' drafts ready — load each into Step 3');
-  }catch(e){ toast('Draft error — see console'); if(dbox)dbox.innerHTML=''; console.error(e); }
+  const dbox=$('dfsbox_'+id);
+  const MAX=3; let lastErr='';
+  // Auto-retry: the draft call does a web-search multi-turn and occasionally hits a
+  // transient timeout/overload — retry a few times with backoff so you don't have to.
+  for(let attempt=1; attempt<=MAX; attempt++){
+    if(dbox) dbox.innerHTML='<div class="tiny">🧩 Reading the feedback & verifying on the web, up to a minute…'+(attempt>1?(' <b>(retry '+attempt+'/'+MAX+')</b>'):'')+'</div>';
+    toast(attempt===1?'🧩 Drafting from the feedback — up to a minute…':('🧩 Retrying the draft ('+attempt+'/'+MAX+')…'));
+    try{
+      const r=await fetch(efUrl('draft-from-source'),{method:'POST',headers:efHeaders(),body:JSON.stringify({feedback_id:id})});
+      if(r.status===401){ toast('Unauthorised — check the shared secret'); if(dbox)dbox.innerHTML=''; return; }  // fatal — don't retry
+      const j=await r.json().catch(()=>({}));
+      const items=Array.isArray(j.items)&&j.items.length?j.items:(j.draft?[j.draft]:[]);
+      if(items.length){
+        const m=j.meta||{}; window._dfsItems[id]={items,meta:m};
+        if(items.length===1){ if(dbox)dbox.innerHTML=''; loadDraftIntoStep3(items[0],m); return; }
+        if(dbox){
+          dbox.innerHTML='<div class="tiny" style="margin-top:6px">🧩 <b>'+items.length+' items</b> found in this feedback — load each into Step 3, Insert (or Stage), then Resolve the feedback:</div>'+
+            items.map((d,i)=>`<div class="chk" style="display:block;margin-top:4px"><b>${esc(d.label||'(no label)')}</b> <span class="tiny">${d.action==='correct'?'✎ correction'+(d.id?(' · '+esc(d.id)):''):'＋ new org'}</span><br><span class="tiny">${esc(d.does||d.note||'')}</span>${d.entry?('<br><span class="tiny">'+esc(String(d.entry).replace(/^https?:\/\//,''))+'</span>'):''}<div style="margin-top:5px"><button class="dfsload primary" data-fid="${esc(id)}" data-i="${i}">Load into Step 3 →</button></div></div>`).join('');
+          dbox.querySelectorAll('.dfsload').forEach(b=>b.onclick=()=>{ const st=window._dfsItems[b.dataset.fid]; if(st) loadDraftIntoStep3(st.items[+b.dataset.i],st.meta); });
+        }
+        toast('🧩 '+items.length+' drafts ready — load each into Step 3');
+        return;
+      }
+      lastErr=j.error||('HTTP '+r.status);
+    }catch(e){ lastErr=String((e&&e.message)||e); console.error(e); }
+    if(attempt<MAX) await new Promise(res=>setTimeout(res, 1200*attempt));  // 1.2s, 2.4s backoff
+  }
+  toast('Draft failed after '+MAX+' tries: '+lastErr);
+  if(dbox)dbox.innerHTML='<div class="chk bad tiny">Draft failed after '+MAX+' tries: '+esc(lastErr)+'. Try again shortly, or draft manually via Step 1.</div>';
 };
 window.loadWebFinds=async()=>{
   const ef=efBase(); if(!ef)return toast('Set the Edge Function URL first');
