@@ -3,6 +3,18 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.12.1 — Finder transparency + non-endorsement (2026-10-10)
+- **Finder explains itself.** Each result now shows **which of the criteria you selected it matches and
+  which are gaps** ("Matches 3/4 of your criteria · gap: region" / "✓ Matches all 4"), so the Exact / Close /
+  Potential grade is legible rather than a black box.
+- **Refusal as an answer.** When nothing matches *everything* you selected, the finder now says so plainly —
+  "there's no exact fit; the closest partial matches are below, treat them as leads" — instead of letting the
+  nearest partial result pose as a definitive answer.
+- **Clearer authority statement.** The welcome disclaimer now states explicitly that **listing an
+  organisation is not an endorsement** and the map **does not represent an approved or official route to
+  market** — guarding against authority drift (a curated directory being mistaken for an official list).
+- App-only (no data change). Part of the trust programme (phase 2a).
+
 ## v4.12.0 — Node provenance (2026-10-10)
 - **New — evidence record on every organisation.** Phase 1 of a trustworthiness programme (prompted by
   an external review against *The Correctness Problem*). Additive, nullable columns on `nodes`:

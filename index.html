@@ -1017,7 +1017,7 @@
       <span class="cx"><b>Enjoying The Defence Ecosystem?</b> It's free and independent — if you find it useful, please consider contributing to its running costs and supporting further expansion.</span>
       <span class="cb">Buy me a coffee</span>
     </a>
-    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO. Coverage is deepest for the UK — where it began — and substantial across the US, Europe and the major allies, but it's representative, not exhaustive, and thinner for smaller nations. Organisation details, access routes and fit ratings are best-effort and change over time — always verify on the organisation's own site before acting.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Corrections welcome via any entry's ✎ button. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
+    <div class="wdis">A navigational aid, not an official source. Not affiliated with any government or NATO — listing an organisation is not an endorsement, and the map does not represent an approved or official route to market. Coverage is deepest for the UK — where it began — and substantial across the US, Europe and the major allies, but it's representative, not exhaustive, and thinner for smaller nations. Organisation details, access routes and fit ratings are best-effort and change over time — always verify on the organisation's own site before acting.<br><br>Open reference — code under MIT, data under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--phos)">CC BY 4.0</a>. Corrections welcome via any entry's ✎ button. Maintained by Julius Davidson (juliusdavidson1987@gmail.com).</div>
   </div>
 </div>
 
@@ -1056,7 +1056,7 @@
       <li><b>Aug 2026</b> — Expanded the technology lens (simulation, wargaming, training, logistics, counter-UAS and more) and added phone / computer layout modes.</li>
       <li><b>Jul 2026</b> — Completed the full NATO membership and non-NATO allies; nationality-aware tender routing so opportunities point to each country's real portal.</li>
     </ul>
-    <div class="aver">The Defence Ecosystem · v4.12.0 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
+    <div class="aver">The Defence Ecosystem · v4.12.1 · updated October 2026 · unofficial · MIT + CC BY 4.0 · © 2026 Julius Davidson</div>
   </div>
 </div>
 
@@ -5181,24 +5181,32 @@ function renderFinderResults(sel){
     const why=[...new Set(r.why)].slice(0,4).map(w=>`<span class="wtag">${w}</span>`).join('');
     const ac=ACCESSCOL[accessOf(r.id)], al=ACCESSLAB[accessOf(r.id)];
     const isGate = sel.homeGateway && r.id===sel.homeGateway;
+    // Explain the grade: which of your criteria this door matches, and which are gaps.
+    const cov=facetCoverage(r.id); let covLine='';
+    if(cov.tot){ const miss=cov.facets.filter(f=>!f.ok).map(f=>f.label);
+      covLine = miss.length
+        ? `<div class="rcov" style="font-size:10.5px;color:var(--faint);margin-top:3px">Matches ${cov.m}/${cov.tot} of your criteria · <span style="color:#E3A24B">gap: ${finderEsc(miss.join(', '))}</span></div>`
+        : `<div class="rcov" style="font-size:10.5px;color:#7fe0c8;margin-top:3px">✓ Matches all ${cov.tot} of your criteria</div>`;
+    }
     return `<div class="rcard${isGate?' rcard-gate':''}" data-id="${r.id}">
       ${isGate?`<div class="rgate">★ Recommended first contact — your national gateway</div>`:''}
       <div class="rhead"><span class="rdot" style="color:${col};background:${col}"></span><span class="rname">${n.l}</span>
         <span class="abadge" style="color:${ac};border-color:${ac}55">${al}</span></div>
-      <div class="rwhy">${why}</div>
+      <div class="rwhy">${why}</div>${covLine}
       <div class="ract">First step: ${linkifyProse((n.entry||oppsFor(r.id)).replace('@@SUGGEST_GATEWAY@@',''))}</div>
     </div>`;
   }
   // grade by facet COVERAGE: how many of the facets you actually chose does this door satisfy?
-  function facetCoverage(id){ const t=tagsFor(id); if(!t) return {m:0,tot:0};
-    let m=0,tot=0;
+  // Also returns which facets matched and which didn't, so each card can explain itself.
+  function facetCoverage(id){ const t=tagsFor(id); if(!t) return {m:0,tot:0,facets:[]};
+    const facets=[];
     const roles=(sel.roles&&sel.roles.length)?sel.roles:(sel.role?[sel.role]:[]);
-    if(roles.length){ tot++; if(roles.some(r=>t.w.includes(r)||(r==='sme'&&t.w.includes('startup'))||(r==='startup'&&t.w.includes('sme')))) m++; }
-    if((sel.needs||[]).length){ tot++; if((sel.needs).some(nd=>t.o.includes(nd)||(nd==='contract'&&t.o.includes('procurement')))) m++; }
-    if((sel.domains||[]).length){ tot++; if((sel.domains).some(x=>t.d.includes(x))||t.d.includes('xcut')) m++; }
-    if(sel.trl){ tot++; if(sel.trl>=t.t[0]&&sel.trl<=t.t[1]) m++; }
-    if(sel.geo&&sel.geo!=='any'){ tot++; if(t.g===sel.geo) m++; }
-    return {m,tot};
+    if(roles.length) facets.push({label:'who you are', ok: roles.some(r=>t.w.includes(r)||(r==='sme'&&t.w.includes('startup'))||(r==='startup'&&t.w.includes('sme')))});
+    if((sel.needs||[]).length) facets.push({label:'what you need', ok:(sel.needs).some(nd=>t.o.includes(nd)||(nd==='contract'&&t.o.includes('procurement')))});
+    if((sel.domains||[]).length) facets.push({label:'domain', ok:(sel.domains).some(x=>t.d.includes(x))||t.d.includes('xcut')});
+    if(sel.trl) facets.push({label:'maturity', ok: sel.trl>=t.t[0]&&sel.trl<=t.t[1]});
+    if(sel.geo&&sel.geo!=='any') facets.push({label:'region', ok: t.g===sel.geo});
+    return {m:facets.filter(f=>f.ok).length, tot:facets.length, facets};
   }
   // pull the national gateway out as a recommended first contact so it doesn't crowd the tiers
   const gate = sel.homeGateway ? scored.find(x=>x.id===sel.homeGateway) : null;
@@ -5210,6 +5218,11 @@ function renderFinderResults(sel){
   lastScored=[...(gate?[gate]:[]),...exact,...close,...potential];
   let html=`<div class="ractions"><button class="rbtn" id="dlCsv">⤓ Download CSV</button><button class="rbtn" id="shareFind">⤴ Share results</button><button class="rbtn" id="saveFind">★ Save search</button></div>`;
   if(gate){ html+=`<div class="rtier"><div class="rcount">Your national front door</div>`+cardHTML(gate)+`</div>`; }
+  // Refusal-as-an-answer: say plainly when nothing matches everything, rather than
+  // letting the nearest partial match pose as a definitive result.
+  if(!exact.length && (close.length||potential.length)){
+    html+=`<div class="fnone" style="border-left:3px solid #E3A24B">No organisation matches <b>everything</b> you selected — there's no exact fit. The closest partial matches are below; treat them as leads to weigh, not a definitive answer.</div>`;
+  }
   function section(cls,title,sub,arr){ if(!arr.length) return ''; return `<div class="rtier rtier-${cls}"><div class="rcount">${title} <span class="rtn">${arr.length}</span></div><div class="rtsub">${sub}</div>`+arr.map(cardHTML).join('')+`</div>`; }
   html+=section('exact','Exact fit','Remit closely matches everything you selected — start here.',exact);
   html+=section('close','Close fit','Strong on most of what you asked for — well worth approaching.',close);
@@ -6054,7 +6067,7 @@ document.getElementById('recCancel2').onclick=closeReconcile;
 document.getElementById('reconcile').addEventListener('click',e=>{ if(e.target.id==='reconcile')closeReconcile(); });
 
 /* ================= v2 engine ================= */
-let DATA_AS_OF='October 2026 · v4.12.0 (Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
+let DATA_AS_OF='October 2026 · v4.12.1 (Finder now explains each result — it shows which of the criteria you selected a door matches and which are gaps, and says plainly when nothing is an exact fit (the nearest partial matches are presented as leads to weigh, not a definitive answer) · Clearer authority statement — listing an organisation is not an endorsement and the map does not represent an approved or official route to market · Provenance: every organisation can now carry an evidence record — origin (maintainer-curated / community / AI-drafted), an evidence status (verified / unverified / AI-drafted) and a last-verified date & reviewer — surfaced in the detail panel so AI-drafted or unverified entries are visibly flagged rather than silently trusted. The Supabase→data.json sync and the data validator carry the new fields · Fix: "Related organisations" on a node now only shows genuinely-linked bodies — a shared technology area or a shared network/corporate family — instead of any same-country, same-type org; comparable orgs in peer nations are included but capped, so the list is meaningful, not a random selection · Scope broadened from defence & dual-use to defence, NATIONAL SECURITY & dual-use — the map now includes the security & resilience bodies that share the same innovation and procurement pipeline (protective security/CNI, cyber, counter-terrorism, border & law-enforcement technology, serious/organised crime, intelligence enablers, resilience). First UK security bodies added: HMGCC, HMGCC Co-Creation, ACE, JSaRC, MI5, SIS, National Crime Agency, Counter Terrorism Policing, Border Force, Police Digital Service, BlueLight Commercial, College of Policing, Homeland Security Group, National Security Secretariat · Fix: adding an organisation while a nation/technology view was open could file it under a runtime-only branch (an orphan) — the app now always resolves it to a real national container, which had been breaking the nightly data sync; the maintainer agent and insert path apply the same guard, and a map-wide pass re-homed ~76 government/lab/agency bodies that had been mis-filed as “industry” · Simulation & modelling is now its own clear category (modelling/simulation/synthetic environments + wargaming), and the UK Defence Simulation Centre (DSC) and Defence M&S Office (DMSO) are on the map · Added a “Buy me a coffee” support call-out on the home screen and in About — the map is free and independent; contributions go to running costs and expansion · Fix: top search now ranks matches — an exact acronym/name (e.g. “DSTL”) wins over broad description/synonym matches, so it lands on the right organisation · New: “Ask the guide” — a conversational assistant that helps you find the right door, understand how bodies relate, use the map, and draft an approach; grounded in the mapped organisations (clickable), map-first with a wider-web fallback, rate-limited, no data stored · Feedback can now carry a source link and an attached fact sheet (PDF/image/text) — the maintainer’s agent drafts the node from it, verified on the web, for review · Fix: input text was dark-on-dark in some boxes (finder description, search-again bars, modal fields) — now readable in every theme · Taxonomy v2 — the technology domains are now a two-level model: ~9 categories (AI/autonomy, cyber/EW, sensing/ISR/space, platforms, weapons, strategic, sustainment, human/medical, cross-cutting) grouping finer subcategories (medical split from human performance, plus EW, PNT, EO-ISR, CBRN, microelectronics, quantum, autonomy, robotics). Technology lens and Find-your-door now navigate by category · Events reworked into a three-layer model — anchor fairs, aggregators & calendars (Defence IQ, Clarion, COGES) and independent organisers & activities (CWIX, Locked Shields); event dates now live in the data layer, not the app · Find your door: a wider-web search on demand — check for new or updated organisations even when the map already has plenty · a daily auto-maintainer agent reviews submissions, corrections, claims, feedback and web-finds · native feedback → straight into the maintainer review queue · AI “Find your door”: describe your situation → Claude ranks the map · graded finder · partner nations · NADG · affiliations)';
 /* ---- per-node "last verified" dating ----
    Honest freshness signal: each region/batch is dated to when it was actually last researched
    and link-checked, so a rolling accuracy pass can update one area without re-stamping everything.
