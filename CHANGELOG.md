@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## Defence-tech startups — batch 3 (2026-10-11)
+- Added **11 more verified firms** (drones/maritime/counter-drone): Auterion, Darkhive, ThayerMahan,
+  Terradepth, Fortem Technologies, Firehawk, Parry Labs, Havoc AI, Vatn Systems, Neros (all US, `us_dtech`)
+  + **D-Fend Solutions** (Israel, `pt_il`). Several had moved domains (captured). Migration
+  `2026-10-11-startups-batch3.sql`. Running total: **38 verified new scaleups** across batches 1–3.
+
 ## Defence-tech startups — batch 2 (2026-10-11)
 - Added **11 more web-verified US scaleups** (AI/software/EW + space) under `us_dtech`: Modern Intelligence,
   Defense Unicorns, Aalyria, Picogrid, Nominal, Gravitics, Turion Space, Muon Space, Slingshot Aerospace,
