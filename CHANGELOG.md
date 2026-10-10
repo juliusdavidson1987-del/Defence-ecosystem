@@ -20,6 +20,13 @@ aren't stamped here unless they change a version.
   feedback) — and shows it in the Step 3 note. Verified to produce ids identical to `makeId`. Corrections
   with no matched existing node still load blank by design (you pick the node). Admin tool only.
 
+## v4.15.1 — Innovation pathway promoted to a headline tool (2026-10-10)
+- The country-aware Innovation pathway is now **front-and-centre**, not a menu item: a **header button**
+  (`⇢ Innovation pathway`) paired with "◎ Find your door", and a **fourth welcome-screen tile** that
+  describes it (cross the valley of death, any nation, confidence-scored stages, gaps flagged). Glyph
+  standardised to `⇢` across the header, welcome tile and modal. The menu item and (desktop) header button
+  both open it; the header button is hidden on phone, where the welcome tile is the entry. App-only.
+
 ## v4.15.0 — Innovation pathway by nation (2026-10-10)
 - The **Innovation pathway** tool ("Crossing the valley of death") is now **country-selectable**: pick any
   nation and get the same five-stage readout (Concept → Develop → Demonstrate → Procure → In-service),
