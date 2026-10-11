@@ -3,6 +3,14 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.6 — Benchmark: two-part nation picker (dropdown + compare buttons) (2026-10-11)
+- Reworked the benchmark controls into a clear UNITI-style pair at the top: a **"Your nation" dropdown**
+  listing **every country** (now including open-data-only baselines like China, Russia and Switzerland —
+  48 in total) to set your default, next to **"Compare with" buttons** that pick which other nations to
+  include. The cited open-data comparison renders directly below, with the map-derived ecosystem breakdown
+  after it. Changing either control re-renders live (your nation is removed from its own compare buttons).
+  Moved the compare chips out of the comparison body into the controls block. App-only; stamped v4.18.6.
+
 ## v4.18.5 — Benchmark remembers your chosen nation (2026-10-11)
 - Users can now set their own default: the benchmark **remembers the nation you pick** (saved to
   `tde_bmNation` in local storage) and opens on it next time. Priority is your saved pick → your
