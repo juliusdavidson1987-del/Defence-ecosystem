@@ -3,6 +3,12 @@
 Semantic **MAJOR.MINOR.PATCH**. Newest first. Data-only changes (Supabase → sync)
 aren't stamped here unless they change a version.
 
+## v4.18.5 — Benchmark remembers your chosen nation (2026-10-11)
+- Users can now set their own default: the benchmark **remembers the nation you pick** (saved to
+  `tde_bmNation` in local storage) and opens on it next time. Priority is your saved pick → your
+  welcome-screen home nation → the US as the last-resort fallback only. Added a one-line caption under the
+  selector ("Pick your nation — it's remembered as your default next time."). App-only; stamped v4.18.5.
+
 ## v4.18.4 — Fix: comparison cards full-width, never cramped (2026-10-11)
 - The previous `auto-fit` change packed the four "How we compare" cards into three narrow columns on wider
   windows (too small) and still felt tight on narrow ones. Switched to **one full-width column by default,
